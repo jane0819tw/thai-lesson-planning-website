@@ -1,0 +1,85 @@
+{
+  "id": "lesson-01",
+  "number": 1,
+  "title": "中輩子音入門＋四個基本母音",
+  "summary": "認識 8 個子音（6 個中輩＋น ม 兩個鼻音）與 า ิ ี ู 四個母音，用 16 個單字拼出第一批簡單句。",
+  "status": "draft",
+  "rules": [
+    {
+      "id": "r1",
+      "title": "泰文字母有「頭」",
+      "body": "多數泰文字母從「頭」（圓圈或彎鉤）開始書寫，認字時先找頭，再看身體往哪個方向延伸。",
+      "strokes": null
+    },
+    {
+      "id": "r2",
+      "title": "母音有固定位置",
+      "body": "母音依附在子音旁：า 寫在子音右邊；ิ ี 寫在子音上方；ู 寫在子音下方。本課母音都以 อ 當示範子音（อา อิ อี อู）。",
+      "strokes": null
+    },
+    {
+      "id": "r3",
+      "title": "長短母音",
+      "body": "า ี ู 是長音（拖長一點），ิ 是短音（短促）。長短不同，單字就不同。",
+      "strokes": null
+    },
+    {
+      "id": "r4",
+      "title": "尾音的收法",
+      "body": "ก 結尾收 k；ด 結尾收 t；บ ป 結尾收 p；น ม 結尾收 n / m。尾音收 k t p 的短促音節，聲調會變低（例：ปิด bpìt、กบ gòp）。",
+      "strokes": null
+    }
+  ],
+  "consonants": [
+    { "id": "c-ko-kai",   "char": "ก", "name": "ก ไก่",    "nameRoman": "gɔɔ gài",    "nameZh": "雞",   "initial": "g",  "final": "k", "class": "mid" },
+    { "id": "c-do-dek",   "char": "ด", "name": "ด เด็ก",   "nameRoman": "dɔɔ dèk",    "nameZh": "小孩", "initial": "d",  "final": "t", "class": "mid" },
+    { "id": "c-to-tao",   "char": "ต", "name": "ต เต่า",   "nameRoman": "dtɔɔ dtào",  "nameZh": "烏龜", "initial": "dt", "final": "t", "class": "mid" },
+    { "id": "c-bo-baimai","char": "บ", "name": "บ ใบไม้",  "nameRoman": "bɔɔ baimái", "nameZh": "樹葉", "initial": "b",  "final": "p", "class": "mid" },
+    { "id": "c-po-pla",   "char": "ป", "name": "ป ปลา",    "nameRoman": "bpɔɔ bplaa","nameZh": "魚",   "initial": "bp", "final": "p", "class": "mid" },
+    { "id": "c-o-ang",    "char": "อ", "name": "อ อ่าง",   "nameRoman": "ɔɔ àang",    "nameZh": "臉盆", "initial": "（無聲，當母音載體）", "final": "（母音 ɔɔ）", "class": "mid" },
+    { "id": "c-no-nu",    "char": "น", "name": "น หนู",    "nameRoman": "nɔɔ nǔu",    "nameZh": "老鼠", "initial": "n",  "final": "n", "class": "low" },
+    { "id": "c-mo-ma",    "char": "ม", "name": "ม ม้า",    "nameRoman": "mɔɔ máa",    "nameZh": "馬",   "initial": "m",  "final": "m", "class": "low" }
+  ],
+  "vowels": [
+    { "id": "v-aa", "char": "า",  "withCarrier": "อา", "roman": "aa", "length": "long",  "position": "子音右邊", "example": "กา" },
+    { "id": "v-i",  "char": "ิ",  "withCarrier": "อิ", "roman": "i",  "length": "short", "position": "子音上方", "example": "กิน" },
+    { "id": "v-ii", "char": "ี",  "withCarrier": "อี", "roman": "ii", "length": "long",  "position": "子音上方", "example": "ดี" },
+    { "id": "v-uu", "char": "ู",  "withCarrier": "อู", "roman": "uu", "length": "long",  "position": "子音下方", "example": "ปู" }
+  ],
+  "words": [
+    { "id": "w-gaa",  "thai": "กา", "roman": "gaa",  "zh": "烏鴉",                       "tone": "mid",  "parts": ["ก", "า"] },
+    { "id": "w-dtaa", "thai": "ตา", "roman": "dtaa", "zh": "眼睛；外公（母親的父親）",   "tone": "mid",  "parts": ["ต", "า"] },
+    { "id": "w-bpaa", "thai": "ปา", "roman": "bpaa", "zh": "丟、扔",                     "tone": "mid",  "parts": ["ป", "า"] },
+    { "id": "w-maa",  "thai": "มา", "roman": "maa",  "zh": "來",                         "tone": "mid",  "parts": ["ม", "า"] },
+    { "id": "w-naa",  "thai": "นา", "roman": "naa",  "zh": "稻田",                       "tone": "mid",  "parts": ["น", "า"] },
+    { "id": "w-aa",   "thai": "อา", "roman": "aa",   "zh": "叔叔／姑姑（父親的弟妹）",   "tone": "mid",  "parts": ["อ", "า"] },
+    { "id": "w-dii",  "thai": "ดี", "roman": "dii",  "zh": "好",                         "tone": "mid",  "parts": ["ด", "ี"] },
+    { "id": "w-bpii", "thai": "ปี", "roman": "bpii", "zh": "年；歲",                     "tone": "mid",  "parts": ["ป", "ี"] },
+    { "id": "w-mii",  "thai": "มี", "roman": "mii",  "zh": "有",                         "tone": "mid",  "parts": ["ม", "ี"] },
+    { "id": "w-gin",  "thai": "กิน", "roman": "gin", "zh": "吃",                         "tone": "mid",  "parts": ["ก", "ิ", "น"] },
+    { "id": "w-din",  "thai": "ดิน", "roman": "din", "zh": "土、泥土",                   "tone": "mid",  "parts": ["ด", "ิ", "น"] },
+    { "id": "w-bin",  "thai": "บิน", "roman": "bin", "zh": "飛",                         "tone": "mid",  "parts": ["บ", "ิ", "น"] },
+    { "id": "w-bpit", "thai": "ปิด", "roman": "bpìt","zh": "關、關閉",                   "tone": "low",  "parts": ["ป", "ิ", "ด"], "note": "短音＋尾音 t：短促，聲調變低" },
+    { "id": "w-gop",  "thai": "กบ", "roman": "gòp",  "zh": "青蛙",                       "tone": "low",  "parts": ["ก", "บ"],       "note": "省略母音時讀 o；尾音 p 短促，聲調變低" },
+    { "id": "w-bpuu", "thai": "ปู", "roman": "bpuu", "zh": "螃蟹",                       "tone": "mid",  "parts": ["ป", "ู"] },
+    { "id": "w-duu",  "thai": "ดู", "roman": "duu",  "zh": "看",                         "tone": "mid",  "parts": ["ด", "ู"] }
+  ],
+  "sentences": [
+    { "id": "s1",  "segments": ["อา", "มา"],              "roman": "aa maa",             "zh": "叔叔來了。" },
+    { "id": "s2",  "segments": ["ตา", "มา", "ดู"],        "roman": "dtaa maa duu",       "zh": "外公來看。" },
+    { "id": "s3",  "segments": ["กา", "บิน"],             "roman": "gaa bin",            "zh": "烏鴉飛。" },
+    { "id": "s4",  "segments": ["ตา", "ดู", "กบ"],        "roman": "dtaa duu gòp",       "zh": "外公看青蛙。" },
+    { "id": "s5",  "segments": ["กบ", "ปิด", "ตา"],       "roman": "gòp bpìt dtaa",      "zh": "青蛙閉上眼睛。" },
+    { "id": "s6",  "segments": ["อา", "กิน", "ปู"],       "roman": "aa gin bpuu",        "zh": "叔叔吃螃蟹。" },
+    { "id": "s7",  "segments": ["อา", "มี", "ปู"],        "roman": "aa mii bpuu",        "zh": "叔叔有螃蟹。" },
+    { "id": "s8",  "segments": ["ตา", "ดี"],              "roman": "dtaa dii",           "zh": "眼睛很好（視力好）。" },
+    { "id": "s9",  "segments": ["นา", "ดี"],              "roman": "naa dii",            "zh": "稻田很好。" },
+    { "id": "s10", "segments": ["อา", "ปา", "ดิน"],       "roman": "aa bpaa din",        "zh": "叔叔丟土。" },
+    { "id": "s11", "segments": ["กิน", "ดิน"],            "roman": "gin din",            "zh": "吃土。（也是「窮到吃土」的玩笑話）" }
+  ],
+  "meme": {
+    "idea": "กินดิน（吃土）：窮到月底只能吃土 → 搭配句子 s11，畫一個空空的碗或口袋的角色圖。",
+    "caption": "月底的我：กินดิน",
+    "imageUrl": null
+  }
+}
