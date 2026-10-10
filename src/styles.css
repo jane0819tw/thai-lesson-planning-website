@@ -118,3 +118,68 @@ table.tone .speak { width: 28px; height: 28px; font-size: .8rem; margin-left: 4p
   .lesson-layout { grid-template-columns: 1fr; }
   .sidenav { position: static; max-height: none; }
 }
+
+.diagram p { margin-top: 0; }
+.dg-row { display: flex; flex-wrap: nowrap; gap: 14px; align-items: flex-start; }
+.dg-col { flex: 1 1 0; min-width: 0; }
+.dg-col.wide { flex-grow: 1.5; }
+.dg-tile { border-radius: 18px; height: 104px; display: flex; flex-direction: column; justify-content: center; padding: 0 12px; text-align: center; font-weight: 700; font-size: 1.15rem; line-height: 1.5; color: #222; border: 2px solid transparent; }
+.dg-tile.pink { background: #edc9c9; } .dg-tile.yellow { background: #f9e3a0; } .dg-tile.blue { background: #d9e4ea; }
+.dg-tile.green { background: #b9d4a9; } .dg-tile.purple { background: #d6d0e4; }
+.dg-tile.dashed { border: 2px dashed #333; }
+.dg-sub { list-style: none; margin: 10px 0 0; padding: 0 4px; font-size: .92rem; line-height: 1.6; }
+.dg-sub li { margin-bottom: 8px; }
+.dg-sub .th { font-size: 1.1rem; letter-spacing: .06em; }
+.dg-eq { flex: 0 0 34px; align-self: flex-start; display: flex; flex-direction: column; gap: 7px; margin-top: 41px; }
+.dg-eq span { display: block; height: 7px; background: #4a9b84; border-radius: 2px; }
+.dg-result { flex: 0 0 110px; }
+.dg-count.sm { font-size: .85rem; font-weight: 600; }
+.dg-sub li.indent { padding-left: 1.2em; margin-top: -4px; }
+@media (max-width: 760px) { .dg-row { flex-wrap: wrap; } .dg-col { flex: 1 1 140px; } .dg-eq { display: none; } .dg-result { flex: 1 1 100%; } }
+
+.gcard { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; text-align: center; }
+.gmodes { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: center; margin: 8px 0; }
+.gbtn { font: inherit; padding: 8px 14px; border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 10px; cursor: pointer; }
+.gbtn.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.gopts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 320px; margin: 10px auto; }
+.gopt { font-size: 2.6rem; padding: 10px; border: 2px solid var(--line); border-radius: 14px; background: var(--card); color: var(--fg); cursor: pointer; }
+.gopt.right { border-color: #3a9a5b; background: #e4f4ea; color: #222; } .gopt.wrong { border-color: #d05252; background: #f8e1e1; color: #222; }
+.mgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 460px; margin: 12px auto; }
+.mcard { aspect-ratio: 1; border: 2px solid var(--line); border-radius: 14px; background: var(--accent-soft); color: var(--fg); font-size: 1.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.mcard.shown { background: var(--card); } .mcard.ok { border-color: #3a9a5b; }
+.mcard .big { font-size: 2.4rem; }
+.tnote { margin: 6px 2px 0; }
+
+.toneintro { margin-bottom: 16px; }
+.tmark td { text-align: center; vertical-align: top; min-width: 90px; }
+.tchart { margin: 14px 0; }
+.tchart figcaption { font-weight: 700; text-align: center; margin-bottom: 4px; }
+.tchart svg { width: 100%; height: auto; max-width: 640px; display: block; margin: 0 auto; }
+.taxis { stroke: var(--muted); stroke-width: 1.5; } .taxis.faint { opacity: .5; }
+.tnum { fill: var(--muted); font-size: 14px; } .tnum.sm { font-size: 15px; font-weight: 700; fill: var(--fg); }
+.tlabel { fill: var(--fg); font-size: 14px; }
+
+.ruledemo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.rd-item { display: flex; align-items: center; gap: 8px; }
+.rd-op { font-size: 1.6rem; color: var(--accent); font-weight: 700; }
+.rd-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--accent-soft); border-radius: 14px; padding: 10px 16px; min-width: 96px; text-align: center; }
+.rd-th { font-size: 2.4rem; line-height: 1.2; color: var(--accent); }
+
+.markbtn { background: none; border: 0; cursor: pointer; color: var(--accent); padding: 0 8px; font-size: 2.6rem; }
+.tmark td { text-align: center; }
+
+.stroke .ghostpath { fill: none; stroke: var(--line); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+.stroke.mark .pen { stroke-width: 3.5; }
+.stroke.mark .penTip { }
+
+.tmini { width: 100%; max-width: 130px; display: block; margin: 0 auto; }
+
+.tmark .rowh { white-space: nowrap; font-size: .9rem; text-align: left; vertical-align: middle; }
+.tmark td .tchart { margin: 0; }
+.ruledemo { align-items: stretch; }
+.rd-item { align-items: stretch; }
+.rd-op { align-self: center; }
+.rd-tile { justify-content: center; min-height: 138px; }
+
+.rd-sub { display: inline-flex; align-items: center; gap: 6px; }
+.rd-tile { min-height: 110px; }

@@ -58,11 +58,13 @@ export default function StrokePlayer({ char, data }: { char: string; data: Strok
   const stop = () => setMode(null)
 
   return (
-    <div className="stroke">
+    <div className={`stroke${data.scale === 'mark' ? ' mark' : ''}`}>
       <svg viewBox={`0 0 ${V} ${V}`} role="img" aria-label={`${char} 的筆順`}>
-        {GUIDES.map((y, i) => <line key={y} x1={8} x2={V - 8} y1={y} y2={y} className={i === 2 ? 'guide base' : 'guide'} />)}
+        {(data.scale === 'mark' ? GUIDES.slice(0, 2) : GUIDES).map((y, i) => <line key={y} x1={8} x2={V - 8} y1={y} y2={y} className={i === 2 ? 'guide base' : 'guide'} />)}
         <line x1={V / 2} x2={V / 2} y1={30} y2={V - 20} className="guide v" />
-        <text x={V / 2} y={216} textAnchor="middle" fontSize={216} className="th ghost">{char}</text>
+        {data.ghost === 'path'
+          ? data.strokes.map((d, i) => <path key={'g' + i} d={d} className="ghostpath" />)
+          : <text x={V / 2} y={data.gy ?? 216} textAnchor="middle" fontSize={data.fs ?? 216} className="th ghost">{/[\u0e48-\u0e4b]/.test(char) ? '\u00A0' + char : char}</text>}
         {data.strokes.map((d, i) => (
           <path key={i} ref={el => { pathRefs.current[i] = el }} d={d} pathLength={1} className="pen"
             strokeDasharray="1 1"

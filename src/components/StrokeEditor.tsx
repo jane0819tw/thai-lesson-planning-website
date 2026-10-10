@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { STROKE_VIEWBOX as V } from '../strokes'
+import { STROKE_VIEWBOX as V, getStrokes, isToneMark } from '../strokes'
+
+const GUIDES = [61, 94, 215, 258] // 與播放器相同的四線格；聲調符號只用上面兩條
 
 // 筆順錄製工具：在淡色字形上用滑鼠／手指依筆順描一遍，匯出 JSON 貼進 data/strokes/strokes.json
 export default function StrokeEditor() {
@@ -28,22 +30,26 @@ export default function StrokeEditor() {
     if (live.length > 1) setStrokes(s => [...s, toPath(live)])
     setLive([])
   }
-  const exportJson = () => setOut(JSON.stringify({ [char]: { strokes } }, null, 2))
+  const exportJson = () => setOut(JSON.stringify({ [char.trim()]: { strokes } }, null, 2))
 
   return (
     <>
       <p><Link to="/reading">← 認字課程</Link></p>
       <h1>筆順錄製工具</h1>
-      <p className="muted">在字形上依正確筆順一筆一筆描過去（每次放開算一筆），完成後按「匯出」，把結果貼進 <code>data/strokes/strokes.json</code>。</p>
+      <p className="muted">在字形上依正確筆順一筆一筆描過去（每次放開算一筆），聲調符號（่ ้ ๊ ๋）沒有底字，請畫在上面兩條虛線之間。完成後按「匯出」，把結果貼進 <code>data/strokes/strokes.json</code>。</p>
       <div className="toolbar">
         <label>字母 <input className="th charinput" value={char} maxLength={2} onChange={e => { setChar(e.target.value); setStrokes([]); setOut('') }} /></label>
+        <span className="small muted">聲調符號：</span>
+        {['\u0e48', '\u0e49', '\u0e4a', '\u0e4b'].map(m => <button key={m} className="th" onClick={() => { setChar(m); setStrokes([]); setOut('') }}>{'\u00A0' + m}</button>)}
+        <button onClick={() => setStrokes(getStrokes(char.trim())?.strokes ?? [])}>載入現有筆順</button>
         <button onClick={() => setStrokes(s => s.slice(0, -1))} disabled={!strokes.length}>復原一筆</button>
         <button onClick={() => { setStrokes([]); setOut('') }}>清除</button>
         <button onClick={exportJson} disabled={!strokes.length}>匯出（{strokes.length} 筆）</button>
       </div>
       <div className="stroke">
         <svg ref={svg} viewBox={`0 0 ${V} ${V}`} className="canvas" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-          <text x={V / 2} y={V * 0.72} textAnchor="middle" fontSize={V * 0.72} className="th ghost">{char}</text>
+          {(isToneMark(char.trim()) ? GUIDES.slice(0, 2) : GUIDES).map((y, i) => <line key={y} x1={8} x2={V - 8} y1={y} y2={y} className={i === 2 ? 'guide base' : 'guide'} />)}
+          {!isToneMark(char.trim()) && <text x={V / 2} y={216} textAnchor="middle" fontSize={216} className="th ghost">{char}</text>}
           {strokes.map((d, i) => <path key={i} d={d} className="pen" pathLength={1} />)}
           {live.length > 1 && <path d={toPath(live)} className="pen live" />}
         </svg>

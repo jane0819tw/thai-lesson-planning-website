@@ -24,6 +24,7 @@ export default function ToneTableView({ table }: { table: ToneTable }) {
           ))}
         </tbody>
       </table>
+      {table.note && <p className="small muted tnote">{table.note}</p>}
     </div>
   )
 }

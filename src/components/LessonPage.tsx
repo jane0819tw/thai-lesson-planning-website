@@ -3,13 +3,18 @@ import { Link, useParams } from 'react-router-dom'
 import { getRepository } from '../data/repository'
 import type { Consonant, Lesson } from '../types'
 import SpeakButton from './SpeakButton'
+import { nameText } from '../audio/speak'
 import WordIcon from './WordIcon'
 import ToneTableView from './ToneTableView'
 import WordList from './WordList'
 import LetterDialog from './LetterDialog'
+import DiagramView from './DiagramView'
+import Games from './Games'
+import RuleDemo from './RuleDemo'
+import ToneIntro from './ToneIntro'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-type Tab = 'rules' | 'consonants' | 'vowels' | 'tones' | 'vocab' | 'practice' | 'homework' | 'memes'
+type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'tones' | 'vocab' | 'practice' | 'homework' | 'memes'
 
 export default function LessonPage() {
   const { id } = useParams()
@@ -26,14 +31,17 @@ export default function LessonPage() {
   const tabs = useMemo(() => {
     if (!lesson) return [] as [Tab, string][]
     const t: [Tab, string][] = []
-    if (lesson.rules.length || lesson.extras.length) t.push(['rules', '說明'])
+    if (lesson.rules.length) t.push(['rules', '說明'])
+    if (lesson.diagram) t.push(['diagram', lesson.diagram.title])
     if (lesson.consonants.length) t.push(['consonants', '子音'])
     if (lesson.vowels.length) t.push(['vowels', '母音'])
     if (lesson.toneTables.length) t.push(['tones', '聲調表'])
     if (lesson.vocab.length) t.push(['vocab', '單字'])
     if (lesson.practice.length || lesson.patterns.length) t.push(['practice', '練習・句型'])
-    if (lesson.homework.length || lesson.links.length) t.push(['homework', '作業・補充'])
+    if (lesson.homework.length || lesson.links.length) t.push(['homework', lesson.homework.length ? '作業・補充' : '補充連結'])
     if (lesson.memes.length) t.push(['memes', '梗圖'])
+    if (lesson.consonants.length >= 4) t.push(['games', '互動練習'])
+    if (lesson.extras.length) t.push(['extras', '補充'])
     return t
   }, [lesson])
 
@@ -48,11 +56,20 @@ export default function LessonPage() {
 
   const content = (cur: Tab) => (
     <>
+      {cur === 'diagram' && lesson.diagram && <DiagramView d={lesson.diagram} />}
+
       {cur === 'rules' && (
         <section className="stack">
           {lesson.rules.map(r => (
-            <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p></article>
+            <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p>{r.demo && <RuleDemo tiles={r.demo} />}</article>
           ))}
+        </section>
+      )}
+
+      {cur === 'games' && <Games consonants={lesson.consonants} />}
+
+      {cur === 'extras' && (
+        <section className="stack">
           {lesson.extras.map(x => (
             <article className="card" key={x.title}>
               <h3>{x.title}</h3>
@@ -68,7 +85,7 @@ export default function LessonPage() {
             <article className="card letter" key={c.id}>
               <button className="big th clickable" onClick={() => setOpen(c)} aria-label={`查看 ${c.char} 的筆順`}>{c.char}</button>
               <WordIcon char={c.char} label={c.zh} />
-              <div className="th">{c.name} <SpeakButton text={c.name} audioUrl={c.audioUrl} /></div>
+              <div className="th">{c.name} <SpeakButton text={nameText(c.name)} audioUrl={c.audioUrl} /></div>
               {showRoman && <div className="muted">{c.roman}</div>}
               {showZh && <div>{c.zh}</div>}
               <div className="small muted">{GROUP_ZH[c.group]}｜發音 {c.sound}{c.sameHigh && <>｜同音高子音：<span className="th">{c.sameHigh}</span></>}</div>
@@ -96,7 +113,12 @@ export default function LessonPage() {
         </section>
       )}
 
-      {cur === 'tones' && <section className="stack">{lesson.toneTables.map(t => <ToneTableView key={t.title} table={t} />)}</section>}
+      {cur === 'tones' && (
+        <>
+          {lesson.toneIntro && <ToneIntro />}
+          <section className="stack">{lesson.toneTables.map(t => <ToneTableView key={t.title} table={t} />)}</section>
+        </>
+      )}
 
       {cur === 'vocab' && <WordList words={lesson.vocab} showZh={showZh} showRoman={showRoman} />}
 

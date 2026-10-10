@@ -31,3 +31,6 @@ export function speak(text: string, audioUrl?: string | null): void {
   if (v) u.voice = v
   window.speechSynthesis.speak(u)
 }
+
+/** 子音名稱（如「กอ ไก่」）中間的空格會讓語音停頓，朗讀時去掉。 */
+export const nameText = (name: string): string => name.replace(/\s+/g, '')
