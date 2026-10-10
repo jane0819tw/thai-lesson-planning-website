@@ -1,0 +1,223 @@
+<title>泰語字幕精讀</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai+Looped:wght@400;600&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: one reading column. Subtitle lines as rows of word blocks (Thai / tone-colored romanization / Chinese), word detail card on top, patterns and vocab below. */
+:root{
+  --bg:#f5f8f9; --surface:#ffffff; --fg:#14232b; --muted:#566872; --line:#d9e3e7;
+  --accent:#0f5e66; --accent-soft:#dff0f1; --on-accent:#ffffff;
+  --t-mid:#5f6b7a; --t-low:#2563eb; --t-fall:#c0392b; --t-high:#15803d; --t-rise:#7e3fb5;
+  --f-th:'Noto Sans Thai Looped','Noto Sans Thai','Leelawadee UI',sans-serif;
+  --f-zh:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
+  --f-rom:'Noto Sans','Helvetica Neue',Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e171b; --surface:#16232a; --fg:#e6eff2; --muted:#9bb0b9; --line:#274049;
+  --accent:#5cc4cc; --accent-soft:#17383d; --on-accent:#08181b;
+  --t-mid:#9aa5b4; --t-low:#6ea0ff; --t-fall:#ff8a7a; --t-high:#5fcf8a; --t-rise:#c79bff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e171b; --surface:#16232a; --fg:#e6eff2; --muted:#9bb0b9; --line:#274049;
+  --accent:#5cc4cc; --accent-soft:#17383d; --on-accent:#08181b;
+  --t-mid:#9aa5b4; --t-low:#6ea0ff; --t-fall:#ff8a7a; --t-high:#5fcf8a; --t-rise:#c79bff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.6 var(--f-zh);padding-inline:16px;padding-block:20px 56px}
+main{max-width:860px;margin-inline:auto;display:flex;flex-direction:column;gap:28px}
+h1{font-size:1.5rem;line-height:1.3;margin:0;text-wrap:balance}
+h2{font-size:1.1rem;margin:0 0 10px;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+.muted{color:var(--muted)}
+.head{display:flex;flex-direction:column;gap:8px}
+.head .th{font-family:var(--f-th);font-size:1.05rem;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:.85rem;color:var(--muted)}
+.ytlink{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:var(--on-accent);text-decoration:none;padding:7px 14px;border-radius:6px;font-weight:500;font-size:.9rem;width:fit-content}
+.ytlink:hover{filter:brightness(1.1)}
+.warn{background:var(--accent-soft);border-radius:6px;padding:10px 14px;font-size:.85rem}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:8px;z-index:5;border-bottom:1px solid var(--line)}
+.bar .lbl{font-size:.8rem;color:var(--muted);margin-right:2px}
+.tog{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:5px 12px;border-radius:99px;cursor:pointer}
+.tog[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.78rem;font-family:var(--f-rom)}
+.legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:currentColor;margin-right:5px}
+.t-mid{color:var(--t-mid)}.t-low{color:var(--t-low)}.t-fall{color:var(--t-fall)}.t-high{color:var(--t-high)}.t-rise{color:var(--t-rise)}
+.detail{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;min-height:84px}
+.detail .big{font-family:var(--f-th);font-size:2rem;line-height:1.3}
+.detail .rom{font-family:var(--f-rom);font-size:1.05rem}
+.detail .zh{font-size:1.05rem}
+.detail .hint{color:var(--muted);font-size:.9rem}
+.spk{font:inherit;font-size:.8rem;border:1px solid var(--line);background:transparent;color:var(--accent);padding:4px 10px;border-radius:6px;cursor:pointer}
+.spk:hover{background:var(--accent-soft)}
+.line{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.lh{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.8rem;color:var(--muted)}
+.lh a{font-variant-numeric:tabular-nums;text-decoration:none;border:1px solid var(--line);border-radius:4px;padding:1px 8px;color:var(--accent)}
+.guess{color:var(--t-fall)}
+.words{display:flex;flex-wrap:wrap;gap:6px 4px}
+.w{font:inherit;background:transparent;border:1px solid transparent;border-radius:6px;padding:4px 7px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:0;color:var(--fg);min-width:0}
+.w:hover,.w.on{background:var(--accent-soft);border-color:var(--accent)}
+.w .th{font-family:var(--f-th);font-size:1.35rem;line-height:1.5}
+.w .rom{font-family:var(--f-rom);font-size:.82rem;line-height:1.3}
+.w .zh{font-size:.78rem;color:var(--muted);max-width:9em}
+.w.pat .th{text-decoration:underline;text-decoration-color:var(--accent);text-decoration-thickness:2px;text-underline-offset:5px}
+.hide-rom .w .rom,.hide-zh .w .zh,.hide-zh .linezh{display:none}
+.no-tone .rom span{color:inherit!important}
+.linezh{border-top:1px dashed var(--line);padding-top:8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:.78rem;border:1px solid var(--accent);color:var(--accent);background:transparent;padding:2px 10px;border-radius:99px;cursor:pointer}
+.chip:hover{background:var(--accent-soft)}
+details.pat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 16px}
+details.pat+details.pat{margin-top:8px}
+details.pat summary{cursor:pointer;padding:12px 0;font-weight:500;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+details.pat summary .th{font-family:var(--f-th);font-size:1.1rem;color:var(--accent)}
+details.pat .body{padding-bottom:14px;display:flex;flex-direction:column;gap:10px}
+.cmp{background:var(--accent-soft);border-radius:6px;padding:8px 12px;font-size:.88rem}
+.ex{display:flex;flex-direction:column;gap:0;border-left:3px solid var(--line);padding-left:12px}
+.ex .th{font-family:var(--f-th);font-size:1.15rem}
+.ex .rom{font-family:var(--f-rom);font-size:.85rem}
+.ex .zh{font-size:.85rem;color:var(--muted)}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:480px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:.78rem;color:var(--muted);font-weight:500}
+tr:last-child td{border-bottom:0}
+td.th-c{font-family:var(--f-th);font-size:1.2rem}
+td.rom-c{font-family:var(--f-rom);font-size:.9rem}
+.tips{display:flex;flex-direction:column;gap:8px;padding:0;margin:0;list-style:none}
+.tips li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:.92rem}
+.tips b{color:var(--accent)}
+@media (max-width:520px){h1{font-size:1.3rem}.detail .big{font-size:1.7rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<main id="app">
+  <header class="head">
+    <h1>泰語字幕精讀</h1>
+    <p class="th" id="vtitle"></p>
+    <div class="meta"><span>影片長度 0:15</span><span>主題：保養品廣告</span><span>難度：初級到初中級</span></div>
+    <a class="ytlink" id="yt" target="_blank" rel="noopener">在 YouTube 觀看影片</a>
+    <p class="warn">字幕原稿來自 YouTube 自動產生的泰文字幕，錯字很多。下方內容已對照影片說明欄修正，標紅的句子是推測，需要老師確認。</p>
+  </header>
+
+  <div class="bar" id="bar">
+    <span class="lbl">顯示</span>
+    <button class="tog" id="tg-rom" aria-pressed="true">音標</button>
+    <button class="tog" id="tg-zh" aria-pressed="true">中文</button>
+    <button class="tog" id="tg-tone" aria-pressed="true">聲調顏色</button>
+    <div class="legend" aria-label="聲調顏色說明">
+      <span class="t-mid">一聲 平</span><span class="t-low">二聲 低</span><span class="t-fall">三聲 降</span><span class="t-high">四聲 高</span><span class="t-rise">五聲 升</span>
+    </div>
+  </div>
+
+  <section aria-labelledby="h-lines">
+    <h2 id="h-lines">逐句精讀</h2>
+    <div class="detail" id="detail"><span class="hint">點任何一個單字，會顯示發音、意思，並可以播放聲音。</span></div>
+    <div style="height:12px"></div>
+    <div id="lines" style="display:flex;flex-direction:column;gap:12px"></div>
+  </section>
+
+  <section aria-labelledby="h-pat">
+    <h2 id="h-pat">這支影片的句型</h2>
+    <div id="patterns"></div>
+  </section>
+
+  <section aria-labelledby="h-voc">
+    <h2 id="h-voc">單字表</h2>
+    <div class="tablewrap"><table><thead><tr><th>泰文</th><th>音標</th><th>中文</th><th></th></tr></thead><tbody id="vocab"></tbody></table></div>
+  </section>
+
+  <section aria-labelledby="h-tip">
+    <h2 id="h-tip">華人學習者的注意點</h2>
+    <ul class="tips" id="tips"></ul>
+  </section>
+</main>
+
+<script>
+/* ===== 資料區：換影片時只需要改這裡 ===== */
+const VIDEO = {id:'V0aOMg94UZk', title:'บอกลาผิวหมองคล้ำ จากแสงแดด และมลภาวะด้วยเดอ ลีฟ ทานาคา'};
+// token: [泰文, 音標, 中文, 句型編號(可省略)]
+const LINES = [
+ {t:0, guess:false, zh:'陽光與污染的問題，讓肌膚暗沉受損。', pats:['p1'], w:[
+  ['ปัญหา','pan-hǎa','問題'],['แสงแดด','sǎaeng-dàaet','陽光'],['และ','lé','和；以及'],['มลภาวะ','mon-lá-phaa-wá','污染'],
+  ['ทำให้','tham-hâi','使得；讓','p1'],['ผิว','phǐw','皮膚'],['คล้ำ','khláam','暗沉'],['เสีย','sǐa','壞；受損']]},
+ {t:4, guess:false, zh:'臉部保養霜 De Leaf Thanaka，融合真正的 Thanaka。', pats:[], w:[
+  ['ครีม','khriim','霜；乳霜'],['บำรุง','bam-rung','滋養；保養'],['ผิวหน้า','phǐw-nâa','臉部肌膚'],['เดอ ลีฟ','doe liip','De Leaf（品牌名）'],['ทานาคา','thaa-naa-khaa','Thanaka（緬甸傳統護膚植物）'],
+  ['ผสาน','phà-sǎan','融合'],['ทานาคา','thaa-naa-khaa','Thanaka'],['แท้','tháe','真正的']]},
+ {t:7, guess:false, zh:'以及高達三倍的高濃度維他命 C。', pats:['p4'], w:[
+  ['และ','lé','和；以及'],['วิตามินซี','wí-taa-min-sii','維他命 C'],['เข้มข้น','khêm-khôn','濃；高濃度'],
+  ['ถึง','thǔeng','達到','p4'],['3','sǎam','三','p4'],['เท่า','thâo','倍','p4']]},
+ {t:10, guess:false, zh:'補充水潤明亮感，讓肌膚有光采。', pats:['p2','p3'], w:[
+  ['เติม','tuem','補充；添加','p2'],['ความ','khwaam','（名詞化前綴）','p2'],['ฉ่ำ','chàm','水潤；飽滿','p2'],['ไบร์ท','brai','明亮（bright 的借詞）','p2'],
+  ['ให้','hâi','讓；給','p3'],['ผิว','phǐw','皮膚','p3'],['มี','mii','有','p3'],['ออร่า','aw-râa','光采（aura）','p3']]},
+ {t:13, guess:true, zh:'說到 Thanaka，Ing Fah 的第一選擇一定是 De Leaf。（此句為推測）', pats:['p5'], w:[
+  ['ที่ 1','thîi nùeng','第一名','p5'],['เรื่อง','rûeang','關於…方面','p5'],['ทานาคา','thaa-naa-khaa','Thanaka','p5'],['ของ','khǒong','的'],
+  ['อิงฟ้า','ing-fáa','Ing Fah（人名）'],['ต้อง','tông','必須；一定要','p5'],['เดอ ลีฟ','doe liip','De Leaf（品牌名）','p5']]}
+];
+const PATTERNS = [
+ {id:'p1', th:'ทำให้ + 受詞 + 狀態', zh:'使…變成…／讓…', cmp:'中文「讓皮膚暗沉受損」和泰文詞序幾乎一樣：致使動詞 + 受詞 + 結果。這是華人最容易上手的句型。',
+  ex:[['แดดจัดทำให้ผิวไหม้','dàaet-jàt tham-hâi phǐw mâi','大太陽讓皮膚曬傷。'],['ความเครียดทำให้นอนไม่หลับ','khwaam-khrîat tham-hâi noon mâi làp','壓力讓人睡不著。']]},
+ {id:'p2', th:'เติมความ + 形容詞', zh:'補充…感／增添…度', cmp:'ความ + 形容詞 = 名詞，相當於中文的「…感」「…度」。ความ 是泰語很重要的名詞化工具，中文沒有對應的詞。',
+  ex:[['เติมความฉ่ำไบร์ท','tuem khwaam chàm brai','補充水潤明亮感（兩個形容詞可以連著用）。'],['เติมความสดชื่น','tuem khwaam sòt-chûen','增添清爽感。'],['เติมความชุ่มชื้น','tuem khwaam chûm-chúen','補充水潤度。']]},
+ {id:'p3', th:'ให้ + 受詞 + มี + 名詞', zh:'讓…擁有…', cmp:'ให้ 在這裡是「使、讓」，後面接受詞，再用 มี 說明受詞得到什麼。',
+  ex:[['ให้เด็กมีความสุข','hâi dèk mii khwaam-sùk','讓孩子快樂（擁有幸福）。'],['ให้ผิวมีออร่า','hâi phǐw mii aw-râa','讓肌膚有光采。']]},
+ {id:'p4', th:'ถึง + 數字 + เท่า', zh:'高達…倍', cmp:'ถึง 表示「達到」，數字後面加 เท่า（倍）。廣告很常用來強調程度。',
+  ex:[['ราคาแพงถึง 2 เท่า','raa-khaa phaaeng thǔeng sǒong thâo','價格貴到兩倍。']]},
+ {id:'p5', th:'ที่ 1 เรื่อง X ต้อง Y', zh:'說到 X，第一名／一定要選 Y', cmp:'เรื่อง 引出主題（關於…方面），ต้อง 表示一定要。廣告語氣，學生可以直接模仿造句。',
+  ex:[['ที่ 1 เรื่องอาหารไทย','thîi nùeng rûeang aa-hǎan thai','泰國菜方面第一名。']]}
+];
+const TIPS = [
+ ['詞序：修飾語放後面','ครีมบำรุงผิวหน้า 直譯是「霜 滋養 臉部肌膚」，中心詞 ครีม 在前面。中文是「滋養臉部肌膚的霜」，順序相反，這是華人最常錯的地方。'],
+ ['ความ 名詞化','เติมความฉ่ำใส 的 ความ 要特別教。中文用「…感」「…度」，泰語要加 ความ，沒有它句子不自然。'],
+ ['借詞好記','ครีม、วิตามินซี、ออร่า、ไบร์ท 都來自英語（cream、vitamin C、aura、bright），先讓學生認出來，增加信心，再教聲調。'],
+ ['聲調要看顏色','學生看到音標容易照中文聲調唸。用顏色標出平、低、降、高、升，並鼓勵先聽再唸。'],
+ ['และ 偏書面','และ 是「和」，廣告、新聞、書面語常見。口語常用 กับ 或 แล้วก็。']
+];
+
+/* ===== 程式 ===== */
+const $=s=>document.querySelector(s);
+const toneOf=s=>{const d=s.normalize('NFD');if(d.includes('̀'))return'low';if(d.includes('̂'))return'fall';if(d.includes('́'))return'high';if(d.includes('̌'))return'rise';return'mid'};
+const romHTML=r=>r.split(/([-\s]+)/).map(p=>/^[-\s]+$/.test(p)?p:`<span class="t-${toneOf(p)}">${p}</span>`).join('');
+const speak=t=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='th-TH';u.rate=.75;speechSynthesis.speak(u)}catch(e){}};
+const mmss=s=>Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+const ytUrl=t=>`https://www.youtube.com/watch?v=${VIDEO.id}&t=${t}s`;
+
+$('#vtitle').textContent=VIDEO.title;
+$('#yt').href=ytUrl(0);
+
+function showDetail(w){
+  $('#detail').innerHTML=`<span class="big">${w[0]}</span><span class="rom">${romHTML(w[1])}</span><span class="zh">${w[2]}</span><button class="spk" type="button">播放發音</button>`;
+  $('#detail .spk').onclick=()=>speak(w[0]);
+  speak(w[0]);
+}
+const lines=$('#lines');
+LINES.forEach((L,i)=>{
+  const el=document.createElement('article');el.className='line';
+  const words=L.w.map((w,j)=>`<button class="w${w[3]?' pat':''}" type="button" data-l="${i}" data-j="${j}"><span class="th">${w[0]}</span><span class="rom">${romHTML(w[1])}</span><span class="zh">${w[2]}</span></button>`).join('');
+  const chips=L.pats.map(p=>`<button class="chip" type="button" data-p="${p}">${PATTERNS.find(x=>x.id===p).th}</button>`).join('');
+  el.innerHTML=`<div class="lh"><a href="${ytUrl(L.t)}" target="_blank" rel="noopener">${mmss(L.t)}</a><span>第 ${i+1} 句</span>${L.guess?'<span class="guess">字幕不確定，請老師確認</span>':''}<button class="spk" type="button" data-s="${i}">朗讀整句</button></div><div class="words">${words}</div><p class="linezh">${L.zh}</p>${chips?`<div class="chips">${chips}</div>`:''}`;
+  lines.appendChild(el);
+});
+lines.addEventListener('click',e=>{
+  const w=e.target.closest('.w');
+  if(w){document.querySelectorAll('.w.on').forEach(x=>x.classList.remove('on'));w.classList.add('on');showDetail(LINES[w.dataset.l].w[w.dataset.j]);return}
+  const s=e.target.closest('[data-s]');
+  if(s){speak(LINES[s.dataset.s].w.map(x=>x[0]).join(''));return}
+  const c=e.target.closest('.chip');
+  if(c){const d=document.getElementById('pat-'+c.dataset.p);d.open=true;d.scrollIntoView({behavior:'smooth',block:'start'})}
+});
+
+$('#patterns').innerHTML=PATTERNS.map(p=>`<details class="pat" id="pat-${p.id}"><summary><span class="th">${p.th}</span><span class="muted">${p.zh}</span></summary><div class="body"><p class="cmp">${p.cmp}</p>${p.ex.map(x=>`<div class="ex"><span class="th">${x[0]}</span><span class="rom">${romHTML(x[1])}</span><span class="zh">${x[2]}</span></div>`).join('')}</div></details>`).join('');
+
+const seen=new Map();
+LINES.forEach(L=>L.w.forEach(w=>{if(!seen.has(w[0])&&w[0]!=='3')seen.set(w[0],w)}));
+$('#vocab').innerHTML=[...seen.values()].map(w=>`<tr><td class="th-c">${w[0]}</td><td class="rom-c">${romHTML(w[1])}</td><td>${w[2]}</td><td><button class="spk" type="button" data-v="${w[0]}">播放</button></td></tr>`).join('');
+$('#vocab').addEventListener('click',e=>{const b=e.target.closest('[data-v]');if(b)speak(b.dataset.v)});
+
+$('#tips').innerHTML=TIPS.map(t=>`<li><b>${t[0]}</b><br>${t[1]}</li>`).join('');
+
+const app=$('#app');
+[['rom','hide-rom'],['zh','hide-zh'],['tone','no-tone']].forEach(([k,c])=>{
+  const b=$('#tg-'+k);
+  b.onclick=()=>{const on=b.getAttribute('aria-pressed')==='true';b.setAttribute('aria-pressed',String(!on));app.classList.toggle(c,on)};
+});
+</script>
