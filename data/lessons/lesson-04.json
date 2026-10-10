@@ -1,0 +1,299 @@
+{
+  "status": "draft",
+  "rules": [
+    {
+      "id": "r1",
+      "title": "高子音的聲調規則",
+      "body": "與長母音不加上音調符號，發第五聲。表中「不發音」代表該聲調在這組沒有對應字。"
+    }
+  ],
+  "consonants": [
+    {
+      "id": "c-ผ",
+      "char": "ผ",
+      "name": "ผอ ผึ้ง",
+      "roman": "pŏr pêung",
+      "zh": "蜜蜂",
+      "sound": "p",
+      "group": "high",
+      "sameHigh": "",
+      "words": [
+        {
+          "thai": "ผี",
+          "zh": "鬼"
+        },
+        {
+          "thai": "ผ้า",
+          "zh": "布"
+        },
+        {
+          "thai": "ผู้",
+          "zh": "~生"
+        }
+      ]
+    },
+    {
+      "id": "c-ฝ",
+      "char": "ฝ",
+      "name": "ฝอ ฝา",
+      "roman": "fŏr făa",
+      "zh": "蓋子",
+      "sound": "f",
+      "group": "high",
+      "sameHigh": "",
+      "words": []
+    },
+    {
+      "id": "c-ถ",
+      "char": "ถ",
+      "name": "ถอ ถุง",
+      "roman": "tŏr tŭng",
+      "zh": "袋子",
+      "sound": "t",
+      "group": "high",
+      "sameHigh": "",
+      "words": [
+        {
+          "thai": "ถ้า",
+          "zh": "如果"
+        },
+        {
+          "thai": "ถู",
+          "zh": "擦、刷（地）"
+        },
+        {
+          "thai": "ถือ",
+          "zh": "提"
+        }
+      ]
+    },
+    {
+      "id": "c-ฐ",
+      "char": "ฐ",
+      "name": "ฐอ ฐาน",
+      "roman": "tŏr tăan",
+      "zh": "壇",
+      "sound": "t",
+      "group": "high",
+      "sameHigh": "",
+      "words": []
+    },
+    {
+      "id": "c-ห",
+      "char": "ห",
+      "name": "หอ หีบ",
+      "roman": "hŏr hèep",
+      "zh": "箱子",
+      "sound": "h",
+      "group": "high",
+      "sameHigh": "",
+      "words": [
+        {
+          "thai": "หา",
+          "zh": "找"
+        },
+        {
+          "thai": "หู",
+          "zh": "耳"
+        },
+        {
+          "thai": "ห้า",
+          "zh": "5"
+        }
+      ]
+    },
+    {
+      "id": "c-ข",
+      "char": "ข",
+      "name": "ขอ ไข่",
+      "roman": "kŏr kài",
+      "zh": "蛋",
+      "sound": "k",
+      "group": "high",
+      "sameHigh": "",
+      "words": [
+        {
+          "thai": "ขา",
+          "zh": "腿"
+        },
+        {
+          "thai": "ขี้",
+          "zh": "大便"
+        },
+        {
+          "thai": "ขอ",
+          "zh": "請求"
+        }
+      ]
+    },
+    {
+      "id": "c-ฃ",
+      "char": "ฃ",
+      "name": "ฃอ ฃวด",
+      "roman": "kŏr kûuat",
+      "zh": "瓶罐",
+      "sound": "k",
+      "group": "high",
+      "sameHigh": "",
+      "words": []
+    },
+    {
+      "id": "c-ฉ",
+      "char": "ฉ",
+      "name": "ฉอ ฉิ่ง",
+      "roman": "chŏr chìng",
+      "zh": "小鈸",
+      "sound": "ch",
+      "group": "high",
+      "sameHigh": "",
+      "words": [
+        {
+          "thai": "ฉี่",
+          "zh": "尿"
+        },
+        {
+          "thai": "ฉัน",
+          "zh": "我",
+          "star": true
+        }
+      ]
+    },
+    {
+      "id": "c-ส",
+      "char": "ส",
+      "name": "สอ เสือ",
+      "roman": "sŏr sĕuua",
+      "zh": "老虎",
+      "sound": "s",
+      "group": "high",
+      "sameHigh": "",
+      "words": [
+        {
+          "thai": "สี",
+          "zh": "色"
+        },
+        {
+          "thai": "สิ",
+          "zh": "吧"
+        },
+        {
+          "thai": "สี่",
+          "zh": "4"
+        },
+        {
+          "thai": "สู้สู้",
+          "zh": "加油"
+        }
+      ]
+    },
+    {
+      "id": "c-ษ",
+      "char": "ษ",
+      "name": "ษอ ฤษี",
+      "roman": "sŏr réu-sĕe",
+      "zh": "隱修士",
+      "sound": "s",
+      "group": "high",
+      "sameHigh": "",
+      "words": [
+        {
+          "thai": "ภาษา",
+          "zh": "語言",
+          "star": true
+        }
+      ]
+    },
+    {
+      "id": "c-ศ",
+      "char": "ศ",
+      "name": "ศอ ศาลา",
+      "roman": "sŏr săa-laa",
+      "zh": "涼亭",
+      "sound": "s",
+      "group": "high",
+      "sameHigh": "",
+      "words": []
+    }
+  ],
+  "vowels": [],
+  "toneTables": [
+    {
+      "title": "高子音＋母音",
+      "rows": [
+        {
+          "label": "＋短母音",
+          "cells": [
+            "x",
+            "ผะ",
+            "不發音",
+            "不發音",
+            "x"
+          ]
+        },
+        {
+          "label": "＋長母音",
+          "cells": [
+            "不發音",
+            "ผ่า",
+            "ผ้า",
+            "不發音",
+            "ผา"
+          ]
+        }
+      ]
+    }
+  ],
+  "vocab": [],
+  "practice": [
+    {
+      "title": "多音節練習",
+      "items": [
+        {
+          "thai": "เจอผี"
+        },
+        {
+          "thai": "ผีดื้อ"
+        },
+        {
+          "thai": "ขาอา"
+        },
+        {
+          "thai": "ขอผ้า"
+        },
+        {
+          "thai": "ตาสู้สู้"
+        },
+        {
+          "thai": "ปู่หาบ้า"
+        }
+      ]
+    }
+  ],
+  "patterns": [],
+  "homework": [
+    "ผี",
+    "ถ้า",
+    "หา",
+    "สู้สู้",
+    "ฉี่",
+    "ขอ",
+    "ถือ",
+    "สี"
+  ],
+  "links": [],
+  "memes": [
+    {
+      "title": "ถถถถถ",
+      "desc": "講義「這是什麼意思？」：ถถถถถ 搭配 KOI Thé 手搖飲的圖片（圖片待補）"
+    },
+    {
+      "title": "ผี → ผี → 13",
+      "desc": "講義「這是什麼意思？」：電梯按鈕 14、15、16／11、12、12A，沒有 13 樓（圖片待補）"
+    }
+  ],
+  "extras": [],
+  "id": "lesson-04",
+  "number": 4,
+  "title": "高子音（11 個）",
+  "summary": "學 11 個高子音；高子音加長母音不加符號時發第五聲。"
+}

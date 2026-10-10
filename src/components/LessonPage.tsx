@@ -1,32 +1,151 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getRepository } from '../data/repository'
-import type { Lesson } from '../types'
+import type { Consonant, Lesson } from '../types'
 import SpeakButton from './SpeakButton'
+import WordIcon from './WordIcon'
+import ToneTableView from './ToneTableView'
+import WordList from './WordList'
+import LetterDialog from './LetterDialog'
 
-const CLASS_ZH = { mid: '中輩', high: '高輩', low: '低輩' } as const
-const TONE_ZH = { mid: '平聲', low: '低聲', falling: '降聲', high: '高聲', rising: '升聲' } as const
-type Tab = 'rules' | 'letters' | 'words' | 'sentences' | 'meme'
-const TABS: [Tab, string][] = [
-  ['rules', '規則'], ['letters', '子音母音'], ['words', '單字'], ['sentences', '例句'], ['meme', '梗圖'],
-]
+const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
+type Tab = 'rules' | 'consonants' | 'vowels' | 'tones' | 'vocab' | 'practice' | 'homework' | 'memes'
 
 export default function LessonPage() {
   const { id } = useParams()
   const [lesson, setLesson] = useState<Lesson | null | undefined>(undefined)
-  const [tab, setTab] = useState<Tab>('letters')
+  const [collapsed, setCollapsed] = useState<Set<Tab>>(new Set())
+  const [navOpen, setNavOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 760)
   const [showZh, setShowZh] = useState(true)
   const [showRoman, setShowRoman] = useState(true)
+  const [open, setOpen] = useState<Consonant | null>(null)
 
-  useEffect(() => { getRepository().getLesson(id ?? '').then(l => setLesson(l ?? null)) }, [id])
+  useEffect(() => { getRepository().getLesson(id ?? '').then(l => { setLesson(l ?? null); setCollapsed(new Set()) }) }, [id])
+
+  // 只顯示這一課有資料的分頁
+  const tabs = useMemo(() => {
+    if (!lesson) return [] as [Tab, string][]
+    const t: [Tab, string][] = []
+    if (lesson.rules.length || lesson.extras.length) t.push(['rules', '說明'])
+    if (lesson.consonants.length) t.push(['consonants', '子音'])
+    if (lesson.vowels.length) t.push(['vowels', '母音'])
+    if (lesson.toneTables.length) t.push(['tones', '聲調表'])
+    if (lesson.vocab.length) t.push(['vocab', '單字'])
+    if (lesson.practice.length || lesson.patterns.length) t.push(['practice', '練習・句型'])
+    if (lesson.homework.length || lesson.links.length) t.push(['homework', '作業・補充'])
+    if (lesson.memes.length) t.push(['memes', '梗圖'])
+    return t
+  }, [lesson])
 
   if (lesson === undefined) return <p>載入中…</p>
-  if (lesson === null) return <p>找不到這一課。<Link to="/">回首頁</Link></p>
+  if (lesson === null) return <p>找不到這一課。<Link to="/reading">回課程列表</Link></p>
+  const toggle = (k: Tab) => setCollapsed(c => { const n = new Set(c); if (n.has(k)) n.delete(k); else n.add(k); return n })
+  const goto = (k: Tab) => {
+    setCollapsed(c => { const n = new Set(c); n.delete(k); return n })
+    window.setTimeout(() => document.getElementById('sec-' + k)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30)
+    if (window.innerWidth <= 760) setNavOpen(false)
+  }
+
+  const content = (cur: Tab) => (
+    <>
+      {cur === 'rules' && (
+        <section className="stack">
+          {lesson.rules.map(r => (
+            <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p></article>
+          ))}
+          {lesson.extras.map(x => (
+            <article className="card" key={x.title}>
+              <h3>{x.title}</h3>
+              {x.lines.map((l, i) => <p className="th big2" key={i}>{l}</p>)}
+            </article>
+          ))}
+        </section>
+      )}
+
+      {cur === 'consonants' && (
+        <section className="grid">
+          {lesson.consonants.map(c => (
+            <article className="card letter" key={c.id}>
+              <button className="big th clickable" onClick={() => setOpen(c)} aria-label={`查看 ${c.char} 的筆順`}>{c.char}</button>
+              <WordIcon char={c.char} label={c.zh} />
+              <div className="th">{c.name} <SpeakButton text={c.name} audioUrl={c.audioUrl} /></div>
+              {showRoman && <div className="muted">{c.roman}</div>}
+              {showZh && <div>{c.zh}</div>}
+              <div className="small muted">{GROUP_ZH[c.group]}｜發音 {c.sound}{c.sameHigh && <>｜同音高子音：<span className="th">{c.sameHigh}</span></>}</div>
+              {c.words.length > 0 && (
+                <div className="small mini">
+                  {c.words.map(w => <span key={w.thai} className="minichip"><span className="th">{w.star ? '＊' : ''}{w.thai}</span>{showZh && w.zh ? ` ${w.zh}` : ''}</span>)}
+                </div>
+              )}
+            </article>
+          ))}
+        </section>
+      )}
+
+      {cur === 'vowels' && (
+        <section className="stack">
+          {lesson.vowels.map(v => (
+            <article className="card" key={v.id}>
+              <h3><span className="th">{v.ipa}</span>　<span className="th big2">{v.short || '—'}</span> / <span className="th big2">{v.long || '—'}</span></h3>
+              {v.note && <p className="muted small">{v.note}</p>}
+              {v.shortSyllables.length > 0 && <p><span className="chip">短音</span> {v.shortSyllables.map(s => <span key={s} className="syl th">{s}<SpeakButton text={s} /></span>)}</p>}
+              {v.longSyllables.length > 0 && <p><span className="chip">{v.short ? '長音' : '例'}</span> {v.longSyllables.map(s => <span key={s} className="syl th">{s}<SpeakButton text={s} /></span>)}</p>}
+              <WordList words={v.words} showZh={showZh} showRoman={showRoman} />
+            </article>
+          ))}
+        </section>
+      )}
+
+      {cur === 'tones' && <section className="stack">{lesson.toneTables.map(t => <ToneTableView key={t.title} table={t} />)}</section>}
+
+      {cur === 'vocab' && <WordList words={lesson.vocab} showZh={showZh} showRoman={showRoman} />}
+
+      {cur === 'practice' && (
+        <section className="stack">
+          {lesson.practice.map(g => (
+            <article className="card" key={g.title}>
+              <h3>{g.title}</h3>
+              <WordList words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />
+            </article>
+          ))}
+          {lesson.patterns.length > 0 && (
+            <article className="card">
+              <h3>句型</h3>
+              <ul className="plain">{lesson.patterns.map(p => <li key={p.thai}><span className="th big2">{p.thai}</span> {showZh && <span>{p.zh}</span>}</li>)}</ul>
+            </article>
+          )}
+        </section>
+      )}
+
+      {cur === 'homework' && (
+        <section className="stack">
+          {lesson.homework.length > 0 && (
+            <article className="card"><h3>作業</h3><p className="th big2">{lesson.homework.join('　')}</p></article>
+          )}
+          {lesson.links.length > 0 && (
+            <article className="card"><h3>補充連結</h3><ul className="plain">{lesson.links.map(l => <li key={l.url}><a href={l.url} target="_blank" rel="noreferrer">{l.title}</a></li>)}</ul></article>
+          )}
+        </section>
+      )}
+
+      {cur === 'memes' && (
+        <section className="stack">
+          {lesson.memes.map(m => (
+            <article className="card" key={m.title}>
+              {m.imageUrl ? <img src={m.imageUrl} alt={m.title} style={{ maxWidth: '100%' }} /> : <div className="meme-placeholder">梗圖待補</div>}
+              <h3 className="th">{m.title}</h3>
+              <p className="muted small">{m.desc}</p>
+            </article>
+          ))}
+        </section>
+      )}
+    </>
+  )
 
   return (
     <>
-      <p><Link to="/">← 課程列表</Link></p>
-      <h1>第 {lesson.number} 課　{lesson.title}</h1>
+      <p><Link to="/reading">← 認字課程</Link></p>
+      <h1>L{lesson.number}　{lesson.title}</h1>
       <p className="muted">{lesson.summary}</p>
 
       <div className="toolbar">
@@ -34,96 +153,34 @@ export default function LessonPage() {
         <label><input type="checkbox" checked={showRoman} onChange={e => setShowRoman(e.target.checked)} /> 顯示拼音</label>
       </div>
 
-      <nav className="tabs" role="tablist">
-        {TABS.map(([k, label]) => (
-          <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>
-        ))}
-      </nav>
-
-      {tab === 'rules' && (
-        <section className="stack">
-          {lesson.rules.map(r => (
-            <article className="card" key={r.id}>
-              <h3>{r.title}</h3>
-              <p>{r.body}</p>
-              <p className="muted small">筆順示範：待定（動畫／靜態圖尚未決定）</p>
-            </article>
-          ))}
-        </section>
-      )}
-
-      {tab === 'letters' && (
-        <>
-          <h2>子音</h2>
-          <section className="grid">
-            {lesson.consonants.map(c => (
-              <article className="card letter" key={c.id}>
-                <div className="big th">{c.char}</div>
-                <div className="th">{c.name} <SpeakButton text={c.name.split(' ').pop() ?? c.char} audioUrl={c.audioUrl} /></div>
-                {showRoman && <div className="muted">{c.nameRoman}</div>}
-                {showZh && <div>{c.nameZh}</div>}
-                <div className="small muted">{CLASS_ZH[c.class]}｜頭音 {c.initial}｜尾音 {c.final}</div>
-              </article>
+      <div className={`lesson-layout${navOpen ? '' : ' navclosed'}`}>
+        <aside className="sidenav" aria-label="本課目錄">
+          <div className="sidenav-head">
+            <strong>目錄</strong>
+            <button onClick={() => setNavOpen(false)} aria-label="收合目錄">«</button>
+          </div>
+          <ul>
+            {tabs.map(([k, label]) => (
+              <li key={k}><button onClick={() => goto(k)}>{label}</button></li>
             ))}
-          </section>
-          <h2>母音</h2>
-          <section className="grid">
-            {lesson.vowels.map(v => (
-              <article className="card letter" key={v.id}>
-                <div className="big th">{v.withCarrier}</div>
-                <SpeakButton text={v.withCarrier} audioUrl={v.audioUrl} />
-                {showRoman && <div className="muted">{v.roman}</div>}
-                <div className="small muted">{v.length === 'long' ? '長音' : '短音'}｜{v.position}｜例：<span className="th">{v.example}</span></div>
-              </article>
-            ))}
-          </section>
-        </>
-      )}
-
-      {tab === 'words' && (
-        <section className="list">
-          {lesson.words.map(w => (
-            <article className="row" key={w.id}>
-              <div className="th big2">{w.thai}</div>
-              <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
-              <div className="meta">
-                {showRoman && <span className="muted">{w.roman}</span>}
-                <span className="chip">{TONE_ZH[w.tone]}</span>
-                {showZh && <span>{w.zh}</span>}
-                {w.note && <span className="small muted">{w.note}</span>}
-              </div>
-            </article>
+          </ul>
+          <div className="sidenav-foot">
+            <button onClick={() => setCollapsed(new Set())}>全部展開</button>
+            <button onClick={() => setCollapsed(new Set(tabs.map(([k]) => k)))}>全部收合</button>
+          </div>
+        </aside>
+        <div className="lesson-main">
+          {!navOpen && <button className="navopen" onClick={() => setNavOpen(true)}>☰ 目錄</button>}
+          {tabs.map(([k, label]) => (
+            <section className="lsec" id={'sec-' + k} key={k}>
+              <h2 className="lsec-h"><button onClick={() => toggle(k)} aria-expanded={!collapsed.has(k)}>
+                <span className="caret">{collapsed.has(k) ? '▸' : '▾'}</span> {label}</button></h2>
+              {!collapsed.has(k) && content(k)}
+            </section>
           ))}
-        </section>
-      )}
-
-      {tab === 'sentences' && (
-        <section className="list">
-          {lesson.sentences.map(s => {
-            const thai = s.segments.join('')
-            return (
-              <article className="row" key={s.id}>
-                <div className="th big2">{s.segments.join(' ')}</div>
-                <SpeakButton text={thai} audioUrl={s.audioUrl} />
-                <div className="meta">
-                  {showRoman && <span className="muted">{s.roman}</span>}
-                  {showZh && <span>{s.zh}</span>}
-                </div>
-              </article>
-            )
-          })}
-        </section>
-      )}
-
-      {tab === 'meme' && (
-        <article className="card">
-          {lesson.meme.imageUrl
-            ? <img src={lesson.meme.imageUrl} alt={lesson.meme.caption} style={{ maxWidth: '100%' }} />
-            : <div className="meme-placeholder">梗圖待補</div>}
-          <p><strong>{lesson.meme.caption}</strong></p>
-          <p className="muted small">構想：{lesson.meme.idea}</p>
-        </article>
-      )}
+        </div>
+      </div>
+      {open && <LetterDialog char={open.char} info={open} onClose={() => setOpen(null)} />}
     </>
   )
 }

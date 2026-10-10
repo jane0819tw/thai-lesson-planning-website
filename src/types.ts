@@ -1,27 +1,29 @@
 // 資料型別：日後若改接資料庫/API，只要回傳同樣的形狀，前端不用改。
-export type ConsonantClass = 'mid' | 'high' | 'low'
-export type Tone = 'mid' | 'low' | 'falling' | 'high' | 'rising'
+// 內容來源：泰語認字講義 L1–L10（拼音、解釋、單元規劃皆依講義）。
+export type ConsonantGroup = 'mid' | 'high' | 'lcp' | 'lcs'
 
-export interface Rule { id: string; title: string; body: string; strokes: unknown | null }
+export interface WordItem { thai: string; zh: string; roman?: string; star?: boolean; group?: string; audioUrl?: string | null }
+export interface Rule { id: string; title: string; body: string }
 export interface Consonant {
-  id: string; char: string; name: string; nameRoman: string; nameZh: string
-  initial: string; final: string; class: ConsonantClass; audioUrl?: string | null
+  id: string; char: string; name: string; roman: string; zh: string
+  sound: string; group: ConsonantGroup; sameHigh: string; words: WordItem[]; audioUrl?: string | null
 }
 export interface Vowel {
-  id: string; char: string; withCarrier: string; roman: string
-  length: 'short' | 'long'; position: string; example: string; audioUrl?: string | null
+  id: string; ipa: string; short: string; long: string
+  shortSyllables: string[]; longSyllables: string[]; words: WordItem[]; note: string
 }
-export interface Word {
-  id: string; thai: string; roman: string; zh: string; tone: Tone
-  parts: string[]; note?: string; audioUrl?: string | null
-}
-export interface Sentence {
-  id: string; segments: string[]; roman: string; zh: string; audioUrl?: string | null
-}
-export interface Meme { idea: string; caption: string; imageUrl: string | null }
+export interface ToneRow { label: string; cells: string[] }
+export interface ToneTable { title: string; rows: ToneRow[] }
+export interface PracticeItem { thai: string; zh?: string; note?: string }
+export interface PracticeGroup { title: string; items: PracticeItem[] }
+export interface Pattern { thai: string; zh: string }
+export interface LinkItem { title: string; url: string }
+export interface Meme { title: string; desc: string; imageUrl?: string | null }
+export interface Extra { title: string; lines: string[] }
+
 export interface Lesson {
-  id: string; number: number; title: string; summary: string
-  status: 'draft' | 'ready'
-  rules: Rule[]; consonants: Consonant[]; vowels: Vowel[]
-  words: Word[]; sentences: Sentence[]; meme: Meme
+  id: string; number: number; title: string; summary: string; status: 'draft' | 'ready'
+  rules: Rule[]; consonants: Consonant[]; vowels: Vowel[]; toneTables: ToneTable[]
+  vocab: WordItem[]; practice: PracticeGroup[]; patterns: Pattern[]
+  homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]
 }

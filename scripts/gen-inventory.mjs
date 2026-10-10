@@ -1,20 +1,19 @@
-// 產生「第N課內容清單」Markdown：node scripts/gen-inventory.mjs [lesson-01]
-import { readFileSync, writeFileSync } from 'node:fs'
-const id = process.argv[2] ?? 'lesson-01'
-const L = JSON.parse(readFileSync(`data/lessons/${id}.json`, 'utf8'))
-const cls = { mid: '中輩', high: '高輩', low: '低輩' }
-const out = []
-out.push(`# 第 ${L.number} 課：${L.title}`, '', L.summary, '')
-out.push('## 規則認知', ...L.rules.map(r => `- **${r.title}**：${r.body}`), '')
-out.push('## 子音', '| 字 | 名稱 | 拼音 | 意思 | 輩 | 頭音 | 尾音 |', '|---|---|---|---|---|---|---|')
-for (const c of L.consonants) out.push(`| ${c.char} | ${c.name} | ${c.nameRoman} | ${c.nameZh} | ${cls[c.class]} | ${c.initial} | ${c.final} |`)
-out.push('', '## 母音', '| 母音 | 拼法 | 發音 | 長短 | 位置 | 例字 |', '|---|---|---|---|---|---|')
-for (const v of L.vowels) out.push(`| ${v.char} | ${v.withCarrier} | ${v.roman} | ${v.length === 'long' ? '長' : '短'} | ${v.position} | ${v.example} |`)
-out.push('', `## 單字（${L.words.length}）`, '| 泰文 | 拼音 | 意思 | 拆解 |', '|---|---|---|---|')
-for (const w of L.words) out.push(`| ${w.thai} | ${w.roman} | ${w.zh} | ${w.parts.join(' + ')} |`)
-out.push('', `## 例句（${L.sentences.length}）`, '| 泰文 | 拼音 | 中文 |', '|---|---|---|')
-for (const s of L.sentences) out.push(`| ${s.segments.join(' ')} | ${s.roman} | ${s.zh} |`)
-out.push('', '## 梗圖', `- ${L.meme.idea}`, `- 圖說：${L.meme.caption}`, '')
-const md = out.join('\n')
-writeFileSync(`docs/${id}-inventory.md`, md)
-console.log(`wrote docs/${id}-inventory.md`)
+// 產生課程內容清單 Markdown：node scripts/gen-inventory.mjs  → docs/curriculum-inventory.md
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+const files = readdirSync('data/lessons').filter(f => f.endsWith('.json')).sort()
+const out = ['# 泰文認字課程內容清單', '']
+for (const f of files) {
+  const L = JSON.parse(readFileSync(`data/lessons/${f}`, 'utf8'))
+  out.push(`## L${L.number} ${L.title}`, '', L.summary, '')
+  if (L.consonants.length) {
+    out.push('| 字 | 名稱 | 拼音 | 意思 | 發音 | 同音高子音 |', '|---|---|---|---|---|---|')
+    for (const c of L.consonants) out.push(`| ${c.char} | ${c.name} | ${c.roman} | ${c.zh} | ${c.sound} | ${c.sameHigh} |`)
+    out.push('')
+  }
+  for (const v of L.vowels) out.push(`- 母音 ${v.ipa}：${v.short} / ${v.long || '—'}　例字：${v.words.map(w => `${w.thai} ${w.zh}`).join('、')}`)
+  if (L.vocab.length) out.push('', '單字：' + L.vocab.map(w => `${w.thai} ${w.zh}`.trim()).join('、'))
+  if (L.homework.length) out.push('', '作業：' + L.homework.join('、'))
+  out.push('')
+}
+writeFileSync('docs/curriculum-inventory.md', out.join('\n'))
+console.log('wrote docs/curriculum-inventory.md')
