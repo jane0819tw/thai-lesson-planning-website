@@ -1,6 +1,8 @@
 /* ---------------- 老師管理頁 ---------------- */
 const linkOf = s => new URL('index.html?t=' + s.token, location.href).href;
-const A = { st: null, msg: null, wk: null, wkDate: '', today: '', tab: 'cal', dirty: false, reg: {}, ov: {} };
+const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生']];
+const secGet = () => { try { const v = localStorage.getItem('thaiskr_admin_sec'); return SECS.some(x => x[0] === v) ? v : 'sched'; } catch (e) { return 'sched'; } };
+const A = { sec: secGet(), st: null, msg: null, wk: null, wkDate: '', today: '', tab: 'cal', dirty: false, reg: {}, ov: {} };
 const LO0 = 360, HI0 = 1440, H = 22, STEP = 30;
 const hm = m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
 const hhmm = x => { const [h, m] = x.split(':').map(Number); return h * 60 + m; };
@@ -185,7 +187,7 @@ function showNewBar(text) {
   el.innerHTML = `<span>🔔 新預約：${esc(text)}</span><button class="primary" id="newgo">查看</button>`;
   document.getElementById('newgo').onclick = async () => {
     try { A.st = await run('adminGetState'); if (!A.dirty) buildDraft(A.st.rules); renderAdmin(); } catch (e) { flash(false, e.message); }
-    el.remove(); document.title = BASE_TITLE; window.scrollTo(0, 0);
+    el.remove(); A.sec = 'pending'; renderAdmin(); document.title = BASE_TITLE; window.scrollTo(0, 0);
   };
 }
 function flash(ok, text) { A.msg = { ok, text }; renderAdmin(); }
@@ -193,40 +195,44 @@ function flash(ok, text) { A.msg = { ok, text }; renderAdmin(); }
 function renderAdmin() {
   const st = A.st;
   $app.innerHTML = `
-    <h1>老師管理</h1><p class="sub">點格子就能開放或取消開放（滑鼠可拖曳多格）。學生只會在綠色格子中、扣掉行事曆已有行程後，看到可預約的時段。</p>
+    <h1>老師管理</h1>
     ${A.msg ? `<div class="msg ${A.msg.ok ? 'ok' : 'err'}">${esc(A.msg.text)}</div>` : ''}
-    <div class="card">
+    <div class="shell"><nav class="side">${SECS.map(([k, n]) => `<button data-sec="${k}" class="${A.sec === k ? 'sel' : ''}">${n}${k === 'pending' && st.pending.length ? `<span class="badge">${st.pending.length}</span>` : ''}</button>`).join('')}</nav><div class="content">
+    ${A.sec === 'sched' ? `<div class="card">
       <div class="tabs"><button data-tab="cal" class="${A.tab === 'cal' ? 'sel' : ''}">行事曆</button><button data-tab="reg" class="${A.tab === 'reg' ? 'sel' : ''}">固定時間</button></div>
       <p class="muted" style="margin-top:0">${A.tab === 'cal' ? '某一週的實際日期。改動只影響那一天（單日設定），不會改到固定時間。' : '每週固定開放的時段，套用到每一個星期。'} 時間為台北時間。</p>
       <div id="grid"></div>
       <div class="legend"><span><i style="background:color-mix(in srgb,var(--ok) 38%,var(--card))"></i>開放預約</span>
         ${A.tab === 'cal' ? `<span><i style="background:color-mix(in srgb,var(--accent) 28%,var(--card));border-color:var(--accent)"></i>私下學生</span><span><i style="background:color-mix(in srgb,#2563eb 24%,var(--card));border-color:#2563eb"></i>AmazingTalker</span><span><i style="border-style:dashed"></i>虛線＝待確認</span><span><i style="background:var(--chip)"></i>其他行程</span>` : ''}</div>
       <div class="savebar" id="savebar" style="display:none"></div></div>
-    <div class="card"><h2>待確認的私下預約</h2>
+      <p class="muted">點格子就能開放或取消開放（滑鼠可拖曳多格）。學生只會在綠色格子中、扣掉行事曆已有行程後，看到可預約的時段。</p>` : ''}
+    ${A.sec === 'pending' ? `<div class="card"><h2>待確認的私下預約</h2>
       ${st.pending.length ? st.pending.map(p => `<div class="item"><div>${esc(p.name)}　${esc(p.start)}（${p.length} 分）<div class="muted">${esc(p.note)}</div></div>
         <div class="row"><button class="primary" data-ok="${p.id}">確認</button><button class="danger" data-no="${p.id}">拒絕</button></div></div>`).join('')
         : '<p class="muted">目前沒有待確認的預約。</p>'}
-      <p class="muted">確認後，記得到 AmazingTalker 手動關閉同一時段。</p></div>
-    <div class="card"><h2>所有預約（可直接改狀態）</h2>
+      <p class="muted">確認後，記得到 AmazingTalker 手動關閉同一時段。</p></div>` : ''}
+    ${A.sec === 'bookings' ? `<div class="card"><h2>所有預約（可直接改狀態）</h2>
       <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="onlyAct" ${A.onlyActive ? 'checked' : ''}>只看有效預約（待確認／已確認）</label>
       ${(st.bookings || []).filter(b => !A.onlyActive || ['待確認', '已確認'].includes(b.status)).map(b => `<div class="item"><div>${esc(b.start)}・${b.length} 分<div class="muted">${esc(b.name)}　${esc(b.source)}</div></div>
         <div class="row">${['待確認', '已確認'].includes(b.status) ? `<button class="danger" data-cancel="${esc(b.id)}">取消這堂課</button>` : ''}<select data-bk="${esc(b.id)}" data-old="${esc(b.status)}">${['待確認', '已確認', '已拒絕', '已過期', '已取消'].map(x => `<option ${x === b.status ? 'selected' : ''}>${x}</option>`).join('')}${['待確認', '已確認', '已拒絕', '已過期', '已取消'].includes(b.status) ? '' : `<option selected>${esc(b.status)}</option>`}</select></div></div>`).join('') || '<p class="muted">沒有預約。</p>'}
-      <p class="muted">改成「已確認／待確認」會把時段放回行事曆；改成其他狀態會移除行事曆事件。私下預約改成已確認時會建立 Zoom 並寫入記錄表。</p></div>
-    <div class="card"><h2>學生預約連結</h2>
+      <p class="muted">改成「已確認／待確認」會把時段放回行事曆；改成其他狀態會移除行事曆事件。私下預約改成已確認時會建立 Zoom 並寫入記錄表。</p></div>` : ''}
+    ${A.sec === 'students' ? `<div class="card"><h2>學生預約連結</h2>
       ${st.students.map(s => `<div class="item"><div>${esc(s.name)}<div class="muted">${esc(s.email)}</div>
         ${s.token ? `<div class="link">${esc(linkOf(s))}</div>` : ''}</div>
         <div class="row">${s.token ? `<button data-copy="${esc(linkOf(s))}">複製連結</button>` : ''}<button data-renew="${esc(s.name)}">${s.token ? '換新連結' : '產生連結'}</button></div>
         <div class="row" style="flex-basis:100%"><input class="rec" data-name="${esc(s.name)}" style="flex:1;min-width:200px" placeholder="課程記錄表（試算表網址）" value="${esc(s.record)}"><button data-saverec="${esc(s.name)}">儲存</button></div></div>`).join('') || '<p class="muted">還沒有學生。</p>'}
       <div class="row" style="margin-top:12px"><input id="sn" placeholder="姓名"><input id="se" type="email" placeholder="Email"><button id="addS">新增學生</button></div>
       <p class="muted">貼上學生的「課程記錄表」網址後，學生頁會顯示剩餘堂數，確認預約時會自動把日期與 Zoom 連結填進下一堂。</p>
-      <p class="muted">新學生也可以用沒有代碼的通用連結自己填姓名與 Email，送出後你確認時會自動建檔。</p></div>`;
+      <p class="muted">新學生也可以用沒有代碼的通用連結自己填姓名與 Email，送出後你確認時會自動建檔。</p></div>` : ''}
+    </div></div>`;
 
   renderGrid(); updateBar();
   const act = async (fn, okText, ...args) => { try { await run(fn, ...args); const [st, wk] = await Promise.all([run('adminGetState'), fn === 'adminSetRecord' ? A.wk : run('adminGetWeek', A.wkDate)]); A.st = st; A.wk = wk; flash(true, okText); } catch (e) { flash(false, e.message); } };
   $app.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { A.tab = b.dataset.tab; A.msg = null; renderAdmin(); });
   $app.querySelectorAll('[data-ok]').forEach(b => b.onclick = () => act('adminSetStatus', '已確認', b.dataset.ok, '已確認'));
   $app.querySelectorAll('[data-no]').forEach(b => b.onclick = () => act('adminSetStatus', '已拒絕', b.dataset.no, '已拒絕'));
-  document.getElementById('onlyAct').onchange = e => { A.onlyActive = e.target.checked; renderAdmin(); };
+  $app.querySelectorAll('[data-sec]').forEach(b => b.onclick = () => { A.sec = b.dataset.sec; A.msg = null; try { localStorage.setItem('thaiskr_admin_sec', A.sec); } catch (e) {} renderAdmin(); window.scrollTo(0, 0); });
+  const oa = document.getElementById('onlyAct'); if (oa) oa.onchange = e => { A.onlyActive = e.target.checked; renderAdmin(); };
   $app.querySelectorAll('[data-cancel]').forEach(b => b.onclick = () => { if (confirm('確定取消這堂課？時段會釋放，也請記得到 AmazingTalker 取消。')) act('adminSetStatus', '已取消這堂課', b.dataset.cancel, '已取消'); });
   $app.querySelectorAll('[data-bk]').forEach(sel => sel.onchange = () => {
     if (sel.value === sel.dataset.old) return;
@@ -236,7 +242,7 @@ function renderAdmin() {
   $app.querySelectorAll('[data-renew]').forEach(b => b.onclick = () => { if (confirm('舊連結會立刻失效，確定嗎？')) act('adminRenewLink', '已產生新連結', b.dataset.renew); });
   $app.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => navigator.clipboard.writeText(b.dataset.copy).then(() => { b.textContent = '已複製'; }));
   $app.querySelectorAll('[data-saverec]').forEach(b => b.onclick = () => act('adminSetRecord', '已儲存課程記錄表', b.dataset.saverec, [...document.querySelectorAll('.rec')].find(i => i.dataset.name === b.dataset.saverec).value));
-  document.getElementById('addS').onclick = () => act('adminCreateStudent', '已新增學生', document.getElementById('sn').value, document.getElementById('se').value);
+  const addS = document.getElementById('addS'); if (addS) addS.onclick = () => act('adminCreateStudent', '已新增學生', document.getElementById('sn').value, document.getElementById('se').value);
 }
 
 initAdmin();

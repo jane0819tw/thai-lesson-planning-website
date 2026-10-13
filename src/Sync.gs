@@ -147,7 +147,7 @@ function onStatusEdit(e) {
 function applyStatusChange_(b) {
   if (b['來源'] === '私下') {
     if (b['狀態'] === STATUS.CONFIRMED) confirmPrivate_(b);
-    else if (b['狀態'] !== STATUS.PENDING) releaseZoom_(b);
+    else if (b['狀態'] !== STATUS.PENDING) { clearRecordFor_(b); releaseZoom_(b); }
   }
   syncCalendarEvent_(b);
   writeBooking_(b);
@@ -188,7 +188,15 @@ function confirmPrivate_(b) {
   }
 }
 
-/** 取消／拒絕／過期：刪除 Zoom 會議並清掉連結（記錄表那一列不自動清，避免誤刪手寫內容） */
+/** 取消／拒絕／過期：先把記錄表裡那一堂清掉（要在 Zoom 連結被清空之前，才找得到對應的列） */
+function clearRecordFor_(b) {
+  const student = readStudents_().filter(function (x) { return x.name === b['學生']; })[0];
+  if (!student || !student['課程記錄表']) return;
+  try { addNote_(b, '記錄表：' + clearBookingFromRecord_(student['課程記錄表'], toLocalStr_(b['開始']), b['課長'], b['Zoom連結'])); }
+  catch (e) { addNote_(b, '記錄表清除失敗：' + e.message); }
+}
+
+/** 取消／拒絕／過期：刪除 Zoom 會議並清掉連結 */
 function releaseZoom_(b) {
   if (!b['會議編號']) return;
   try { zoomDeleteMeeting_(b['會議編號']); b['Zoom連結'] = ''; b['會議編號'] = ''; }

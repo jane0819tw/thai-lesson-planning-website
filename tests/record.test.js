@@ -24,4 +24,9 @@ const s50 = ctx.summarizeLessons_([['', '單人10堂 50分鐘', '', 'V']], lesso
 assert.deepStrictEqual([s50.len, s50.leftMinutes], [50, 350]);
 assert.strictEqual(sum.len, null);
 assert.strictEqual(ctx.summarizeLessons_([['', '10堂 50分', '', 'V'], ['', '5堂 25分', '', 'V']], []).len, null);
+// 取消時找出要清的列：先比連結，再比我們寫的日期格式；手寫的其他列不碰
+const clr = [['2026/09/02 20:00-21:00', ''], ['2026/10/14 09:00-09:50', 'https://us06web.zoom.us/j/1?pwd=a'], ['', '']];
+assert.strictEqual(ctx.findRecordRowToClear_(clr, '2026/10/14 09:00-09:50', 'https://us06web.zoom.us/j/1?pwd=a'), 1);
+assert.strictEqual(ctx.findRecordRowToClear_([['2026/10/14 09:00-09:50', '']], '2026/10/14 09:00-09:50', ''), 0);
+assert.strictEqual(ctx.findRecordRowToClear_(clr, '2026/11/01 09:00-09:50', 'https://zoom.us/j/999'), -1);
 console.log('record tests passed');

@@ -79,3 +79,16 @@
   body.is-busy button, body.is-busy .tabs { pointer-events:none; opacity:.6; }
 
   .newbar { position:fixed; left:50%; bottom:16px; transform:translateX(-50%); z-index:40; display:flex; gap:12px; align-items:center; max-width:calc(100% - 32px); padding:10px 14px; border-radius:12px; background:var(--card); border:1px solid var(--accent); box-shadow:0 6px 20px rgba(0,0,0,.2); }
+
+  main.wide { max-width:1040px; }
+  .shell { display:flex; gap:20px; align-items:flex-start; }
+  .content { flex:1; min-width:0; }
+  .side { flex:0 0 150px; position:sticky; top:16px; display:flex; flex-direction:column; gap:6px; }
+  .side button { text-align:left; display:flex; justify-content:space-between; align-items:center; }
+  .badge { background:var(--accent); color:var(--accent-ink); border-radius:999px; font-size:.75rem; padding:0 7px; line-height:1.5; }
+  .side button.sel .badge { background:var(--accent-ink); color:var(--accent); }
+  @media (max-width: 720px) {
+    .shell { flex-direction:column; gap:12px; }
+    .side { flex:none; flex-direction:row; overflow-x:auto; position:sticky; top:0; z-index:5; width:100%; padding:8px 0; background:var(--bg); }
+    .side button { flex:0 0 auto; white-space:nowrap; gap:8px; }
+  }

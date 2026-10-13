@@ -42,6 +42,20 @@ function recordDateText_(startStr, minutes) {
   return startStr.slice(0, 10).replace(/-/g, '/') + ' ' + startStr.slice(11) + '-' + end.slice(11);
 }
 
+/**
+ * 取消時要清掉哪一列：會議連結相同，或「上課日期」文字完全等於我們當初寫入的格式。
+ * rows 為每列的 [上課日期, 會議連結]；找不到回傳 -1（不會碰手寫的其他列）
+ */
+function findRecordRowToClear_(rows, dateText, joinUrl) {
+  for (let i = 0; i < rows.length; i++) {
+    if (joinUrl && String(rows[i][1] || '').indexOf(joinUrl) >= 0) return i;
+  }
+  for (let i = 0; i < rows.length; i++) {
+    if (String(rows[i][0] || '').trim() === dateText) return i;
+  }
+  return -1;
+}
+
 // ---- Google 試算表存取 ----
 
 function openRecord_(url) {
@@ -92,4 +106,23 @@ function writeBookingToRecord_(recordUrl, startStr, minutes, joinUrl) {
   sh.getRange(row, colDate).setValue(recordDateText_(startStr, minutes));
   if (joinUrl) sh.getRange(row, colLink).setValue(joinUrl);
   return '已寫入第 ' + rows[i][0] + ' 堂';
+}
+
+/**
+ * 取消／拒絕時：把當初寫進記錄表的那一堂清空（只清「上課日期」與「會議連結」兩格），剩餘堂數會自動加回來。
+ * @return {string} 結果說明
+ */
+function clearBookingFromRecord_(recordUrl, startStr, minutes, joinUrl) {
+  const ss = openRecord_(recordUrl);
+  const sh = tabOf_(ss, RECORD_TABS_.lessons);
+  if (!sh) throw new Error('記錄表找不到「上課記錄」分頁');
+  const head = sh.getRange(1, 1, 1, sh.getLastColumn()).getDisplayValues()[0];
+  const colDate = head.indexOf('上課日期') + 1, colLink = head.indexOf('會議連結') + 1;
+  if (!colDate || !colLink) throw new Error('記錄表缺少「上課日期」或「會議連結」欄');
+  const rows = displayRows_(sh);
+  const i = findRecordRowToClear_(rows.map(function (r) { return [r[colDate - 1], r[colLink - 1]]; }), recordDateText_(startStr, minutes), joinUrl);
+  if (i < 0) return '記錄表找不到這一堂，未清除';
+  sh.getRange(i + 2, colDate).clearContent();
+  sh.getRange(i + 2, colLink).clearContent();
+  return '已從記錄表清除第 ' + rows[i][0] + ' 堂';
 }
