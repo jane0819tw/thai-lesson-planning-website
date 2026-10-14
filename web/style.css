@@ -92,3 +92,5 @@
     .side { flex:none; flex-direction:row; overflow-x:auto; position:sticky; top:0; z-index:5; width:100%; padding:8px 0; background:var(--bg); }
     .side button { flex:0 0 auto; white-space:nowrap; gap:8px; }
   }
+
+  .lesson-note { flex-basis:100%; background:var(--chip); border-radius:8px; padding:8px 12px; white-space:pre-line; }

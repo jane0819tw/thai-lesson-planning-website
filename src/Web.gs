@@ -118,13 +118,16 @@ function getStudentView(token) {
   if (token && !s) return { mode: 'invalid' };
   const v = { mode: s ? 'known' : 'generic', name: s ? s.name : '', days: openDays_(), lessons: null, upcoming: [], asOf: Utilities.formatDate(new Date(), CONFIG.TZ, 'yyyy-MM-dd HH:mm:ss') };
   if (s) {
-    v.lessons = s['課程記錄表'] ? readLessonSummary_(s['課程記錄表']) : null;
-    const now = Date.now();
-    v.upcoming = readBookings_().filter(function (b) {
-      return b['學生'] === s.name && (b['狀態'] === STATUS.PENDING || b['狀態'] === STATUS.CONFIRMED) && b['開始'] && new Date(b['開始']).getTime() >= now;
-    }).sort(function (a, b) { return new Date(a['開始']) - new Date(b['開始']); }).map(function (b) {
-      return { start: toLocalStr_(b['開始']), length: b['課長'], status: b['狀態'], zoom: b['狀態'] === STATUS.CONFIRMED ? b['Zoom連結'] : '' };
+    const rec = s['課程記錄表'] ? readRecordBundle_(s['課程記錄表']) : null;
+    v.lessons = rec ? rec.summary : null;
+    v.lastLesson = rec ? rec.last : null;
+    const bks = readBookings_().filter(function (b) {
+      return b['學生'] === s.name && (b['狀態'] === STATUS.PENDING || b['狀態'] === STATUS.CONFIRMED) && b['開始'];
+    }).map(function (b) {
+      return { start: toLocalStr_(b['開始']), end: toLocalStr_(b['實際結束']), zoom: b['Zoom連結'] || '', status: b['狀態'], length: b['課長'] };
     });
+    // 記錄表（含老師手寫的未來課）與預約表合併；前後相連的課合成一筆、共用同一個 Zoom
+    v.upcoming = buildSessions_(rec ? rec.sessions : [], bks, toLocalStr_(new Date()));
   }
   return v;
 }

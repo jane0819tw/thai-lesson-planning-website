@@ -165,7 +165,13 @@ function confirmPrivate_(b) {
   ensureStudent_(b['學生'], emailFromNote_(b['備註']));
   const student = readStudents_().filter(function (x) { return x.name === b['學生']; })[0];
 
-  if (!b['Zoom連結']) {
+  // 25 分鐘的課和同一位學生前後相連時，共用同一個 Zoom（把原本的會議延長），不另外開一場
+  const nb = b['Zoom連結'] ? null : adjacentZoomBooking_(b);
+  if (nb) {
+    b['Zoom連結'] = nb['Zoom連結']; b['會議編號'] = nb['會議編號'];
+    try { patchSharedZoom_(b['會議編號'], sharingBookings_(b['會議編號'], b['編號']).concat([b])); addNote_(b, '與前後相連的課共用同一個 Zoom'); }
+    catch (e) { addNote_(b, 'Zoom 延長失敗：' + e.message); }
+  } else if (!b['Zoom連結']) {
     if (!zoomConfigured_()) {
       addNote_(b, '尚未設定 Zoom 金鑰，未建立會議');
       notify_('尚未建立 Zoom：' + b['學生'], '請在「專案設定 → 指令碼屬性」設定 ZOOM_ACCOUNT_ID、ZOOM_CLIENT_ID、ZOOM_CLIENT_SECRET，再把這筆預約的狀態改一次。');
@@ -196,11 +202,43 @@ function clearRecordFor_(b) {
   catch (e) { addNote_(b, '記錄表清除失敗：' + e.message); }
 }
 
-/** 取消／拒絕／過期：刪除 Zoom 會議並清掉連結 */
+/** 同一場 Zoom 會議上的其他已確認預約（連續課共用會議時會有多筆） */
+function sharingBookings_(meetingId, exceptId) {
+  return readBookings_().filter(function (o) {
+    return o['編號'] !== exceptId && String(o['會議編號']) === String(meetingId) && o['狀態'] === STATUS.CONFIRMED;
+  });
+}
+
+/** 同一位學生、25 分鐘、前後緊接（佔用時段首尾相接）且已有 Zoom 的另一筆已確認預約；沒有回傳 null */
+function adjacentZoomBooking_(b) {
+  if (Number(b['課長']) !== 25) return null;
+  const s = new Date(b['開始']).getTime(), e = new Date(b['佔用結束']).getTime();
+  const rows = readBookings_();
+  for (let i = 0; i < rows.length; i++) {
+    const o = rows[i];
+    if (o['編號'] === b['編號'] || o['來源'] !== '私下' || o['學生'] !== b['學生'] || o['狀態'] !== STATUS.CONFIRMED) continue;
+    if (Number(o['課長']) !== 25 || !o['會議編號'] || !o['Zoom連結']) continue;
+    if (new Date(o['佔用結束']).getTime() === s || new Date(o['開始']).getTime() === e) return o;
+  }
+  return null;
+}
+
+/** 把共用會議調成涵蓋 list 裡所有預約（從最早開始到最晚的實際結束） */
+function patchSharedZoom_(meetingId, list) {
+  if (!zoomConfigured_() || !list.length) return;
+  let s = Infinity, e = 0;
+  list.forEach(function (x) { s = Math.min(s, new Date(x['開始']).getTime()); e = Math.max(e, new Date(x['實際結束']).getTime()); });
+  zoomPatchMeeting_(meetingId, toLocalStr_(new Date(s)), Math.round((e - s) / 60000));
+}
+
+/** 取消／拒絕／過期：刪除 Zoom 會議並清掉連結；若會議還有別的課共用，就只把會議縮回剩下的課 */
 function releaseZoom_(b) {
   if (!b['會議編號']) return;
-  try { zoomDeleteMeeting_(b['會議編號']); b['Zoom連結'] = ''; b['會議編號'] = ''; }
-  catch (e) { addNote_(b, 'Zoom 刪除失敗：' + e.message); }
+  try {
+    const others = sharingBookings_(b['會議編號'], b['編號']);
+    if (others.length) patchSharedZoom_(b['會議編號'], others); else zoomDeleteMeeting_(b['會議編號']);
+    b['Zoom連結'] = ''; b['會議編號'] = '';
+  } catch (e) { addNote_(b, 'Zoom 刪除失敗：' + e.message); }
 }
 
 /** 不寄任何信（確認信、老師通知都已停用）。保留函式讓呼叫處不用改；需要時只看試算表的「備註」與管理頁。 */

@@ -29,8 +29,12 @@
   const api = {
     adminGetWeek: d => week(d),
     getStudentView: t => t === 'bad' ? { mode: 'invalid' } : { mode: t ? 'known' : 'generic', name: t ? 'Jenny' : '', days: db.days, asOf: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 19).replace('T', ' '),
-      lessons: t ? { bought: 10, used: 3, left: 7, len: 50, leftMinutes: 350 } : null,
-      upcoming: t ? [{ start: day(1) + ' 19:00', length: 50, status: '已確認', zoom: 'https://zoom.us/j/123' }, { start: day(3) + ' 10:00', length: 25, status: '待確認', zoom: '' }] : [] },
+      lastLesson: t ? { date: '2026-09-25', progress: '會話Level2L3第一頁', next: '會話Level2L3第2頁開始' } : null,
+      lessons: t ? { bought: 10, used: 3, booked: 3, left: 7, len: 25, leftMinutes: 175 } : null,
+      upcoming: t ? [
+        { start: day(0) + ' ' + new Date(Date.now() + 8 * 3600000 + 5 * 60000).toISOString().slice(11, 16), end: day(0) + ' ' + new Date(Date.now() + 8 * 3600000 + 35 * 60000).toISOString().slice(11, 16), length: 25, count: 1, status: '已確認', zoom: 'https://zoom.us/j/123' },
+        { start: day(2) + ' 09:00', end: day(2) + ' 10:00', length: 25, count: 2, status: '已確認', zoom: 'https://zoom.us/j/456' },
+        { start: day(3) + ' 10:00', end: day(3) + ' 10:25', length: 25, count: 1, status: '待確認', zoom: '' }] : [] },
     submitBooking: (t, n, e, s, l) => { if (!t && !n) throw new Error('請填姓名'); return { ok: true }; },
     adminGetState: () => JSON.parse(JSON.stringify(db)),
     adminSaveRules: r => { db.rules = r; return true; },
