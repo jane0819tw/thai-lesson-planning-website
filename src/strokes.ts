@@ -1,4 +1,4 @@
-// 筆順資料：data/strokes/strokes.json
+// 筆順資料：data/strokes/strokes.json（由 data/strokes/chars/*.json 合併產生，請改 chars/ 底下的單字檔，再跑 npm run strokes）
 // 格式：{ "ก": { "strokes": ["M x y L x y ...", "M ..."] } }，座標以 300×300 的 viewBox 為準，陣列順序＝筆順。
 // 用 /reading/stroke-editor 在字形上描一遍就能錄製並匯出。
 import raw from '../data/strokes/strokes.json'

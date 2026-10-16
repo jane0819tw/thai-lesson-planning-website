@@ -5,8 +5,8 @@
   :root { --bg: #17140f; --fg: #f1ebe2; --muted: #a39a8e; --card: #221e18; --line: #3a342b; --accent: #fb923c; --accent-soft: #3a2616; }
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--fg); font-family: 'Noto Sans TC', system-ui, sans-serif; line-height: 1.6; }
-.th { font-family: 'Sarabun', 'Noto Sans TC', sans-serif; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: 'Noto Sans TC', 'Noto Sans Thai Looped', system-ui, sans-serif; line-height: 1.6; }
+.th { font-family: 'Noto Sans Thai Looped', 'Noto Sans TC', sans-serif; }
 a { color: var(--accent); }
 .top { border-bottom: 1px solid var(--line); padding: 12px 16px; }
 .brand { font-weight: 700; text-decoration: none; color: var(--fg); font-size: 1.1rem; }

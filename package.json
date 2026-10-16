@@ -4,12 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "strokes": "node scripts/build-strokes.mjs",
+    "dev": "node scripts/build-strokes.mjs && vite",
+    "build": "node scripts/build-strokes.mjs && tsc --noEmit && vite build",
     "preview": "vite preview",
     "inventory": "node scripts/gen-inventory.mjs"
   },
   "dependencies": {
+    "@fontsource/noto-sans-thai-looped": "^5.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.2"
