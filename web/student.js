@@ -1,6 +1,6 @@
 const TOKEN = QS.get('t') || '';
 /* ---------------- 學生預約頁 ---------------- */
-const S = { len: 25, date: null, time: null, view: null, msg: null, busy: false };
+const S = { len: 25, month: null, date: null, time: null, view: null, msg: null, busy: false };
 
 /* 進入教室：上課前 10 分鐘才出現按鈕，結束後 15 分鐘消失（時間皆為台北時間） */
 const toMs = str => new Date(str.replace(' ', 'T') + ':00+08:00').getTime();
@@ -26,11 +26,18 @@ function renderStudent() {
   if (fixed) S.len = fixed;
   const ok = sl => S.len === 25 ? sl.can25 : sl.can50;
   const days = v.days.map(d => ({ ...d, free: d.slots.some(ok) }));
-  if (!days.some(d => d.date === S.date && d.free)) { const f = days.find(d => d.free); S.date = f && f.date; S.time = null; }
+  // 日期依月份分頁：只顯示選中月份的日期。月份沒選過就用第一個有空位的日子所在的月份
+  const months = [...new Set(days.map(d => d.date.slice(0, 7)))];
+  if (!months.includes(S.month)) { const f = days.find(d => d.free) || days[0]; S.month = f ? f.date.slice(0, 7) : null; }
+  const monthDays = days.filter(d => d.date.slice(0, 7) === S.month);
+  if (!monthDays.some(d => d.date === S.date && d.free)) { const f = monthDays.find(d => d.free); S.date = f ? f.date : null; S.time = null; }
+  const monthLabel = m => (m.slice(0, 4) !== months[0].slice(0, 4) ? m.slice(0, 4) + '年' : '') + +m.slice(5) + '月';
   const cur = days.find(d => d.date === S.date);
   if (S.time && !(cur && cur.slots.some(sl => sl.time === S.time && ok(sl)))) S.time = null; // 重新整理後這格被約走了
   // 50 分鐘的課佔兩個半小時格：選了一格，下一格一起變色
   const second = S.len === 50 && S.time ? (m => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'))(+S.time.slice(0, 2) * 60 + +S.time.slice(3) + 30) : null;
+  // 每次點選都會整頁重畫，先記住日期列與頁面的捲動位置，重畫後還原（否則日期列會跳回最前面）
+  const keepDays = $app.querySelector('.days'), daysLeft = keepDays ? keepDays.scrollLeft : 0, pageTop = window.scrollY;
   $app.innerHTML = `
     <h1>預約泰語課</h1>
     <p class="sub">${v.name ? `${esc(v.name)}，你好！` : ''}選擇課長與時段，送出後等老師確認，確認後可在這個頁面看到 Zoom 連結。時間皆為台北時間。</p>
@@ -46,7 +53,8 @@ function renderStudent() {
       ${[25, 50].map(n => `<button data-len="${n}" class="${S.len === n ? 'sel' : ''}" ${fixed && fixed !== n ? 'disabled' : ''}>${n} 分鐘</button>`).join('')}</div></div>
     <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">2. 日期與時間</h2>
       <span class="row"><span class="muted">最後更新 ${esc((v.asOf || S.fetched || '').slice(5, 16).replace('-', '/'))}</span><button id="sync">重新整理時段</button></span></div>
-      ${days.length ? `<div class="days">${days.map(d => `<button data-date="${d.date}" class="${d.date === S.date ? 'sel' : ''}" ${d.free ? '' : 'disabled'}>${dayLabel(d.date)}${d.free ? '' : `<br><span class="tag">${esc(d.closed ? d.label : '已滿')}</span>`}</button>`).join('')}</div>
+      ${months.length > 1 ? `<div class="row" style="margin-bottom:10px">${months.map(m => `<button data-month="${m}" class="${m === S.month ? 'sel' : ''}">${monthLabel(m)}</button>`).join('')}</div>` : ''}
+      ${days.length ? `<div class="days">${monthDays.map(d => `<button data-date="${d.date}" class="${d.date === S.date ? 'sel' : ''}" ${d.free ? '' : 'disabled'}>${dayLabel(d.date)}${d.free ? '' : `<br><span class="tag">${esc(d.closed ? d.label : '已滿')}</span>`}</button>`).join('')}</div>
       ${cur ? `<div class="slots">${cur.slots.map(s => `<button data-time="${s.time}" class="${s.time === S.time || s.time === second ? 'sel' : ''}" ${ok(s) ? '' : 'disabled'}>${s.time}</button>`).join('')}</div>` : '<p class="muted">這個課長目前沒有可預約的時段，換個課長或稍後再來看看。</p>'}`
       : '<p class="muted">目前沒有開放的時段，請稍後再來看看。</p>'}</div>
     ${S.time ? `<div class="card"><h2>3. 確認送出</h2>
@@ -54,7 +62,10 @@ function renderStudent() {
       ${v.mode === 'generic' ? `<label>姓名</label><input class="full" id="nm" autocomplete="name"><label>Email（確認信會寄到這裡）</label><input class="full" id="em" type="email" autocomplete="email">` : ''}
       <button class="primary" id="go" ${S.busy ? 'disabled' : ''}>${S.busy ? '送出中…' : '送出預約'}</button></div>` : ''}
     ${S.msg ? `<div class="msg ${S.msg.ok ? 'ok' : 'err'}">${esc(S.msg.text)}</div>` : ''}`;
+  const nd = $app.querySelector('.days'); if (nd) nd.scrollLeft = daysLeft;
+  window.scrollTo(0, pageTop);
   $app.querySelectorAll('[data-len]').forEach(b => b.onclick = () => { S.len = +b.dataset.len; S.time = null; S.msg = null; renderStudent(); });
+  $app.querySelectorAll('[data-month]').forEach(b => b.onclick = () => { S.month = b.dataset.month; S.time = null; S.msg = null; renderStudent(); });
   $app.querySelectorAll('[data-date]').forEach(b => b.onclick = () => { S.date = b.dataset.date; S.time = null; renderStudent(); });
   $app.querySelectorAll('[data-time]').forEach(b => b.onclick = () => { S.time = b.dataset.time; S.msg = null; renderStudent(); });
   $app.querySelectorAll('[data-join]').forEach(b => b.onclick = () => window.open(b.dataset.url, '_blank', 'noopener'));

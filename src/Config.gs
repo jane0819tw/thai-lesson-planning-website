@@ -10,7 +10,7 @@ const CONFIG = {
   IMPORT_AFTER: '2026-10-13',   // 只處理這天（含）之後收到的信，避免舊信被當成新請求；空白 = 全部
   CALENDAR_ID: '',              // 空白 = Jane 的預設行事曆
   NOTIFY_EMAIL: '',             // 空白 = 執行者自己的 Email
-  BOOKING_DAYS_AHEAD: 21,       // 預約頁顯示未來幾天
+  BOOKING_DAYS_AHEAD: 92,       // 預約頁顯示未來幾天（約三個月）
   MIN_NOTICE_HOURS: 12,         // 至少提前幾小時才能預約
   SHEETS: { BOOKINGS: '預約', STUDENTS: '學生', LOG: '信件紀錄', RULES: '開放時段' },
 };
