@@ -16,7 +16,7 @@ const BUSY_TEXT = {
   adminSetStatus: '處理預約中（建立 Zoom、寫入記錄表、更新行事曆），約需數秒…',
   submitBooking: '送出預約中…', adminSaveRules: '儲存開放時段中…', adminCreateStudent: '新增學生中…',
   adminSetRecord: '儲存課程記錄表中…', adminRenewLink: '產生新連結中…', adminGetWeek: '載入課表中…',
-  getStudentView: '更新時段中…', adminGetState: '載入中…',
+  getStudentView: '更新時段中…', adminGetRecordSessions: '讀取學生記錄表中…', adminCancelRecordLesson: '清除記錄表中…', adminGetState: '載入中…',
 };
 let pending = 0, busyEl = null, busyTimer = null, busyText = '';
 function busy(on, fn) {

@@ -8,6 +8,7 @@ const PUBLIC_API_ = { getStudentView: getStudentView, submitBooking: submitBooki
 const ADMIN_API_ = {
   adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminSaveRules: adminSaveRules,
   adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord,
+  adminGetRecordSessions: adminGetRecordSessions, adminCancelRecordLesson: adminCancelRecordLesson,
 };
 
 function doGet() { return json_({ ok: true, service: 'thaiskr-reservation' }); }
@@ -294,4 +295,36 @@ function adminSetRecord(name, url) {
   }
   getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).getRange(s.row, STUDENT_HEADERS.indexOf('課程記錄表') + 1).setValue(url);
   return true;
+}
+
+// ---------- 記錄表裡已排、但不在預約表的課 ----------
+
+/**
+ * 各學生記錄表中「還沒上完」的課，扣掉已在預約表（待確認／已確認）的。
+ * 用途：新綁定記錄表時，老師之前手寫在裡面的課也能在老師頁看到、取消。
+ * 每位學生要開一次記錄表，所以只在老師頁進入「所有預約」時才讀取。
+ */
+function adminGetRecordSessions() {
+  const nowStr = toLocalStr_(new Date());
+  const bookings = readBookings_();
+  const out = [];
+  readStudents_().forEach(function (s) {
+    if (!s['課程記錄表']) return;
+    const rec = readRecordBundle_(s['課程記錄表']);
+    if (!rec) return;
+    const known = {};
+    bookings.forEach(function (b) {
+      if (b['學生'] === s.name && b['開始'] && (b['狀態'] === STATUS.PENDING || b['狀態'] === STATUS.CONFIRMED)) known[toLocalStr_(b['開始'])] = true;
+    });
+    rec.sessions.forEach(function (x) { if (x.end > nowStr && !known[x.start]) out.push({ name: s.name, start: x.start, end: x.end }); });
+  });
+  return out.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : 0; });
+}
+
+/** 清掉記錄表那一堂的上課日期與會議連結（不會刪 Zoom 會議，因為不是系統建立的） */
+function adminCancelRecordLesson(name, start) {
+  const s = readStudents_().filter(function (x) { return x.name === name; })[0];
+  if (!s || !s['課程記錄表']) throw new Error('找不到學生或尚未綁定課程記錄表');
+  if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(String(start))) throw new Error('時間格式不正確');
+  return clearBookingFromRecord_(s['課程記錄表'], start, 30, '');
 }

@@ -36,6 +36,8 @@
         { start: day(2) + ' 09:00', end: day(2) + ' 10:00', length: 25, count: 2, status: '已確認', zoom: 'https://zoom.us/j/456' },
         { start: day(3) + ' 10:00', end: day(3) + ' 10:25', length: 25, count: 1, status: '待確認', zoom: '' }] : [] },
     submitBooking: (t, n, e, s, l) => { if (!t && !n) throw new Error('請填姓名'); return { ok: true }; },
+    adminGetRecordSessions: () => [{ name: 'Ariel', start: day(3) + ' 09:00', end: day(3) + ' 09:30' }, { name: 'Ariel', start: day(3) + ' 09:30', end: day(3) + ' 10:00' }],
+    adminCancelRecordLesson: () => true,
     adminGetState: () => JSON.parse(JSON.stringify(db)),
     adminSaveRules: r => { db.rules = r; return true; },
     adminSetStatus: (id, st) => { db.pending = db.pending.filter(p => p.id !== id); db.bookings.forEach(b => { if (b.id === id) b.status = st; }); return true; },
