@@ -33,3 +33,8 @@ AmazingTalker 通知信 → Gmail 標籤 → Apps Script → 試算表 + 行事�
 - 確認私下預約時（`src/Sync.gs` 的 `confirmPrivate_`）：建立 Zoom（`src/Zoom.gs`）→ 把日期與連結填進記錄表下一個空白堂數（`src/Record.gs`）（不寄信）。取消／拒絕時刪除 Zoom 會議，記錄表那一列不自動清除。
 - Zoom 金鑰只放「專案設定 → 指令碼屬性」：`ZOOM_ACCOUNT_ID`、`ZOOM_CLIENT_ID`、`ZOOM_CLIENT_SECRET`。
 - 測試：`node tests/record.test.js`
+
+## 老師的 LINE 通知
+- 學生送出私下預約時，`src/Line.gs` 的 `notifyTeacher_` 會推 LINE 給老師（失敗只記錄，不影響預約）。
+- 設定：LINE Developers 建 Messaging API channel → 發行 Channel access token；老師用自己的 LINE 加該官方帳號為好友；User ID 在 channel 的 Basic settings 最下方「Your user ID」。
+- 在「專案設定 → 指令碼屬性」新增 `LINE_CHANNEL_TOKEN`、`LINE_USER_ID`，執行 `testLineNotify` 驗證，再「管理部署作業 → 新版本」。

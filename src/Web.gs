@@ -167,6 +167,8 @@ function submitBooking(token, name, email, startStr, length) {
     writeBooking_(b);
     notify_('私下學生新預約：' + studentName,
       studentName + '　' + startStr + '（' + length + ' 分）\n\n請到管理頁或試算表確認／拒絕。\n私下預約成立後，記得到 AmazingTalker 手動關閉同一時段。');
+    notifyTeacher_('📚 新預約：' + studentName + '\n' + startStr + '（' + length + ' 分）\n\n管理頁：' + CONFIG.ADMIN_URL +
+      '\n管理密鑰：' + (PropertiesService.getScriptProperties().getProperty('ADMIN_KEY') || '（尚未建立，請執行 createAdminKey）'));
     return { ok: true, id: b['編號'] };
   } finally { lock.releaseLock(); }
 }
