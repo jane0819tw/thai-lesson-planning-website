@@ -177,7 +177,7 @@ function confirmPrivate_(b) {
       notify_('尚未建立 Zoom：' + b['學生'], '請在「專案設定 → 指令碼屬性」設定 ZOOM_ACCOUNT_ID、ZOOM_CLIENT_ID、ZOOM_CLIENT_SECRET，再把這筆預約的狀態改一次。');
     } else {
       try {
-        const m = zoomCreateMeeting_('泰語課 ' + b['學生'], start, b['課長']);
+        const m = zoomCreateMeeting_(zoomTopic_(b['學生'], start), start, b['課長']);
         b['Zoom連結'] = m.joinUrl; b['會議編號'] = m.id;
       } catch (e) {
         addNote_(b, 'Zoom 建立失敗：' + e.message);
@@ -200,6 +200,11 @@ function clearRecordFor_(b) {
   if (!student || !student['課程記錄表']) return;
   try { addNote_(b, '記錄表：' + clearBookingFromRecord_(student['課程記錄表'], toLocalStr_(b['開始']), b['課長'], b['Zoom連結'])); }
   catch (e) { addNote_(b, '記錄表清除失敗：' + e.message); }
+}
+
+/** Zoom 會議名稱：「名字-日期」，例如 Fah-20261018 */
+function zoomTopic_(name, startStr) {
+  return String(name).trim() + '-' + startStr.slice(0, 10).replace(/-/g, '');
 }
 
 /** 同一場 Zoom 會議上的其他已確認預約（連續課共用會議時會有多筆） */

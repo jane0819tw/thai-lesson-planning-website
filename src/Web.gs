@@ -321,10 +321,30 @@ function adminGetRecordSessions() {
   return out.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : 0; });
 }
 
-/** 清掉記錄表那一堂的上課日期與會議連結（不會刪 Zoom 會議，因為不是系統建立的） */
+/**
+ * 取消記錄表裡的一堂課：清掉上課日期與會議連結，並刪除行事曆上「開始時間完全相同、標題含學生名字
+ * （或平台顯示名稱）」的事件，讓時段釋放。不會刪 Zoom 會議（不是系統建立的）。
+ * 為了不誤刪，只刪符合上述條件的；標題沒有學生名字的事件要自己到行事曆刪。
+ */
 function adminCancelRecordLesson(name, start) {
   const s = readStudents_().filter(function (x) { return x.name === name; })[0];
   if (!s || !s['課程記錄表']) throw new Error('找不到學生或尚未綁定課程記錄表');
   if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(String(start))) throw new Error('時間格式不正確');
-  return clearBookingFromRecord_(s['課程記錄表'], start, 30, '');
+  const msg = clearBookingFromRecord_(s['課程記錄表'], start, 30, '');
+  const n = deleteCalendarEventsFor_([s.name, s.display], start);
+  return msg + (n ? '；已刪除行事曆事件 ' + n + ' 個' : '；行事曆上沒有符合的事件');
+}
+
+/** 刪除開始時間等於 startStr、標題含任一名字（不分大小寫）的行事曆事件，回傳刪除數量 */
+function deleteCalendarEventsFor_(names, startStr) {
+  const from = parseLocal_(startStr);
+  const keys = names.map(function (x) { return String(x || '').trim().toLowerCase(); }).filter(Boolean);
+  if (!keys.length) return 0;
+  let n = 0;
+  getCal_().getEvents(from, new Date(from.getTime() + 30 * 60000)).forEach(function (ev) {
+    if (ev.isAllDayEvent() || toLocalStr_(ev.getStartTime()) !== startStr) return;
+    const t = ev.getTitle().toLowerCase();
+    if (keys.some(function (k) { return t.indexOf(k) >= 0; })) { ev.deleteEvent(); n++; }
+  });
+  return n;
 }

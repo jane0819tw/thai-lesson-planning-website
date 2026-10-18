@@ -221,7 +221,7 @@ function renderAdmin() {
       ${(st.bookings || []).filter(b => !A.onlyActive || ['待確認', '已確認'].includes(b.status)).map(b => `<div class="item"><div>${esc(b.start)}・${b.length} 分<div class="muted">${esc(b.name)}　${esc(b.source)}</div></div>
         <div class="row">${['待確認', '已確認'].includes(b.status) ? `<button class="danger" data-cancel="${esc(b.id)}">取消這堂課</button>` : ''}<select data-bk="${esc(b.id)}" data-old="${esc(b.status)}">${['待確認', '已確認', '已拒絕', '已過期', '已取消'].map(x => `<option ${x === b.status ? 'selected' : ''}>${x}</option>`).join('')}${['待確認', '已確認', '已拒絕', '已過期', '已取消'].includes(b.status) ? '' : `<option selected>${esc(b.status)}</option>`}</select></div></div>`).join('') || '<p class="muted">沒有預約。</p>'}
       ${A.rec && A.rec.length ? `<h2 style="margin-top:20px">記錄表中已排的課</h2>
-        <p class="muted">這些課寫在學生的課程記錄表裡（例如之前手寫的），不在預約表。取消會清掉記錄表那一堂的上課日期與會議連結，Zoom 會議本身不會被刪除。</p>
+        <p class="muted">這些課寫在學生的課程記錄表裡（例如之前手寫的），不在預約表。取消會清掉記錄表那一堂的上課日期與會議連結，並刪除行事曆上同一時間、標題含學生名字的事件；Zoom 會議本身不會被刪除。</p>
         ${A.rec.map(r => `<div class="item"><div>${esc(r.start.slice(0, 10).replace(/-/g, '/'))} ${r.start.slice(11)}–${r.end.slice(11)}<div class="muted">${esc(r.name)}　記錄表</div></div>
           <button class="danger" data-reccancel data-name="${esc(r.name)}" data-start="${esc(r.start)}">取消這堂課</button></div>`).join('')}` : ''}
       <p class="muted">改成「已確認／待確認」會把時段放回行事曆；改成其他狀態會移除行事曆事件。私下預約改成已確認時會建立 Zoom 並寫入記錄表。</p></div>` : ''}
@@ -243,7 +243,7 @@ function renderAdmin() {
   $app.querySelectorAll('[data-sec]').forEach(b => b.onclick = async () => { A.sec = b.dataset.sec; A.msg = null; try { localStorage.setItem('thaiskr_admin_sec', A.sec); } catch (e) {} renderAdmin(); window.scrollTo(0, 0);  loadRec(); });
   const oa = document.getElementById('onlyAct'); if (oa) oa.onchange = e => { A.onlyActive = e.target.checked; renderAdmin(); };
   $app.querySelectorAll('[data-cancel]').forEach(b => b.onclick = () => { if (confirm('確定取消這堂課？時段會釋放，也請記得到 AmazingTalker 取消。')) act('adminSetStatus', '已取消這堂課', b.dataset.cancel, '已取消'); });
-  $app.querySelectorAll('[data-reccancel]').forEach(b => b.onclick = () => { if (confirm('取消 ' + b.dataset.name + ' ' + b.dataset.start + ' 這堂課？會清掉記錄表那一堂的日期與連結。')) act('adminCancelRecordLesson', '已從記錄表取消這堂課', b.dataset.name, b.dataset.start); });
+  $app.querySelectorAll('[data-reccancel]').forEach(b => b.onclick = () => { if (confirm('取消 ' + b.dataset.name + ' ' + b.dataset.start + ' 這堂課？會清掉記錄表那一堂的日期與連結，並刪除行事曆上同一時間、標題含學生名字的事件。')) act('adminCancelRecordLesson', '已從記錄表取消這堂課', b.dataset.name, b.dataset.start); });
   $app.querySelectorAll('[data-bk]').forEach(sel => sel.onchange = () => {
     if (sel.value === sel.dataset.old) return;
     if (!confirm('把這筆預約改成「' + sel.value + '」？')) { sel.value = sel.dataset.old; return; }
