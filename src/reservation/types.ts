@@ -9,6 +9,8 @@ export interface StudentView {
   lastLesson: { date: string; progress: string; next: string } | null
   lessons: { bought: number; used: number; booked: number; left: number; len: number; leftMinutes: number } | null
   upcoming: Upcoming[]
+  /** 這位學生目前可進入的課程（對應 categories.ts 的 key）。後端還沒提供時為 undefined */
+  courses?: string[]
 }
 
 // ───────── 老師管理頁 ─────────

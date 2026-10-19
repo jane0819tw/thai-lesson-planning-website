@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { CATEGORIES } from '../categories'
+import { setSession } from './session'
 import { getApi } from './api'
 import type { StudentView } from './types'
 import './booking.css'
@@ -32,6 +34,8 @@ export default function BookingPage() {
 
   const load = useCallback(async () => { setView(await api.getStudentView(token)) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { load().catch(e => setError(e.message)) }, [load])
+  // 記住這位學生，讓其他頁面的頁首能回到「我的預約」
+  useEffect(() => { if (token && view && view.mode === 'known') setSession({ token, name: view.name }) }, [token, view])
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(i) }, [])
 
   if (error) return <div className="bk"><div className="bk-msg err">{error}</div></div>
@@ -53,6 +57,9 @@ export default function BookingPage() {
   const second = L === 50 && curTime ? addMin(curTime, 30) : null
   const monthLabel = (m: string) => (m.slice(0, 4) !== months[0].slice(0, 4) ? m.slice(0, 4) + '年' : '') + +m.slice(5) + '月'
   const l = view.lessons
+  // 可進入的課程：後端有給清單就照清單；還沒給時，已建檔的學生先預設可進「泰文認字課程」（權限設計之後再接）
+  const allowed = view.courses ?? (view.mode === 'known' ? ['reading'] : [])
+  const myCourses = CATEGORIES.filter(c => allowed.includes(c.key))
 
   const refresh = async () => { try { await load(); setMsg(null) } catch (e) { setMsg({ ok: false, text: (e as Error).message }) } }
   const submit = async () => {
@@ -71,9 +78,24 @@ export default function BookingPage() {
       <h1>預約泰語課</h1>
       <p className="bk-sub">{view.name ? `${view.name}，你好！` : ''}選擇課長與時段，送出後等老師確認，確認後可在這個頁面看到 Zoom 連結。時間皆為台北時間。</p>
 
-      {l && (
+      {myCourses.length > 0 && (
         <div className="bk-card">
           <h2>我的課程</h2>
+          <ul className="bk-courses">
+            {myCourses.map(c => (
+              <li key={c.key}>
+                {c.to
+                  ? <Link to={c.to} className="bk-course"><strong>{c.title}</strong><small>{c.desc}</small><span className="bk-go">進入 →</span></Link>
+                  : <div className="bk-course off"><strong>{c.title}</strong><small>{c.desc}</small><span className="bk-muted">即將推出</span></div>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {l && (
+        <div className="bk-card">
+          <h2>堂數</h2>
           <p style={{ margin: 0 }}>
             <strong className="bk-big">剩餘 {l.left} 堂</strong><br />
             <span className="bk-muted">{fixed ? `${fixed} 分鐘課程包・` : ''}已購 {l.bought} 堂・已上 {l.used} 堂{l.booked ? `・已預約 ${l.booked} 堂（尚未上課）` : ''}</span>

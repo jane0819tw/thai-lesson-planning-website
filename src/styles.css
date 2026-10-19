@@ -268,3 +268,6 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .hw-sum { background: var(--bg); border: 1px dashed var(--line); border-radius: 12px; padding: 12px; white-space: pre-wrap; font: inherit; margin: 8px 0 12px; }
 .hw-submit { margin-top: 16px; }
 .gbtn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mybook { font-size: .9rem; text-decoration: none; padding: 4px 12px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }

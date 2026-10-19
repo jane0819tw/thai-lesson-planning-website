@@ -80,3 +80,11 @@
 @keyframes ad-in { to { opacity: 1; } }
 @keyframes ad-spin { to { transform: rotate(360deg); } }
 .ad-newbar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 40; display: flex; gap: 12px; align-items: center; max-width: calc(100% - 32px); padding: 10px 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--accent); box-shadow: 0 6px 20px rgba(0,0,0,.2); }
+
+/* 我的課程入口 */
+.bk-courses { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.bk-course { display: grid; gap: 2px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); color: var(--fg); text-decoration: none; }
+a.bk-course:hover { border-color: var(--accent); }
+.bk-course small { color: var(--muted); }
+.bk-course.off { opacity: .55; }
+.bk-go { margin-top: 6px; color: var(--accent); font-weight: 600; font-size: .9rem; }
