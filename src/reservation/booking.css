@@ -100,3 +100,7 @@ a.bk-course:hover { border-color: var(--accent); }
 .mgr-courses label { display: inline-flex; gap: 6px; align-items: center; margin: 0; color: var(--fg); }
 
 .mgr-diag { white-space: pre-wrap; font: .8rem/1.5 ui-monospace, monospace; background: var(--accent-soft); border: 1px dashed var(--accent); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+
+.bk a.mgr-tool { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 10px; min-height: 40px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--fg); text-decoration: none; text-align: center; }
+.bk a.mgr-tool:hover { border-color: var(--accent); color: var(--accent); }
+@media (max-width: 720px) { .bk a.mgr-tool { margin-top: 0; flex: 0 0 auto; white-space: nowrap; } }

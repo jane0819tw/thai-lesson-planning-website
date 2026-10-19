@@ -158,6 +158,8 @@ export default function AdminPage() {
           {SECS.map(([k, n]) => (
             <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}</button>
           ))}
+          {/* 其他工具：另開分頁，不影響這頁尚未儲存的開放時段 */}
+          <a className="mgr-tool" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
         </nav>
         <div className="mgr-content">
           {sec === 'sched' && (
