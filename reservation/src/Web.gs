@@ -7,7 +7,7 @@
 const PUBLIC_API_ = { getStudentView: getStudentView, submitBooking: submitBooking };
 const ADMIN_API_ = {
   adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminSaveRules: adminSaveRules,
-  adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord,
+  adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetCourses: adminSetCourses,
   adminGetRecordSessions: adminGetRecordSessions, adminCancelRecordLesson: adminCancelRecordLesson,
 };
 
@@ -68,7 +68,7 @@ function readStudents_() {
   const sh = getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS);
   if (sh.getLastRow() < 2) return [];
   return sh.getRange(2, 1, sh.getLastRow() - 1, STUDENT_HEADERS.length).getValues()
-    .map(function (r, i) { return { row: i + 2, name: r[0], display: r[1], email: r[2], note: r[3], token: r[4], '課程記錄表': r[5] }; });
+    .map(function (r, i) { return { row: i + 2, name: r[0], display: r[1], email: r[2], note: r[3], token: r[4], '課程記錄表': r[5], courses: parseCourses_(r[6]) }; });
 }
 
 function newToken_() { return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, ''); }
@@ -120,6 +120,7 @@ function getStudentView(token) {
   const v = { mode: s ? 'known' : 'generic', name: s ? s.name : '', days: openDays_(), lessons: null, upcoming: [], asOf: Utilities.formatDate(new Date(), CONFIG.TZ, 'yyyy-MM-dd HH:mm:ss') };
   if (s) {
     const rec = s['課程記錄表'] ? readRecordBundle_(s['課程記錄表']) : null;
+    v.courses = s.courses;
     v.lessons = rec ? rec.summary : null;
     v.lastLesson = rec ? rec.last : null;
     const bks = readBookings_().filter(function (b) {
@@ -179,7 +180,7 @@ function adminGetState() {
   const pending = readBookings_().filter(function (b) { return b['來源'] === '私下' && b['狀態'] === STATUS.PENDING; })
     .map(function (b) { return { id: b['編號'], name: b['學生'], start: toLocalStr_(b['開始']), length: b['課長'], note: b['備註'] }; });
   const students = readStudents_().map(function (s) {
-    return { name: s.name, email: s.email, token: s.token || '', record: s['課程記錄表'] || '' };
+    return { name: s.name, email: s.email, token: s.token || '', record: s['課程記錄表'] || '', courses: s.courses };
   });
   // 所有來源、尚未結束（或一天內剛結束）的預約，供老師頁直接調整狀態
   const since = Date.now() - 86400000;
@@ -296,6 +297,15 @@ function adminSetRecord(name, url) {
     if (!/^https:\/\/docs\.google\.com\/spreadsheets\/d\/[\w-]+/.test(url) && !/^[\w-]{20,}$/.test(url)) throw new Error('請貼上 Google 試算表的網址');
   }
   getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).getRange(s.row, STUDENT_HEADERS.indexOf('課程記錄表') + 1).setValue(url);
+  return true;
+}
+
+/** 設定學生可進入的課程（課程代號清單，見 Courses.gs；空陣列＝都不開放） */
+function adminSetCourses(name, courses) {
+  const s = readStudents_().filter(function (x) { return x.name === name; })[0];
+  if (!s) throw new Error('找不到學生');
+  const clean = cleanCourses_(courses);
+  getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).getRange(s.row, STUDENT_HEADERS.indexOf('可進入課程') + 1).setValue(clean.join(','));
   return true;
 }
 

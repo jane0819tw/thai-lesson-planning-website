@@ -42,3 +42,11 @@ AmazingTalker 通知信 → Gmail 標籤 → Apps Script → 試算表 + 行事�
 - 學生送出私下預約時，`src/Line.gs` 的 `notifyTeacher_` 會推 LINE 給老師（失敗只記錄，不影響預約）。
 - 設定：LINE Developers 建 Messaging API channel → 發行 Channel access token；老師用自己的 LINE 加該官方帳號為好友；User ID 在 channel 的 Basic settings 最下方「Your user ID」。
 - 在「專案設定 → 指令碼屬性」新增 `LINE_CHANNEL_TOKEN`、`LINE_USER_ID`，執行 `testLineNotify` 驗證，再「管理部署作業 → 新版本」。
+
+## 學生可進入的課程（2026-10）
+- 「學生」分頁多一欄 **可進入課程**（第 7 欄），值是逗號分隔的課程代號，例如 `reading:1,reading:2,video`。老師在管理頁「學生」分頁勾選後按儲存，會自動寫入（`adminSetCourses`）。
+- 開放單位：**認字課程每 5 課一個單位**（`reading:1` ＝ L1–L5、`reading:2` ＝ L6–L10 …，課數增加時自動多出單位）；其他課程整門開放，代號是網站 `src/categories.ts` 的 key（目前有 `video`）。
+- 學生頁（`getStudentView`）回傳 `courses`，「我的課程」卡片只列出已開放的單位與其課程連結。
+- 部署：貼入新的 `src/Courses.gs`、`Config.gs`、`Web.gs` → 執行一次 `setup`（補上第 7 欄標題）→「管理部署作業 → 新版本」。**既有學生的這欄是空的＝沒有開放任何課程**，要到管理頁逐一勾選。
+- 注意：這只控制「學生頁顯示哪些入口」。課程頁本身是公開的靜態網頁，沒有登入保護。
+- 測試：`node tests/courses.test.js`

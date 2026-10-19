@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { CATEGORIES } from '../categories'
+import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import { setSession } from './session'
 import { getApi } from './api'
 import type { StudentView } from './types'
@@ -31,6 +31,7 @@ export default function BookingPage() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
   const [now, setNow] = useState(Date.now())
+  const lessons = useLessons()
 
   const load = useCallback(async () => { setView(await api.getStudentView(token)) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { load().catch(e => setError(e.message)) }, [load])
@@ -57,9 +58,11 @@ export default function BookingPage() {
   const second = L === 50 && curTime ? addMin(curTime, 30) : null
   const monthLabel = (m: string) => (m.slice(0, 4) !== months[0].slice(0, 4) ? m.slice(0, 4) + '年' : '') + +m.slice(5) + '月'
   const l = view.lessons
-  // 可進入的課程：後端有給清單就照清單；還沒給時，已建檔的學生先預設可進「泰文認字課程」（權限設計之後再接）
-  const allowed = view.courses ?? (view.mode === 'known' ? ['reading'] : [])
-  const myCourses = CATEGORIES.filter(c => allowed.includes(c.key))
+  // 可進入的課程：老師在「學生」分頁勾選（存在試算表）。認字課每 5 課一個單位
+  const allowed = view.courses ?? []
+  const myUnits = readingUnits(lessons.map(x => x.number)).filter(u => allowed.includes(u.id))
+  const myWhole = WHOLE_COURSES.filter(c => allowed.includes(c.key))
+  const hasCourses = myUnits.length > 0 || myWhole.length > 0
 
   const refresh = async () => { try { await load(); setMsg(null) } catch (e) { setMsg({ ok: false, text: (e as Error).message }) } }
   const submit = async () => {
@@ -78,18 +81,35 @@ export default function BookingPage() {
       <h1>預約泰語課</h1>
       <p className="bk-sub">{view.name ? `${view.name}，你好！` : ''}選擇課長與時段，送出後等老師確認，確認後可在這個頁面看到 Zoom 連結。時間皆為台北時間。</p>
 
-      {myCourses.length > 0 && (
+      {view.mode === 'known' && (
         <div className="bk-card">
           <h2>我的課程</h2>
-          <ul className="bk-courses">
-            {myCourses.map(c => (
-              <li key={c.key}>
-                {c.to
-                  ? <Link to={c.to} className="bk-course"><strong>{c.title}</strong><small>{c.desc}</small><span className="bk-go">進入 →</span></Link>
-                  : <div className="bk-course off"><strong>{c.title}</strong><small>{c.desc}</small><span className="bk-muted">即將推出</span></div>}
-              </li>
-            ))}
-          </ul>
+          {hasCourses ? (
+            <>
+              {myUnits.length > 0 && (
+                <div className="bk-unit-group">
+                  <strong>泰文認字課程</strong>
+                  {myUnits.map(u => (
+                    <div className="bk-unit" key={u.id}>
+                      <span className="bk-unit-h">{unitLabel(u)}</span>
+                      <ul className="bk-lessons">
+                        {lessons.filter(x => x.number >= u.from && x.number <= u.to).map(x => (
+                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link></li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {myWhole.length > 0 && (
+                <ul className="bk-courses">
+                  {myWhole.map(c => (
+                    <li key={c.key}><Link to={c.to!} className="bk-course"><strong>{c.title}</strong><small>{c.desc}</small><span className="bk-go">進入 →</span></Link></li>
+                  ))}
+                </ul>
+              )}
+            </>
+          ) : <p className="bk-muted" style={{ margin: 0 }}>目前還沒有開放的課程，請聯絡老師。</p>}
         </div>
       )}
 

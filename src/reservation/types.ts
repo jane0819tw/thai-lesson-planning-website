@@ -9,7 +9,7 @@ export interface StudentView {
   lastLesson: { date: string; progress: string; next: string } | null
   lessons: { bought: number; used: number; booked: number; left: number; len: number; leftMinutes: number } | null
   upcoming: Upcoming[]
-  /** 這位學生目前可進入的課程（對應 categories.ts 的 key）。後端還沒提供時為 undefined */
+  /** 這位學生目前可進入的課程代號：reading:<n>（認字課每 5 課一個單位）或 categories.ts 的 key。舊版後端沒有這欄時為 undefined */
   courses?: string[]
 }
 
@@ -17,7 +17,7 @@ export interface StudentView {
 export interface Rule { type: '每週' | '單次' | '限定' | '休假'; weekday: number | ''; date: string; start: string; end: string; label?: string }
 export interface Booking { id: string; source: string; name: string; start: string; length: number; status: string }
 export interface Pending { id: string; name: string; start: string; length: number; note: string }
-export interface StudentRow { name: string; email: string; token: string; record?: string }
+export interface StudentRow { name: string; email: string; token: string; record?: string; courses: string[] }
 export interface AdminState { rules: Rule[]; bookings: Booking[]; pending: Pending[]; students: StudentRow[] }
 export interface WeekLesson { id: string; name: string; source: string; status: string; len: number; start: number; end: number }
 export interface WeekEvent { title: string; start: number; end: number }

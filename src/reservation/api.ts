@@ -14,6 +14,7 @@ interface Api {
   adminCreateStudent(name: string, email: string): Promise<boolean>
   adminRenewLink(name: string): Promise<boolean>
   adminSetRecord(name: string, url: string): Promise<boolean>
+  adminSetCourses(name: string, courses: string[]): Promise<boolean>
   adminGetRecordSessions(): Promise<RecSession[]>
   adminCancelRecordLesson(name: string, start: string): Promise<boolean>
 }
@@ -44,6 +45,7 @@ const real: Api = {
   adminCreateStudent: (n, e) => call('adminCreateStudent', [n, e]),
   adminRenewLink: n => call('adminRenewLink', [n]),
   adminSetRecord: (n, u) => call('adminSetRecord', [n, u]),
+  adminSetCourses: (n, c) => call('adminSetCourses', [n, c]),
   adminGetRecordSessions: () => call('adminGetRecordSessions', []),
   adminCancelRecordLesson: (n, s) => call('adminCancelRecordLesson', [n, s]),
 }
@@ -67,7 +69,7 @@ const db: AdminState = {
     { id: 'B0021', source: 'AmazingTalker', name: 'Jenny', start: `${day(2)} 21:00`, length: 50, status: '已過期' },
   ],
   pending: [{ id: 'B0020', name: 'Amy', start: `${day(1)} 19:00`, length: 50, note: 'Email: amy@example.com' }],
-  students: [{ name: 'Jenny', email: 'jenny@example.com', token: 'abc123', record: 'https://docs.google.com/spreadsheets/d/xxx' }],
+  students: [{ name: 'Jenny', email: 'jenny@example.com', token: 'abc123', record: 'https://docs.google.com/spreadsheets/d/xxx', courses: ['reading:1', 'video'] }],
 }
 const week = (d: string): Week => {
   const base = d || day(0)
@@ -97,7 +99,7 @@ const mock: Api = {
     asOf: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 19).replace('T', ' '),
     lastLesson: t ? { date: '2026-09-25', progress: '會話Level2L3第一頁', next: '會話Level2L3第2頁開始' } : null,
     lessons: t ? { bought: 10, used: 3, booked: 3, left: 7, len: 25, leftMinutes: 175 } : null,
-    courses: t ? ['reading', 'video'] : [],
+    courses: t ? ['reading:1', 'video'] : [],
     upcoming: t ? [
       { start: `${day(0)} ${hhmm(5)}`, end: `${day(0)} ${hhmm(35)}`, length: 25, count: 1, status: '已確認', zoom: 'https://zoom.us/j/123' },
       { start: `${day(2)} 09:00`, end: `${day(2)} 10:00`, length: 25, count: 2, status: '已確認', zoom: 'https://zoom.us/j/456' },
@@ -109,9 +111,10 @@ const mock: Api = {
   adminGetWeek: d => delay(week(d)),
   adminSaveRules: r => { db.rules = r; return delay(true) },
   adminSetStatus: (id, st) => { db.pending = db.pending.filter(p => p.id !== id); db.bookings.forEach(b => { if (b.id === id) b.status = st }); return delay(true) },
-  adminCreateStudent: n => { if (!n) return Promise.reject(new Error('請填姓名')); db.students.push({ name: n, email: '', token: '' }); return delay(true) },
+  adminCreateStudent: n => { if (!n) return Promise.reject(new Error('請填姓名')); db.students.push({ name: n, email: '', token: '', courses: [] }); return delay(true) },
   adminRenewLink: n => { db.students.forEach(s => { if (s.name === n) s.token = Math.random().toString(36).slice(2) }); return delay(true) },
   adminSetRecord: (n, u) => { db.students.forEach(s => { if (s.name === n) s.record = u }); return delay(true) },
+  adminSetCourses: (n, c) => { db.students.forEach(s => { if (s.name === n) s.courses = c }); return delay(true) },
   adminGetRecordSessions: () => delay([{ name: 'Ariel', start: `${day(3)} 09:00`, end: `${day(3)} 09:30` }, { name: 'Ariel', start: `${day(3)} 09:30`, end: `${day(3)} 10:00` }]),
   adminCancelRecordLesson: () => delay(true),
 }

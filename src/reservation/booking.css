@@ -88,3 +88,13 @@ a.bk-course:hover { border-color: var(--accent); }
 .bk-course small { color: var(--muted); }
 .bk-course.off { opacity: .55; }
 .bk-go { margin-top: 6px; color: var(--accent); font-weight: 600; font-size: .9rem; }
+
+.bk-unit-group { margin-bottom: 12px; }
+.bk-unit { margin-top: 8px; }
+.bk-unit-h { display: inline-block; font-size: .8rem; background: var(--accent-soft); color: var(--accent); padding: 1px 10px; border-radius: 99px; }
+.bk-lessons { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+.bk-lessons a { display: block; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--fg); text-decoration: none; }
+.bk-lessons a:hover { border-color: var(--accent); }
+.bk-lessons b { color: var(--accent); margin-right: 4px; }
+.ad-courses { flex-basis: 100%; display: flex; gap: 6px 14px; flex-wrap: wrap; align-items: center; padding-top: 4px; }
+.ad-courses label { display: inline-flex; gap: 6px; align-items: center; margin: 0; color: var(--fg); }

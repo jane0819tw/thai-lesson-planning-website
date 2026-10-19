@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getAdminKey, getApi, setAdminKey } from './api'
 import ScheduleGrid from './ScheduleGrid'
+import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
+import type { Unit } from './access'
 import { buildDraft, paintCells, serialize, setHoliday } from './schedule'
 import type { Draft } from './schedule'
 import type { AdminState, RecSession, StudentRow, Week } from './types'
@@ -38,6 +40,7 @@ export default function AdminPage() {
   const [newBar, setNewBar] = useState('')
   const [busy, setBusy] = useState({ n: 0, text: '' })
   const seen = useRef<Set<string> | null>(null)
+  const units = readingUnits(useLessons().map(l => l.number))
 
   // 讀取／儲存期間：蓋一層遮罩＋轉圈圈（太快完成的操作 0.3 秒內不顯示，見 CSS）
   const run = useCallback(async <T,>(text: string, f: () => Promise<T>): Promise<T> => {
@@ -237,7 +240,8 @@ export default function AdminPage() {
             <div className="bk-card">
               <h2>學生預約連結</h2>
               {st.students.length ? st.students.map(s => (
-                <StudentItem key={s.name} s={s}
+                <StudentItem key={s.name} s={s} units={units}
+                  onSaveCourses={list => act('儲存開放課程中…', () => api.adminSetCourses(s.name, list), `已儲存 ${s.name} 的開放課程`, true)}
                   onRenew={() => { if (confirm('舊連結會立刻失效，確定嗎？')) act('產生新連結中…', () => api.adminRenewLink(s.name), '已產生新連結') }}
                   onSaveRec={url => act('儲存課程記錄表中…', () => api.adminSetRecord(s.name, url), '已儲存課程記錄表', true)} />
               )) : <p className="bk-muted">還沒有學生。</p>}
@@ -265,8 +269,9 @@ export default function AdminPage() {
 
 const Busy = ({ text }: { text: string }) => <div className="ad-busy"><div><i /><span>{text}</span></div></div>
 
-function StudentItem({ s, onRenew, onSaveRec }: { s: StudentRow; onRenew: () => void; onSaveRec: (url: string) => void }) {
+function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses }: { s: StudentRow; units: Unit[]; onRenew: () => void; onSaveRec: (url: string) => void; onSaveCourses: (list: string[]) => void }) {
   const [url, setUrl] = useState(s.record ?? '')
+  const [courses, setCourses] = useState<string[]>(s.courses)
   const [copied, setCopied] = useState(false)
   return (
     <div className="bk-item">
@@ -275,6 +280,13 @@ function StudentItem({ s, onRenew, onSaveRec }: { s: StudentRow; onRenew: () => 
         {s.token && <button onClick={() => navigator.clipboard.writeText(linkOf(s)).then(() => setCopied(true))}>{copied ? '已複製' : '複製連結'}</button>}
         <button onClick={onRenew}>{s.token ? '換新連結' : '產生連結'}</button>
       </div>
+      <div className="ad-courses">
+        <span className="bk-muted">開放課程</span>
+        {[...units.map(u => ({ id: u.id, label: `認字 ${unitLabel(u)}` })), ...WHOLE_COURSES.map(c => ({ id: c.key, label: c.title }))].map(o => (
+          <label key={o.id}><input type="checkbox" checked={courses.includes(o.id)} onChange={e => setCourses(c => (e.target.checked ? [...c, o.id] : c.filter(x => x !== o.id)))} />{o.label}</label>
+        ))}
+        <button disabled={sameSet(courses, s.courses)} onClick={() => onSaveCourses(courses)}>儲存</button>
+      </div>
       <div className="bk-row" style={{ flexBasis: '100%' }}>
         <input style={{ flex: 1, minWidth: 200 }} placeholder="課程記錄表（試算表網址）" value={url} onChange={e => setUrl(e.target.value)} />
         <button onClick={() => onSaveRec(url)}>儲存</button>
@@ -282,6 +294,8 @@ function StudentItem({ s, onRenew, onSaveRec }: { s: StudentRow; onRenew: () => 
     </div>
   )
 }
+
+const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every(x => b.includes(x))
 
 function NewStudent({ onAdd }: { onAdd: (name: string, email: string) => void }) {
   const [n, setN] = useState(''), [e, setE] = useState('')
