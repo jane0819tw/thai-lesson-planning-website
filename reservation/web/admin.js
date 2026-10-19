@@ -1,5 +1,6 @@
 /* ---------------- 老師管理頁 ---------------- */
-const linkOf = s => new URL('index.html?t=' + s.token, location.href).href;
+// 學生預約頁已併入認字網站（React，#/book）；老師頁放在 <網站>/reservation-admin/，所以往上一層就是網站根目錄
+const linkOf = s => new URL('../#/book?t=' + s.token, location.href).href;
 const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生']];
 const secGet = () => { try { const v = localStorage.getItem('thaiskr_admin_sec'); return SECS.some(x => x[0] === v) ? v : 'sched'; } catch (e) { return 'sched'; } };
 const A = { sec: secGet(), rec: null, st: null, msg: null, wk: null, wkDate: '', today: '', tab: 'cal', dirty: false, reg: {}, ov: {} };

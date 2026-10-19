@@ -1,3 +1,7 @@
+> **已併入認字網站（2026-10）**：學生預約頁改成 React 頁面 `src/reservation/`（網址 `#/book?t=<預約代碼>`，加 `&mock=1` 用假資料）。
+> 老師管理頁尚未改寫，仍用本資料夾 `web/admin.html`，由網站提供在 `/reservation-admin/admin.html`（見 `scripts/legacy-admin-plugin.mjs`）。
+> `web/index.html`、`web/student.js` 為舊版學生頁，已不再使用。Apps Script 後端（`src/*.gs`）不變。
+
 # 泰時刻約課系統 — 第一版（功能 A）
 
 AmazingTalker 通知信 → Gmail 標籤 → Apps Script → 試算表 + 行事曆。

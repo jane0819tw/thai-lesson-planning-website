@@ -1,0 +1,30 @@
+/* 預約頁：全部限定在 .bk 底下，不影響其他頁面 */
+.bk { --bk-ok: #15803d; --bk-err: #b91c1c; max-width: 640px; margin: 0 auto; }
+@media (prefers-color-scheme: dark) { .bk { --bk-ok: #4ade80; --bk-err: #f87171; } }
+.bk h1 { font-size: 1.4rem; margin: 0 0 4px; }
+.bk h2 { font-size: 1.05rem; margin: 0 0 12px; }
+.bk-sub { color: var(--muted); margin: 0 0 20px; }
+.bk-muted { color: var(--muted); font-size: .9rem; }
+.bk-big { font-size: 1.4rem; }
+.bk-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+.bk-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.bk-row.between { justify-content: space-between; }
+.bk button { cursor: pointer; font: inherit; color: inherit; border: 1px solid var(--line); background: var(--accent-soft); border-radius: 8px; padding: 8px 14px; min-height: 40px; }
+.bk button.sel, .bk button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+.bk button.primary { font-weight: 600; }
+.bk button.sel .bk-muted { color: inherit; opacity: .85; }
+.bk button:disabled { opacity: .5; cursor: default; }
+.bk input { font: inherit; color: inherit; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 8px 10px; min-height: 40px; }
+.bk input.full { width: 100%; margin-bottom: 10px; }
+.bk label { display: block; margin: 0 0 4px; font-size: .9rem; color: var(--muted); }
+.bk-days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
+.bk-days button { flex: 0 0 auto; text-align: center; line-height: 1.3; min-width: 64px; }
+.bk-tag { font-size: .75rem; color: var(--bk-err); }
+.bk-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.bk-slots button:disabled { text-decoration: line-through; }
+.bk-item { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.bk-item:first-of-type { border-top: 0; }
+.bk-note { flex-basis: 100%; background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; white-space: pre-line; }
+.bk-msg { padding: 10px 12px; border-radius: 8px; margin: 12px 0; }
+.bk-msg.ok { background: color-mix(in srgb, var(--bk-ok) 15%, transparent); color: var(--bk-ok); }
+.bk-msg.err { background: color-mix(in srgb, var(--bk-err) 15%, transparent); color: var(--bk-err); }
