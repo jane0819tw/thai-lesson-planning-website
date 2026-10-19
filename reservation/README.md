@@ -1,6 +1,6 @@
-> **已併入認字網站（2026-10）**：學生預約頁改成 React 頁面 `src/reservation/`（網址 `#/book?t=<預約代碼>`，加 `&mock=1` 用假資料）。
-> 老師管理頁尚未改寫，仍用本資料夾 `web/admin.html`，由網站提供在 `/reservation-admin/admin.html`（見 `scripts/legacy-admin-plugin.mjs`）。
-> `web/index.html`、`web/student.js` 為舊版學生頁，已不再使用。Apps Script 後端（`src/*.gs`）不變。
+> **已併入認字網站（2026-10）**：學生預約頁與老師管理頁都改成 React，放在 `src/reservation/`。
+> - 學生頁：`#/book?t=<預約代碼>`　老師頁：`#/admin`（加 `?mock=1` 用假資料，不碰真實試算表）。
+> - 本資料夾只剩 Apps Script 後端（`src/*.gs`）、測試與開發文件；下方關於 `web/` 的說明是舊版，僅供參考。
 
 # 泰時刻約課系統 — 第一版（功能 A）
 

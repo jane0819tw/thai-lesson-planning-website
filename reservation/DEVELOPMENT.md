@@ -1,3 +1,5 @@
+> **注意（2026-10）**：前端 `web/` 已搬到認字網站的 `src/reservation/`（React）：學生頁 `#/book`、老師頁 `#/admin`，原 `student.js`／`admin.js` 的邏輯對應 `BookingPage.tsx`／`AdminPage.tsx`／`schedule.ts`。下文提到 `web/` 的地方是舊版說明；Apps Script 後端不變。
+
 # 泰時刻約課系統 — 開發文件
 
 > 依 2026-10-13 的程式碼整理。部署步驟見 [README.md](README.md)，這份文件說明「目前有哪些功能、怎麼運作、改哪裡」。

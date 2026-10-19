@@ -10,3 +10,15 @@ export interface StudentView {
   lessons: { bought: number; used: number; booked: number; left: number; len: number; leftMinutes: number } | null
   upcoming: Upcoming[]
 }
+
+// ───────── 老師管理頁 ─────────
+export interface Rule { type: '每週' | '單次' | '限定' | '休假'; weekday: number | ''; date: string; start: string; end: string; label?: string }
+export interface Booking { id: string; source: string; name: string; start: string; length: number; status: string }
+export interface Pending { id: string; name: string; start: string; length: number; note: string }
+export interface StudentRow { name: string; email: string; token: string; record?: string }
+export interface AdminState { rules: Rule[]; bookings: Booking[]; pending: Pending[]; students: StudentRow[] }
+export interface WeekLesson { id: string; name: string; source: string; status: string; len: number; start: number; end: number }
+export interface WeekEvent { title: string; start: number; end: number }
+export interface WeekDay { date: string; closed: string; open: number[]; allDay: string[]; lessons: WeekLesson[]; events: WeekEvent[] }
+export interface Week { monday: string; today: string; days: WeekDay[] }
+export interface RecSession { name: string; start: string; end: string }

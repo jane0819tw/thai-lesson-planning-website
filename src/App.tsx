@@ -3,6 +3,7 @@ import Home from './components/Home'
 import ReadingIndex from './components/ReadingIndex'
 import LessonPage from './components/LessonPage'
 import BookingPage from './reservation/BookingPage'
+import AdminPage from './reservation/AdminPage'
 import HomeworkPage from './components/HomeworkPage'
 import ChartPage from './components/ChartPage'
 import KeyboardPage from './components/KeyboardPage'
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/reading/lesson/:id" element={<LessonPage />} />
           <Route path="/reading/lesson/:id/homework" element={<HomeworkPage />} />
           <Route path="/book" element={<BookingPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="/video" element={<VideoIndex />} />
           <Route path="/video/:id" element={<VideoPage />} />
           <Route path="*" element={<p>找不到頁面。<Link to="/">回首頁</Link></p>} />
