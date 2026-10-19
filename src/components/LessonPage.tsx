@@ -11,9 +11,11 @@ import LetterDialog from './LetterDialog'
 import DiagramView from './DiagramView'
 import { vowelForm } from '../strokes'
 import VowelText from './VowelText'
-import Games from './Games'
+import Games, { vowelSyllables } from './Games'
 import RuleDemo from './RuleDemo'
 import ToneIntro from './ToneIntro'
+import VowelIntro from './VowelIntro'
+import { AssignBar } from './HomeworkPage'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
 type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'tones' | 'vocab' | 'practice' | 'homework' | 'memes'
@@ -34,16 +36,16 @@ export default function LessonPage() {
   const tabs = useMemo(() => {
     if (!lesson) return [] as [Tab, string][]
     const t: [Tab, string][] = []
-    if (lesson.rules.length) t.push(['rules', '說明'])
     if (lesson.diagram) t.push(['diagram', lesson.diagram.title])
-    if (lesson.consonants.length) t.push(['consonants', '子音'])
     if (lesson.vowels.length) t.push(['vowels', '母音'])
+    if (lesson.rules.length) t.push(['rules', '說明'])
+    if (lesson.consonants.length) t.push(['consonants', '子音'])
     if (lesson.toneTables.length) t.push(['tones', '聲調表'])
     if (lesson.vocab.length) t.push(['vocab', '單字'])
     if (lesson.practice.length || lesson.patterns.length) t.push(['practice', '練習・句型'])
-    if (lesson.homework.length || lesson.links.length) t.push(['homework', lesson.homework.length ? '作業・補充' : '補充連結'])
+    if (lesson.links.length) t.push(['homework', '補充連結'])
     if (lesson.memes.length) t.push(['memes', '梗圖'])
-    if (lesson.consonants.length >= 4) t.push(['games', '互動練習'])
+    if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6) t.push(['games', '互動練習'])
     if (lesson.extras.length) t.push(['extras', '補充'])
     return t
   }, [lesson])
@@ -69,7 +71,7 @@ export default function LessonPage() {
         </section>
       )}
 
-      {cur === 'games' && <Games consonants={lesson.consonants} />}
+      {cur === 'games' && <Games consonants={lesson.consonants} vowels={lesson.vowels} />}
 
       {cur === 'extras' && (
         <section className="stack">
@@ -103,17 +105,57 @@ export default function LessonPage() {
       )}
 
       {cur === 'vowels' && (
-        <section className="stack">
+        <>
+        {lesson.vowelIntro && <VowelIntro />}
+        <section className="vstack">
           {lesson.vowels.map(v => (
-            <article className="card" key={v.id}>
-              <h3><span className="th">{v.ipa}</span>　{[v.short, v.long].map((f, i) => <span key={i}>{i > 0 && ' / '}{f ? <button className="th big2 clickable" onClick={() => setOpenVowel({ char: vowelForm(f), ipa: v.ipa })} aria-label={`查看 ${vowelForm(f)} 的筆順`}><VowelText form={f} /></button> : <span className="th big2">—</span>}</span>)}</h3>
-              {v.note && <p className="muted small">{v.note}</p>}
-              {v.shortSyllables.length > 0 && <p><span className="chip">短音</span> {v.shortSyllables.map(s => <span key={s} className="syl th">{s}<SpeakButton text={s} /></span>)}</p>}
-              {v.longSyllables.length > 0 && <p><span className="chip">{v.short ? '長音' : '例'}</span> {v.longSyllables.map(s => <span key={s} className="syl th">{s}<SpeakButton text={s} /></span>)}</p>}
-              <WordList words={v.words} showZh={showZh} showRoman={showRoman} />
+            <article className="vcard" key={v.id}>
+              <div className="vhead">
+                <span className="vipa">{v.ipa}</span>
+                <div className="vforms">
+                  {[[v.short, '短音'], [v.long, v.short ? '長音' : '']].map(([f, label], i) => f ? (
+                    <button key={i} className="vform th" onClick={() => setOpenVowel({ char: vowelForm(f), ipa: v.ipa })} aria-label={`查看 ${vowelForm(f)} 的筆順`}>
+                      <span className="vglyph"><VowelText form={f} /></span>
+                      {label && <span className="vlabel">{label}</span>}
+                    </button>
+                  ) : null)}
+                </div>
+              </div>
+              {v.note && <p className="muted vnote">{v.note}</p>}
+              {(v.shortSyllables.length > 0 || v.longSyllables.length > 0) && (
+                <div className="tablewrap">
+                  <table className="vtable">
+                    <tbody>
+                      {[[v.shortSyllables, '短音'], [v.longSyllables, v.short ? '長音' : '例']].map(([list, label]) => (list as string[]).length > 0 && (
+                        <tr key={label as string}>
+                          <th scope="row">{label as string}</th>
+                          {Array.from({ length: Math.max(v.shortSyllables.length, v.longSyllables.length) }, (_, i) => (list as string[])[i]).map((s, i) => (
+                            <td key={i}>{s ? <span className="vsyl th">{s}<SpeakButton text={s} /></span> : <span className="muted">—</span>}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              {v.words.length > 0 && (
+                <div className="vwords">
+                  {v.words.map((w, i) => (
+                    <div className="vword" key={w.thai + i}>
+                      <span className="th vword-th">{w.star ? '＊' : ''}{w.thai}</span>
+                      <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
+                      <span className="vword-meta">
+                        {showRoman && w.roman && <span className="muted">{w.roman}</span>}
+                        {showZh && w.zh && <span>{w.zh}</span>}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </article>
           ))}
         </section>
+        </>
       )}
 
       {cur === 'tones' && (
@@ -144,9 +186,6 @@ export default function LessonPage() {
 
       {cur === 'homework' && (
         <section className="stack">
-          {lesson.homework.length > 0 && (
-            <article className="card"><h3>作業</h3><p className="th big2">{lesson.homework.join('　')}</p></article>
-          )}
           {lesson.links.length > 0 && (
             <article className="card"><h3>補充連結</h3><ul className="plain">{lesson.links.map(l => <li key={l.url}><a href={l.url} target="_blank" rel="noreferrer">{l.title}</a></li>)}</ul></article>
           )}
@@ -172,6 +211,8 @@ export default function LessonPage() {
       <p><Link to="/reading">← 認字課程</Link></p>
       <h1>L{lesson.number}　{lesson.title}</h1>
       <p className="muted">{lesson.summary}</p>
+
+      <AssignBar lessonId={lesson.id} />
 
       <div className="toolbar">
         <label><input type="checkbox" checked={showZh} onChange={e => setShowZh(e.target.checked)} /> 顯示中文翻譯</label>

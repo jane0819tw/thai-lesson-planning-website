@@ -2,6 +2,7 @@ import { Link, Route, Routes } from 'react-router-dom'
 import Home from './components/Home'
 import ReadingIndex from './components/ReadingIndex'
 import LessonPage from './components/LessonPage'
+import HomeworkPage from './components/HomeworkPage'
 import ChartPage from './components/ChartPage'
 import KeyboardPage from './components/KeyboardPage'
 import StrokeEditor from './components/StrokeEditor'
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/reading/keyboard" element={<KeyboardPage />} />
           <Route path="/reading/stroke-editor" element={<StrokeEditor />} />
           <Route path="/reading/lesson/:id" element={<LessonPage />} />
+          <Route path="/reading/lesson/:id/homework" element={<HomeworkPage />} />
           <Route path="/video" element={<VideoIndex />} />
           <Route path="/video/:id" element={<VideoPage />} />
           <Route path="*" element={<p>找不到頁面。<Link to="/">回首頁</Link></p>} />

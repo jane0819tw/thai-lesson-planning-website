@@ -29,5 +29,5 @@ export interface Lesson {
   id: string; number: number; title: string; summary: string; status: 'draft' | 'ready'
   rules: Rule[]; consonants: Consonant[]; vowels: Vowel[]; toneTables: ToneTable[]
   vocab: WordItem[]; practice: PracticeGroup[]; patterns: Pattern[]
-  homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean
+  homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean
 }
