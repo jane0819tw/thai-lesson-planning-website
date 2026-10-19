@@ -3,3 +3,6 @@ dist
 .DS_Store
 *.local
 *.timestamp-*.mjs
+
+# 含學生姓名與 Email 的信件樣本，不進版本控制
+data/gmail/
