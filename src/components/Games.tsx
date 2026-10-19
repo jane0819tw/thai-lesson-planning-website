@@ -164,7 +164,7 @@ export function VowelListenQuiz({ vowels, onDone }: { vowels: Vowel[]; onDone?: 
 export default function Games({ consonants, vowels }: { consonants: Consonant[]; vowels: Vowel[] }) {
   const hasC = consonants.length >= 4
   const hasV = vowelSyllables(vowels).length >= 6
-  const [g, setG] = useState<'listen' | 'memory' | 'vowel' | null>(hasC ? null : 'vowel')
+  const [g, setG] = useState<'listen' | 'memory' | 'vowel' | null>(null)
   return (
     <section className="stack">
       <article className="card">
