@@ -16,7 +16,7 @@ const same = (a: Set<number>, b: Set<number>) => a.size === b.size && [...a].eve
 export function buildDraft(rules: Rule[]): Draft {
   const reg: Draft['reg'] = {}
   for (let w = 1; w <= 7; w++) reg[w] = new Set()
-  rules.filter(r => r.type === '每週').forEach(r => fill(reg[+r.weekday], r.start, r.end))
+  rules.filter(r => r.type === '每週').forEach(r => { if (reg[+r.weekday]) fill(reg[+r.weekday], r.start, r.end) }) // 星期欄空白或不是 1–7 的壞資料直接略過
   const by: Record<string, Rule[]> = {}
   rules.filter(r => r.type !== '每週').forEach(r => (by[r.date] ??= []).push(r))
   const ov: Draft['ov'] = {}

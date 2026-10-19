@@ -40,6 +40,16 @@ export default function AdminPage() {
   const [newBar, setNewBar] = useState('')
   const [busy, setBusy] = useState({ n: 0, text: '' })
   const seen = useRef<Set<string> | null>(null)
+  // 診斷資訊：載入每一步的狀態與任何未捕捉的錯誤，直接顯示在頁面上（排查「畫面空白」用）
+  const [diag, setDiag] = useState<string[]>([])
+  const [fatal, setFatal] = useState('')
+  const step = useCallback((t: string) => setDiag(d => [...d, t]), [])
+  useEffect(() => {
+    const onErr = (e: ErrorEvent) => setFatal(e.message || String(e.error))
+    const onRej = (e: PromiseRejectionEvent) => setFatal('Promise：' + (e.reason?.message ?? String(e.reason)))
+    window.addEventListener('error', onErr); window.addEventListener('unhandledrejection', onRej)
+    return () => { window.removeEventListener('error', onErr); window.removeEventListener('unhandledrejection', onRej) }
+  }, [])
   const units = readingUnits(useLessons().map(l => l.number))
 
   // 讀取／儲存期間：蓋一層遮罩＋轉圈圈（太快完成的操作 0.3 秒內不顯示，見 CSS）
@@ -51,20 +61,25 @@ export default function AdminPage() {
 
   const loadWeek = useCallback(async (date: string) => {
     setWk(null); setWeekErr('')
-    try { setWk(await run('載入課表中…', () => api.adminGetWeek(date))) } catch (e) { setWeekErr((e as Error).message) }
-  }, [api, run])
+    try { const w = await run('載入課表中…', () => api.adminGetWeek(date)); step(`4 課表已收到：${w.days?.length} 天`); setWk(w) } catch (e) { step('✗ 課表失敗：' + (e as Error).message); setWeekErr((e as Error).message) }
+  }, [api, run, step])
 
   const init = useCallback(async () => {
     try {
+      step('1 讀取管理資料…')
       const s = await run('載入中…', () => api.adminGetState())
-      setSt(s); setDraft(buildDraft(s.rules)); setDirty(false)
+      step(`2 已收到：規則 ${s.rules?.length} 筆、待確認 ${s.pending?.length} 筆、預約 ${s.bookings?.length} 筆、學生 ${s.students?.length} 位`)
+      const d = buildDraft(s.rules)
+      setSt(s); setDraft(d); setDirty(false)
       seen.current = new Set(s.pending.map(p => p.id))
+      step('3 草稿建立完成，讀取本週課表…')
       loadWeek('')
     } catch (e) {
-      const m = (e as Error).message
-      if (/密鑰/.test(m)) { setAdminKey(''); setKeyMsg(m); setNeedKey(true) } else setKeyMsg(m)
+      const m = (e as Error).message || String(e)
+      step('✗ 失敗：' + m)
+      if (/密鑰/.test(m)) { setAdminKey(''); setKeyMsg(m); setNeedKey(true) } else setKeyMsg(m || '（沒有錯誤訊息）')
     }
-  }, [api, run, loadWeek])
+  }, [api, run, loadWeek, step])
   useEffect(() => { if (!needKey) init() }, [needKey, init])
 
   // 進入「所有預約」時才讀各學生的記錄表（每位要開一次檔，比較慢）
@@ -131,11 +146,12 @@ export default function AdminPage() {
       </div>
     )
   }
-  if (!st || !draft) return <div className="bk"><h1>老師管理</h1>{keyMsg ? <div className="bk-msg err">{keyMsg}</div> : <p className="bk-muted">載入中…</p>}{busy.n > 0 && <Busy text={busy.text} />}</div>
+  if (!st || !draft) return <div className="bk"><h1>老師管理</h1>{keyMsg ? <div className="bk-msg err">{keyMsg}</div> : <p className="bk-muted">載入中…</p>}<Diag lines={diag} fatal={fatal} always />{busy.n > 0 && <Busy text={busy.text} />}</div>
 
   return (
     <div className="bk wide">
       <h1>老師管理</h1>
+      <Diag lines={diag} fatal={fatal} />
       {msg && <div className={`bk-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
       <div className="ad-shell">
         <nav className="ad-side">
@@ -266,6 +282,10 @@ export default function AdminPage() {
     </div>
   )
 }
+
+const Diag = ({ lines, fatal, always }: { lines: string[]; fatal: string; always?: boolean }) => (fatal || always || lines.some(l => l.includes('✗'))) ? (
+  <pre className="ad-diag">{fatal && `頁面錯誤：${fatal}\n`}{lines.join('\n')}</pre>
+) : null
 
 const Busy = ({ text }: { text: string }) => <div className="ad-busy"><div><i /><span>{text}</span></div></div>
 
