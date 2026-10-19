@@ -39,7 +39,7 @@ export default function App() {
         </Routes>
         </ErrorBoundary>
       </main>
-      <footer className="foot">開發中</footer>
+      <footer className="foot">開發中　<span title="建置時間">v {__BUILD__}</span></footer>
     </>
   )
 }

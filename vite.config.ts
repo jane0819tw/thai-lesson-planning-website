@@ -6,5 +6,6 @@ import strokeSave from './scripts/stroke-save-plugin.mjs'
 // base './' => 不論部署在 GitHub Pages 的 /repo-name/ 還是 GCP 根路徑都能運作
 export default defineConfig({
   base: './',
+  define: { __BUILD__: JSON.stringify(new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC') },
   plugins: [react(), strokeSave()],
 })
