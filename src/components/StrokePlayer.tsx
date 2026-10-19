@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { STROKE_VIEWBOX as V, type StrokeData } from '../strokes'
+import { STROKE_VIEWBOX as V, guideLines, type StrokeData } from '../strokes'
+import { useMarkGhost } from '../markGhost'
 
 // 以 SVG 路徑動畫呈現筆順：講義風格的四線格＋灰色字形當底，筆尖圓點帶著筆畫「寫出來」。
 // 速度以「每秒走多少座標單位」計算，並設最短時間，短筆畫也不會一閃而過。
 const SPEEDS = { normal: { pps: 55, min: 1.4 }, slow: { pps: 24, min: 3 } } as const
 type Mode = keyof typeof SPEEDS
 const PAUSE_MS = 500
-// 四線格（對應 Noto Sans Thai Looped、字級 216、基線 216 時的位置）
-const GUIDES = [61, 94, 215, 258]
 
 export default function StrokePlayer({ char, data }: { char: string; data: StrokeData }) {
   const total = data.strokes.length
+  const mg = useMarkGhost(data.scale === 'mark' ? char : null) // 聲調符號：用字型畫真正的符號當底
   const [pos, setPos] = useState(0)          // 0..total；整數部分＝已完成筆數，小數＝目前這筆的進度
   const [mode, setMode] = useState<Mode | null>(null) // null＝未播放
   const posRef = useRef(0)
@@ -60,9 +60,11 @@ export default function StrokePlayer({ char, data }: { char: string; data: Strok
   return (
     <div className={`stroke${data.scale === 'mark' ? ' mark' : ''}`}>
       <svg viewBox={`0 0 ${V} ${V}`} role="img" aria-label={`${char} 的筆順`}>
-        {(data.scale === 'mark' ? GUIDES.slice(0, 2) : GUIDES).map((y, i) => <line key={y} x1={8} x2={V - 8} y1={y} y2={y} className={i === 2 ? 'guide base' : 'guide'} />)}
+        {(data.scale === 'mark' ? guideLines().slice(0, 2) : guideLines(data.fs)).map((y, i) => <line key={y} x1={8} x2={V - 8} y1={y} y2={y} className={i === 2 ? 'guide base' : 'guide'} />)}
         <line x1={V / 2} x2={V / 2} y1={30} y2={V - 20} className="guide v" />
-        {data.ghost === 'path'
+        {data.ghost === 'path' && mg
+          ? <text x={mg.x} y={mg.y} textAnchor="middle" fontSize={mg.fs} className="th ghost">{'\u00A0' + char}</text>
+          : data.ghost === 'path'
           ? data.strokes.map((d, i) => <path key={'g' + i} d={d} className="ghostpath" />)
           : <text x={V / 2} y={data.gy ?? 216} textAnchor="middle" fontSize={data.fs ?? 216} className="th ghost">{/[\u0e48-\u0e4b]/.test(char) ? '\u00A0' + char : char}</text>}
         {data.strokes.map((d, i) => (

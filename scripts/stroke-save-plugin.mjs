@@ -19,14 +19,17 @@ export default function strokeSave() {
         req.on('data', c => { body += c })
         req.on('end', () => {
           try {
-            const { char, strokes } = JSON.parse(body)
-            if (typeof char !== 'string' || !/^[ก-๛]{1,2}$/.test(char)) throw new Error('字母格式不正確')
+            const { char, strokes, fs, draft } = JSON.parse(body)
+            if (typeof char !== 'string' || !/^[ก-๛]{1,6}$/.test(char)) throw new Error('字母格式不正確')
+            if (fs !== undefined && !(typeof fs === 'number' && fs >= 60 && fs <= 216)) throw new Error('字級格式不正確')
             if (!Array.isArray(strokes) || !strokes.length || !strokes.every(s => typeof s === 'string' && PATH_RE.test(s))) throw new Error('筆畫格式不正確')
             const isMark = /^[่-๋]$/.test(char)
             const file = isMark ? join(strokesDir, 'marks.json') : join(strokesDir, 'chars', `${char}.json`)
             const all = readJson(file)
-            const { draft, ...rest } = all[char] ?? {} // 重新錄製後就不再是草稿；fs / gy 等其他欄位保留
-            all[char] = { ...rest, strokes }
+            const { draft: _old, ...rest } = all[char] ?? {} // 重新錄製後就不再是草稿；fs / gy 等其他欄位保留
+            all[char] = { ...rest, strokes, ...(draft === true && { draft: true }) } // draft：自動產生的草稿
+            // 底字太寬（多字元的母音）時編輯器會縮小字級，要一起存，播放器才能畫在同樣的位置
+            if (!isMark && fs !== undefined) { if (fs < 216) all[char].fs = fs; else delete all[char].fs }
             writeFileSync(file, isMark ? JSON.stringify(all, null, 1) + '\n' : JSON.stringify({ [char]: all[char] }, null, 1) + '\n')
             if (!isMark) buildStrokes()
             res.setHeader('Content-Type', 'application/json')
