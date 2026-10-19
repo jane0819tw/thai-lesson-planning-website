@@ -146,24 +146,24 @@ export default function AdminPage() {
       </div>
     )
   }
-  if (!st || !draft) return <div className="bk"><h1>老師管理</h1>{keyMsg ? <div className="bk-msg err">{keyMsg}</div> : <p className="bk-muted">載入中…</p>}<Diag lines={diag} fatal={fatal} always />{busy.n > 0 && <Busy text={busy.text} />}</div>
+  if (!st || !draft) return <div className="bk"><h1>老師管理</h1>{keyMsg ? <div className="bk-msg err">{keyMsg}</div> : <p className="bk-muted">載入中…</p>}<Diag lines={diag} fatal={fatal} />{busy.n > 0 && <Busy text={busy.text} />}</div>
 
   return (
     <div className="bk wide">
       <h1>老師管理</h1>
       <Diag lines={diag} fatal={fatal} />
       {msg && <div className={`bk-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
-      <div className="ad-shell">
-        <nav className="ad-side">
+      <div className="mgr-shell">
+        <nav className="mgr-side">
           {SECS.map(([k, n]) => (
-            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="ad-badge">{st.pending.length}</span>}</button>
+            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}</button>
           ))}
         </nav>
-        <div className="ad-content">
+        <div className="mgr-content">
           {sec === 'sched' && (
             <>
               <div className="bk-card">
-                <div className="ad-tabs">
+                <div className="mgr-tabs">
                   <button className={tab === 'cal' ? 'sel' : ''} onClick={() => { setTab('cal'); setMsg(null) }}>行事曆</button>
                   <button className={tab === 'reg' ? 'sel' : ''} onClick={() => { setTab('reg'); setMsg(null) }}>固定時間</button>
                 </div>
@@ -180,7 +180,7 @@ export default function AdminPage() {
                     onWeek={loadWeek}
                   />
                 )}
-                <div className="ad-legend">
+                <div className="mgr-legend">
                   <span><i style={{ background: 'color-mix(in srgb, var(--bk-ok) 38%, var(--card))' }} />開放預約</span>
                   {tab === 'cal' && <>
                     <span><i style={{ background: 'color-mix(in srgb, var(--accent) 28%, var(--card))', borderColor: 'var(--accent)' }} />私下學生</span>
@@ -190,7 +190,7 @@ export default function AdminPage() {
                   </>}
                 </div>
                 {dirty && (
-                  <div className="ad-savebar">
+                  <div className="mgr-savebar">
                     <span>有尚未儲存的變更</span>
                     <span className="bk-row"><button onClick={() => { setDraft(buildDraft(st.rules)); setDirty(false); setMsg(null) }}>還原</button><button className="primary" onClick={save}>儲存</button></span>
                   </div>
@@ -219,7 +219,7 @@ export default function AdminPage() {
           {sec === 'bookings' && (
             <div className="bk-card">
               <h2>所有預約（可直接改狀態）</h2>
-              <label className="ad-check"><input type="checkbox" checked={onlyActive} onChange={e => setOnlyActive(e.target.checked)} />只看有效預約（待確認／已確認）</label>
+              <label className="mgr-check"><input type="checkbox" checked={onlyActive} onChange={e => setOnlyActive(e.target.checked)} />只看有效預約（待確認／已確認）</label>
               {(() => {
                 const list = st.bookings.filter(b => !onlyActive || ['待確認', '已確認'].includes(b.status))
                 return list.length ? list.map(b => (
@@ -270,7 +270,7 @@ export default function AdminPage() {
       </div>
 
       {newBar && (
-        <div className="ad-newbar">
+        <div className="mgr-newbar">
           <span>🔔 新預約：{newBar}</span>
           <button className="primary" onClick={async () => {
             try { const s = await run('載入中…', () => api.adminGetState()); setSt(s); if (!dirty) setDraft(buildDraft(s.rules)) } catch (e) { flash(false, (e as Error).message) }
@@ -284,10 +284,10 @@ export default function AdminPage() {
 }
 
 const Diag = ({ lines, fatal, always }: { lines: string[]; fatal: string; always?: boolean }) => (fatal || always || lines.some(l => l.includes('✗'))) ? (
-  <pre className="ad-diag">{fatal && `頁面錯誤：${fatal}\n`}{lines.join('\n')}</pre>
+  <pre className="mgr-diag">{fatal && `頁面錯誤：${fatal}\n`}{lines.join('\n')}</pre>
 ) : null
 
-const Busy = ({ text }: { text: string }) => <div className="ad-busy"><div><i /><span>{text}</span></div></div>
+const Busy = ({ text }: { text: string }) => <div className="mgr-busy"><div><i /><span>{text}</span></div></div>
 
 function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses }: { s: StudentRow; units: Unit[]; onRenew: () => void; onSaveRec: (url: string) => void; onSaveCourses: (list: string[]) => void }) {
   const [url, setUrl] = useState(s.record ?? '')
@@ -295,12 +295,12 @@ function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses }: { s: Stude
   const [copied, setCopied] = useState(false)
   return (
     <div className="bk-item">
-      <div>{s.name}<div className="bk-muted">{s.email}</div>{s.token && <div className="ad-link">{linkOf(s)}</div>}</div>
+      <div>{s.name}<div className="bk-muted">{s.email}</div>{s.token && <div className="mgr-link">{linkOf(s)}</div>}</div>
       <div className="bk-row">
         {s.token && <button onClick={() => navigator.clipboard.writeText(linkOf(s)).then(() => setCopied(true))}>{copied ? '已複製' : '複製連結'}</button>}
         <button onClick={onRenew}>{s.token ? '換新連結' : '產生連結'}</button>
       </div>
-      <div className="ad-courses">
+      <div className="mgr-courses">
         <span className="bk-muted">開放課程</span>
         {[...units.map(u => ({ id: u.id, label: `認字 ${unitLabel(u)}` })), ...WHOLE_COURSES.map(c => ({ id: c.key, label: c.title }))].map(o => (
           <label key={o.id}><input type="checkbox" checked={courses.includes(o.id)} onChange={e => setCourses(c => (e.target.checked ? [...c, o.id] : c.filter(x => x !== o.id)))} />{o.label}</label>

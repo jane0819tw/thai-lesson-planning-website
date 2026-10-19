@@ -60,7 +60,7 @@ export default function ScheduleGrid({ tab, draft, wk, onPaint, onHoliday, onWee
       )}
       <div style={{ overflowX: 'auto' }}>
         <div
-          className="ad-g"
+          className="mgr-g"
           onPointerDown={e => {
             if (e.pointerType !== 'mouse') return
             const c = cellOf(e.target); if (!c) return
@@ -73,26 +73,26 @@ export default function ScheduleGrid({ tab, draft, wk, onPaint, onHoliday, onWee
             paint.current = { on: !c.classList.contains('on') }; apply(c); paint.current = null
           }}
         >
-          <div className="ad-gh" style={{ borderLeft: 0 }} />
+          <div className="mgr-gh" style={{ borderLeft: 0 }} />
           {cols.map(c => (
-            <div className={`ad-gh${c.today ? ' today' : ''}`} key={c.key}>
+            <div className={`mgr-gh${c.today ? ' today' : ''}`} key={c.key}>
               {c.head}
-              {c.closed && <span className="ad-tag">{c.label}</span>}
-              {c.allDay.map(t => <span className="ad-tag" key={t}>{t}</span>)}
+              {c.closed && <span className="mgr-tag">{c.label}</span>}
+              {c.allDay.map(t => <span className="mgr-tag" key={t}>{t}</span>)}
               {!reg && !c.past && <button className="mini" onClick={() => onHoliday(String(c.key))}>{c.closed ? '取消休假' : '休假'}</button>}
             </div>
           ))}
-          <div className="ad-gt" style={{ height: n * H }}>
+          <div className="mgr-gt" style={{ height: n * H }}>
             {Array.from({ length: (hi - lo) / 60 + 1 }, (_, i) => <span key={i} style={{ top: i * 2 * H }}>{hm(lo + i * 60)}</span>)}
           </div>
           {cols.map(c => (
-            <div className={`ad-gc${c.closed ? ' closed' : ''}`} key={c.key}>
+            <div className={`mgr-gc${c.closed ? ' closed' : ''}`} key={c.key}>
               {Array.from({ length: n }, (_, i) => { const m = lo + i * STEP; return <div key={m} className={`cell${c.set.has(m) ? ' on' : ''}${c.past ? ' off' : ''}`} data-k={c.key} data-m={m} /> })}
-              {c.events.map((e, i) => <div key={i} className="ad-gb ev" style={{ top: y(e.start), height: y(e.end) - y(e.start) - 2 }}>{e.title}</div>)}
+              {c.events.map((e, i) => <div key={i} className="mgr-gb ev" style={{ top: y(e.start), height: y(e.end) - y(e.start) - 2 }}>{e.title}</div>)}
               {c.lessons.map(l => {
                 const short = l.end - l.start <= 30
                 return (
-                  <div key={l.id} className={`ad-gb ${l.source === '私下' ? 'priv' : 'at'}${l.status === '待確認' ? ' pend' : ''}`} style={{ top: y(l.start), height: y(l.end) - y(l.start) - 2 }} title={`${l.name} ${hm(l.start)} ${l.len}分 ${l.status}`}>
+                  <div key={l.id} className={`mgr-gb ${l.source === '私下' ? 'priv' : 'at'}${l.status === '待確認' ? ' pend' : ''}`} style={{ top: y(l.start), height: y(l.end) - y(l.start) - 2 }} title={`${l.name} ${hm(l.start)} ${l.len}分 ${l.status}`}>
                     <b>{l.name}</b>{short ? ' ' : <br />}{hm(l.start)}{!short && `・${l.len}分${l.status === '待確認' ? '・待確認' : ''}`}
                   </div>
                 )

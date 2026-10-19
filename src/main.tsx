@@ -15,10 +15,10 @@ import './styles.css'
 
 // 任何未捕捉的錯誤都直接顯示在畫面底部（不依賴 React），方便在沒有開發者工具時回報問題
 const showError = (m: string) => {
-  let el = document.getElementById('err-banner')
+  let el = document.getElementById('fatal-msg')
   if (!el) {
     el = document.createElement('pre')
-    el.id = 'err-banner'
+    el.id = 'fatal-msg'
     el.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9999;margin:0;padding:8px 12px;background:#b91c1c;color:#fff;font:12px/1.4 monospace;white-space:pre-wrap;max-height:40vh;overflow:auto'
     document.body.appendChild(el)
   }
