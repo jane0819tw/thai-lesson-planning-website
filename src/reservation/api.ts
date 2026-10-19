@@ -38,7 +38,8 @@ async function call<T>(fn: string, args: unknown[]): Promise<T> {
 const real: Api = {
   getStudentView: t => call('getStudentView', [t]),
   submitBooking: (t, n, e, s, l) => call('submitBooking', [t, n, e, s, l]),
-  adminGetState: () => call('adminGetState', []),
+  // 舊版後端的學生資料沒有 courses 欄位：補成空陣列（＝尚未開放任何課程）
+  adminGetState: () => call<AdminState>('adminGetState', []).then(st => ({ ...st, students: st.students.map(x => ({ ...x, courses: x.courses ?? [] })) })),
   adminGetWeek: d => call('adminGetWeek', [d]),
   adminSaveRules: r => call('adminSaveRules', [r]),
   adminSetStatus: (id, st) => call('adminSetStatus', [id, st]),

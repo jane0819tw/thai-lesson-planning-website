@@ -1,4 +1,5 @@
-import { Link, Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes, useLocation } from 'react-router-dom'
+import ErrorBoundary from './components/ErrorBoundary'
 import Home from './components/Home'
 import ReadingIndex from './components/ReadingIndex'
 import LessonPage from './components/LessonPage'
@@ -13,6 +14,7 @@ import VideoIndex from './components/VideoIndex'
 import VideoPage from './components/VideoPage'
 
 export default function App() {
+  const loc = useLocation() // 換頁時重置錯誤保護
   return (
     <>
       <header className="top">
@@ -20,6 +22,7 @@ export default function App() {
         <StudentLink />
       </header>
       <main className="wrap">
+        <ErrorBoundary key={loc.pathname + loc.search}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/reading" element={<ReadingIndex />} />
@@ -34,6 +37,7 @@ export default function App() {
           <Route path="/video/:id" element={<VideoPage />} />
           <Route path="*" element={<p>找不到頁面。<Link to="/">回首頁</Link></p>} />
         </Routes>
+        </ErrorBoundary>
       </main>
       <footer className="foot">開發中</footer>
     </>
