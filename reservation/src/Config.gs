@@ -9,7 +9,7 @@ const CONFIG = {
   REMINDER_HOURS_BEFORE_EXPIRY: 4,
   IMPORT_AFTER: '2026-10-13',   // 只處理這天（含）之後收到的信，避免舊信被當成新請求；空白 = 全部
   CALENDAR_ID: '',              // 空白 = Jane 的預設行事曆
-  ADMIN_URL: 'https://jane0819tw.github.io/thaiskr-course-reservation/admin.html', // 老師 LINE 通知附上的管理頁連結
+  ADMIN_URL: 'https://jane0819tw.github.io/thai-lesson-planning-website/#/admin', // 老師 LINE 通知附上的管理頁連結
   NOTIFY_EMAIL: '',             // 空白 = 執行者自己的 Email
   BOOKING_DAYS_AHEAD: 92,       // 預約頁顯示未來幾天（約三個月）
   MIN_NOTICE_HOURS: 12,         // 至少提前幾小時才能預約
