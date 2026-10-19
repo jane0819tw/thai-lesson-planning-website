@@ -2,7 +2,7 @@
 // 量出實際大小後縮放、置中在上面兩條虛線（y=61、94）之間，讓編輯器與播放器的底完全一致。
 import { useEffect, useState } from 'react'
 
-const FONT = '"Noto Sans Thai Looped"'
+const FONT = '"LayijiTrace"'
 const BOX_CY = 77.5, BOX_H = 40, BOX_W = 80 // 目標：中心在兩條虛線中間，最高 40、最寬 80
 
 export interface MarkGhost { x: number; y: number; fs: number }

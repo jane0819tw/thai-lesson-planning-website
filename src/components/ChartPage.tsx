@@ -1,3 +1,4 @@
+import VowelText from './VowelText'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCatalog } from '../data/useCatalog'
@@ -48,8 +49,8 @@ export default function ChartPage() {
             {vowels.map(v => (
               <tr key={v.id}>
                 <th>{v.ipa}</th>
-                <td className="th big3">{v.short || '—'}</td>
-                <td className="th big3">{v.long || '—'}</td>
+                <td className="th big3">{v.short ? <VowelText form={v.short} /> : '—'}</td>
+                <td className="th big3">{v.long ? <VowelText form={v.long} /> : '—'}</td>
                 <td className="th">{v.words.slice(0, 3).map(w => w.thai).join('　')}</td>
               </tr>
             ))}

@@ -10,6 +10,7 @@ import WordList from './WordList'
 import LetterDialog from './LetterDialog'
 import DiagramView from './DiagramView'
 import { vowelForm } from '../strokes'
+import VowelText from './VowelText'
 import Games from './Games'
 import RuleDemo from './RuleDemo'
 import ToneIntro from './ToneIntro'
@@ -105,7 +106,7 @@ export default function LessonPage() {
         <section className="stack">
           {lesson.vowels.map(v => (
             <article className="card" key={v.id}>
-              <h3><span className="th">{v.ipa}</span>　{[v.short, v.long].map((f, i) => <span key={i}>{i > 0 && ' / '}{f ? <button className="th big2 clickable" onClick={() => setOpenVowel({ char: vowelForm(f), ipa: v.ipa })} aria-label={`查看 ${vowelForm(f)} 的筆順`}>{f}</button> : <span className="th big2">—</span>}</span>)}</h3>
+              <h3><span className="th">{v.ipa}</span>　{[v.short, v.long].map((f, i) => <span key={i}>{i > 0 && ' / '}{f ? <button className="th big2 clickable" onClick={() => setOpenVowel({ char: vowelForm(f), ipa: v.ipa })} aria-label={`查看 ${vowelForm(f)} 的筆順`}><VowelText form={f} /></button> : <span className="th big2">—</span>}</span>)}</h3>
               {v.note && <p className="muted small">{v.note}</p>}
               {v.shortSyllables.length > 0 && <p><span className="chip">短音</span> {v.shortSyllables.map(s => <span key={s} className="syl th">{s}<SpeakButton text={s} /></span>)}</p>}
               {v.longSyllables.length > 0 && <p><span className="chip">{v.short ? '長音' : '例'}</span> {v.longSyllables.map(s => <span key={s} className="syl th">{s}<SpeakButton text={s} /></span>)}</p>}

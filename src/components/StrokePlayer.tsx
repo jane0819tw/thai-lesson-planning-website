@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { STROKE_VIEWBOX as V, guideLines, type StrokeData } from '../strokes'
+import { STROKE_VIEWBOX as V, GHOST_SCALE, ghostText, guideLines, type StrokeData } from '../strokes'
 import { useMarkGhost } from '../markGhost'
 
 // 以 SVG 路徑動畫呈現筆順：講義風格的四線格＋灰色字形當底，筆尖圓點帶著筆畫「寫出來」。
@@ -66,7 +66,7 @@ export default function StrokePlayer({ char, data }: { char: string; data: Strok
           ? <text x={mg.x} y={mg.y} textAnchor="middle" fontSize={mg.fs} className="th ghost">{'\u00A0' + char}</text>
           : data.ghost === 'path'
           ? data.strokes.map((d, i) => <path key={'g' + i} d={d} className="ghostpath" />)
-          : <text x={V / 2} y={data.gy ?? 216} textAnchor="middle" fontSize={data.fs ?? 216} className="th ghost">{/[\u0e48-\u0e4b]/.test(char) ? '\u00A0' + char : char}</text>}
+          : <text x={V / 2} y={data.gy ?? 216} textAnchor="middle" fontSize={(data.fs ?? 216) * GHOST_SCALE} className="th ghost">{/[\u0e48-\u0e4b]/.test(char) ? '\u00A0' + char : ghostText(char)}</text>}
         {data.strokes.map((d, i) => (
           <path key={i} ref={el => { pathRefs.current[i] = el }} d={d} pathLength={1} className="pen"
             strokeDasharray="1 1"

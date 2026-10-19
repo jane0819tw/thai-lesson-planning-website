@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { STROKE_VIEWBOX as V, getStrokes, guideLines, isToneMark, vowelForm } from '../strokes'
+import { STROKE_VIEWBOX as V, GHOST_SCALE, ghostText, getStrokes, guideLines, isToneMark, vowelForm } from '../strokes'
 import { getRepository } from '../data/repository'
 import { generateStrokes } from '../strokeGen'
+import { fitFs } from '../ghostFit'
 import { useMarkGhost } from '../markGhost'
 
 const FS = 216, MAX_W = 250 // 底字字級；多字元的母音（เอียะ）太寬時會自動縮小，字級會跟著筆畫一起存
@@ -32,10 +33,9 @@ export default function StrokeEditor() {
   // 量底字寬度，太寬就縮小字級（字型載入完會再量一次）
   useEffect(() => {
     const measure = () => {
-      const t = ghost.current
-      if (!t) return setFs(FS)
-      const w = (t.getComputedTextLength() * FS) / (Number(t.getAttribute('font-size')) || FS)
-      setFs(w > MAX_W ? Math.floor((FS * MAX_W) / w) : FS)
+      const f = char.trim()
+      const saved = getStrokes(f) // 已有筆畫的字沿用存檔的字級，筆畫才對得上底字；新的字才重新計算
+      setFs(!f || isToneMark(f) ? FS : saved ? saved.fs ?? FS : fitFs(f))
     }
     measure()
     document.fonts.addEventListener('loadingdone', measure)
@@ -72,7 +72,7 @@ export default function StrokeEditor() {
   }
   const autogen = async () => {
     setMsg('產生中…')
-    const r = await generateStrokes(char.trim())
+    const r = await generateStrokes(char.trim(), getStrokes(char.trim())?.strokes) // 有現有筆畫就參考它的順序與方向
     setStrokes(r.strokes); setAuto(true); setOut('')
     setMsg(r.strokes.length ? `已自動產生 ${r.strokes.length} 筆草稿（起筆與方向是猜的）：請檢查、修改後按「儲存」` : '沒有產生出筆畫')
   }
@@ -105,7 +105,7 @@ export default function StrokeEditor() {
         <svg ref={svg} viewBox={`0 0 ${V} ${V}`} className="canvas" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
           {(mark ? guideLines().slice(0, 2) : guideLines(fs)).map((y, i) => <line key={y} x1={8} x2={V - 8} y1={y} y2={y} className={i === 2 ? 'guide base' : 'guide'} />)}
           {mark && mg && <text x={mg.x} y={mg.y} textAnchor="middle" fontSize={mg.fs} className="th ghost">{'\u00A0' + char.trim()}</text>}
-          {!mark && <text ref={ghost} x={V / 2} y={216} textAnchor="middle" fontSize={fs} className="th ghost">{char.trim()}</text>}
+          {!mark && <text ref={ghost} x={V / 2} y={216} textAnchor="middle" fontSize={fs * GHOST_SCALE} className="th ghost">{ghostText(char.trim())}</text>}
           {strokes.map((d, i) => <path key={i} d={d} className="pen" pathLength={1} />)}
           {live.length > 1 && <path d={toPath(live)} className="pen live" />}
         </svg>
