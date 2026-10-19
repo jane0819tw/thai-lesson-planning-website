@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getAdminKey, getApi, setAdminKey } from './api'
+import { CATEGORIES } from '../categories'
 import ScheduleGrid from './ScheduleGrid'
 import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import type { Unit } from './access'
@@ -9,7 +10,7 @@ import type { Draft } from './schedule'
 import type { AdminState, RecSession, StudentRow, Week } from './types'
 import './booking.css'
 
-const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生']] as const
+const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生'], ['links', '課程入口']] as const
 type Sec = (typeof SECS)[number][0]
 const SEC_KEY = 'thaiskr_admin_sec'
 const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'sched' } catch { return 'sched' } }
@@ -50,7 +51,8 @@ export default function AdminPage() {
     window.addEventListener('error', onErr); window.addEventListener('unhandledrejection', onRej)
     return () => { window.removeEventListener('error', onErr); window.removeEventListener('unhandledrejection', onRej) }
   }, [])
-  const units = readingUnits(useLessons().map(l => l.number))
+  const lessons = useLessons()
+  const units = readingUnits(lessons.map(l => l.number))
 
   // 讀取／儲存期間：蓋一層遮罩＋轉圈圈（太快完成的操作 0.3 秒內不顯示，見 CSS）
   const run = useCallback(async <T,>(text: string, f: () => Promise<T>): Promise<T> => {
@@ -251,6 +253,39 @@ export default function AdminPage() {
                 </>
               )}
               <p className="bk-muted">改成「已確認／待確認」會把時段放回行事曆；改成其他狀態會移除行事曆事件。私下預約改成已確認時會建立 Zoom 並寫入記錄表。</p>
+            </div>
+          )}
+
+          {sec === 'links' && (
+            <div className="bk-card">
+              <h2>課程入口</h2>
+              <p className="bk-muted" style={{ marginTop: 0 }}>都會另開新分頁，不影響這頁尚未儲存的內容。</p>
+              <ul className="bk-courses">
+                {CATEGORIES.map(c => (
+                  <li key={c.key}>
+                    {c.to
+                      ? <a className="bk-course" href={`#${c.to}`} target="_blank" rel="noopener noreferrer"><strong>{c.title}</strong><small>{c.desc}</small><span className="bk-go">開啟 →</span></a>
+                      : <div className="bk-course off"><strong>{c.title}</strong><small>{c.desc}</small><span className="bk-muted">即將推出</span></div>}
+                  </li>
+                ))}
+              </ul>
+              <h2 style={{ marginTop: 20 }}>認字課程工具</h2>
+              <div className="bk-row">
+                <a className="mgr-link" href="#/reading/chart" target="_blank" rel="noopener noreferrer">子音・母音總表</a>
+                <a className="mgr-link" href="#/reading/keyboard" target="_blank" rel="noopener noreferrer">泰文鍵盤</a>
+                <a className="mgr-link" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
+              </div>
+              <h2 style={{ marginTop: 20 }}>各課連結</h2>
+              <p className="bk-muted" style={{ marginTop: 0 }}>「作業」是給學生做練習的頁面，可以直接把連結傳給學生（課程頁上有「複製指派連結」，能帶學生姓名）。</p>
+              {lessons.map(l => (
+                <div className="bk-item" key={l.id}>
+                  <div><b>L{l.number}</b>　{l.title}</div>
+                  <div className="bk-row">
+                    <a className="mgr-link" href={`#/reading/lesson/${l.id}`} target="_blank" rel="noopener noreferrer">課程頁</a>
+                    <a className="mgr-link" href={`#/reading/lesson/${l.id}/homework`} target="_blank" rel="noopener noreferrer">作業頁</a>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
