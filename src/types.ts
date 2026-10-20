@@ -2,7 +2,7 @@
 // 內容來源：泰語認字講義 L1–L10（拼音、解釋、單元規劃皆依講義）。
 export type ConsonantGroup = 'mid' | 'high' | 'lcp' | 'lcs'
 
-export interface WordItem { thai: string; zh: string; roman?: string; star?: boolean; group?: string; audioUrl?: string | null }
+export interface WordItem { thai: string; zh: string; roman?: string; star?: boolean; group?: string; audioUrl?: string | null; image?: ExtraImage }
 export interface DemoTile { th: string; sub?: string; op?: string; icon?: string; speak?: string }
 export interface Rule { id: string; title: string; body: string; demo?: DemoTile[] }
 export interface Consonant {
@@ -21,7 +21,8 @@ export interface PracticeItem { thai: string; zh?: string; note?: string }
 export interface PracticeGroup { title: string; items: PracticeItem[] }
 export interface Pattern { thai: string; zh: string }
 export interface LinkItem { title: string; url: string }
-export interface Meme { title: string; desc: string; imageUrl?: string | null }
+/** imageUrl：沒填＝顯示「圖片待補」；明確填 null＝這張卡本來就不需要圖（只有文字） */
+export interface Meme { title: string; desc: string; imageUrl?: string | null; big?: string }  // big：標題下方用大字顯示的泰文
 export interface ExtraImage { src: string; alt: string }
 export interface Extra { title: string; lines: string[]; images?: ExtraImage[] }
 

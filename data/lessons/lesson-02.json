@@ -137,7 +137,19 @@
         },
         {
           "thai": "เจ",
-          "zh": "齋"
+          "zh": "齋",
+          "image": {
+            "src": "extras/lesson-02/je.png",
+            "alt": "เจ（齋）"
+          }
+        },
+        {
+          "thai": "เต",
+          "zh": "",
+          "image": {
+            "src": "extras/lesson-02/te.png",
+            "alt": "เต"
+          }
         },
         {
           "thai": "เจ๊",
@@ -181,11 +193,19 @@
     },
     {
       "thai": "จู๋",
-      "zh": "丁丁"
+      "zh": "丁丁",
+      "image": {
+        "src": "extras/lesson-02/ju.png",
+        "alt": "จู๋（丁丁）"
+      }
     },
     {
       "thai": "ป้า",
-      "zh": "阿姨"
+      "zh": "阿姨",
+      "image": {
+        "src": "extras/lesson-02/pa.png",
+        "alt": "ป้า（阿姨）"
+      }
     },
     {
       "thai": "ปี",

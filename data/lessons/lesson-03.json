@@ -165,11 +165,19 @@
     {
       "thai": "ปีโป้",
       "zh": "",
-      "roman": "pipo"
+      "roman": "pipo",
+      "image": {
+        "src": "extras/lesson-03/pipo.png",
+        "alt": "ปีโป้"
+      }
     },
     {
       "thai": "โก๋แก่",
-      "zh": "花生品牌"
+      "zh": "花生品牌",
+      "image": {
+        "src": "extras/lesson-03/koh-kae.png",
+        "alt": "โก๋แก่（花生品牌）"
+      }
     }
   ],
   "practice": [

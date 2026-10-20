@@ -1,5 +1,6 @@
 import type { WordItem } from '../types'
 import SpeakButton from './SpeakButton'
+import ZoomImage from './ZoomImage'
 
 export default function WordList({ words, showZh, showRoman }: { words: WordItem[]; showZh: boolean; showRoman: boolean }) {
   return (
@@ -13,6 +14,7 @@ export default function WordList({ words, showZh, showRoman }: { words: WordItem
             {showZh && w.zh && <span>{w.zh}</span>}
             {w.group && <span className="chip">{w.group}</span>}
           </div>
+          {w.image && <ZoomImage className="wordimg" src={`${import.meta.env.BASE_URL}${w.image.src}`} alt={w.image.alt} />}
         </article>
       ))}
     </section>

@@ -12,6 +12,7 @@ import LetterDialog from './LetterDialog'
 import DiagramView from './DiagramView'
 import { vowelForm, vowelSpeech } from '../strokes'
 import VowelText from './VowelText'
+import ZoomImage from './ZoomImage'
 import Games, { vowelSyllables } from './Games'
 import RuleDemo from './RuleDemo'
 import ToneIntro from './ToneIntro'
@@ -43,7 +44,7 @@ export default function LessonPage() {
     if (lesson.toneTables.length) t.push(['tones', '聲調表'])
     if (lesson.vocab.length) t.push(['vocab', '單字'])
     if (lesson.practice.length || lesson.patterns.length) t.push(['practice', '練習・句型'])
-    if (lesson.memes.length) t.push(['memes', '梗圖'])
+    if (lesson.memes.length) t.push(['memes', '這是什麼意思'])
     if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6) t.push(['games', '互動練習'])
     if (lesson.extras.length) t.push(['extras', '補充'])
     return t
@@ -78,7 +79,7 @@ export default function LessonPage() {
             <article className="card" key={x.title}>
               <h3>{x.title}</h3>
               {x.lines.map((l, i) => <p className="th big2" key={i}>{l}</p>)}
-              {x.images?.map(im => <img key={im.src} src={`${import.meta.env.BASE_URL}${im.src}`} alt={im.alt} style={{ maxWidth: '100%', borderRadius: 12 }} />)}
+              {x.images?.map(im => <ZoomImage key={im.src} src={`${import.meta.env.BASE_URL}${im.src}`} alt={im.alt} style={{ maxWidth: '100%', borderRadius: 12 }} />)}
             </article>
           ))}
         </section>
@@ -95,8 +96,14 @@ export default function LessonPage() {
               {showZh && <div>{c.zh}</div>}
               <div className="small muted">{GROUP_ZH[c.group]}｜發音 {c.sound}{c.sameHigh && <>｜同音高子音：<span className="th">{c.sameHigh}</span></>}</div>
               {c.words.length > 0 && (
-                <div className="small mini">
-                  {c.words.map(w => <span key={w.thai} className="minichip"><span className="th">{w.star ? '＊' : ''}{w.thai}</span>{showZh && w.zh ? ` ${w.zh}` : ''}</span>)}
+                <div className="cwords">
+                  {c.words.map(w => (
+                    <div key={w.thai} className="cword">
+                      <span className="th cword-th">{w.star ? '＊' : ''}{w.thai}</span>
+                      <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
+                      {showZh && w.zh && <span className="cword-zh">{w.zh}</span>}
+                    </div>
+                  ))}
                 </div>
               )}
             </article>
@@ -153,6 +160,7 @@ export default function LessonPage() {
                         {showRoman && w.roman && <span className="muted">{w.roman}</span>}
                         {showZh && w.zh && <span>{w.zh}</span>}
                       </span>
+                      {w.image && <ZoomImage className="vword-img" src={`${import.meta.env.BASE_URL}${w.image.src}`} alt={w.image.alt} />}
                     </div>
                   ))}
                 </div>
@@ -194,9 +202,10 @@ export default function LessonPage() {
         <section className="stack">
           {lesson.memes.map(m => (
             <article className="card" key={m.title}>
-              {m.imageUrl ? <img src={m.imageUrl} alt={m.title} style={{ maxWidth: '100%' }} /> : <div className="meme-placeholder">梗圖待補</div>}
-              <h3 className="th">{m.title}</h3>
-              <p className="muted small">{m.desc}</p>
+              <h3>{m.title}</h3>
+              {m.big && <div className="th meme-big">{m.big}</div>}
+              {m.desc && <p className="muted small">{m.desc}</p>}
+              {m.imageUrl ? <ZoomImage src={/^(https?:|data:|\/)/.test(m.imageUrl) ? m.imageUrl : `${import.meta.env.BASE_URL}${m.imageUrl}`} alt={m.title} style={{ maxWidth: '100%' }} /> : m.imageUrl === undefined && <div className="meme-placeholder">圖片待補</div>}
             </article>
           ))}
         </section>
