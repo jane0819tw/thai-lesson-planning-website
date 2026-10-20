@@ -4,7 +4,7 @@ export type ConsonantGroup = 'mid' | 'high' | 'lcp' | 'lcs'
 
 export interface WordItem { thai: string; zh: string; roman?: string; star?: boolean; group?: string; audioUrl?: string | null; image?: ExtraImage }
 export interface DemoTile { th: string; sub?: string; op?: string; icon?: string; speak?: string }
-export interface Rule { id: string; title: string; body: string; demo?: DemoTile[] }
+export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; toneTable?: ToneTable }  // toneTable：說明卡內直接顯示聲調表
 export interface Consonant {
   id: string; char: string; name: string; roman: string; zh: string
   sound: string; group: ConsonantGroup; sameHigh: string; words: WordItem[]; audioUrl?: string | null
@@ -14,6 +14,10 @@ export interface Vowel {
   shortSyllables: string[]; longSyllables: string[]; words: WordItem[]; note: string
   /** 顯示在這個母音卡「前面」的說明卡（例如拼讀範例） */
   preface?: Rule[]
+  /** 顯示在這張母音卡「前面」的小標題（例如把複合母音、特殊母音分成兩組） */
+  heading?: string
+  /** 連續幾張標 inRow 的母音卡會排在同一列（特殊母音只有短音，卡片很小） */
+  inRow?: boolean
 }
 export interface ToneRow { label: string; cells: string[] }
 export interface ToneTable { title: string; note?: string; rows: ToneRow[] }
@@ -22,16 +26,23 @@ export interface PracticeGroup { title: string; items: PracticeItem[] }
 export interface Pattern { thai: string; zh: string }
 export interface LinkItem { title: string; url: string }
 /** imageUrl：沒填＝顯示「圖片待補」；明確填 null＝這張卡本來就不需要圖（只有文字） */
-export interface Meme { title: string; desc: string; imageUrl?: string | null; big?: string }  // big：標題下方用大字顯示的泰文
+export interface Meme { title: string; desc: string; imageUrl?: string | null; big?: string; half?: boolean }  // big：標題下方用大字顯示的泰文；half：只佔半列（兩張 half 卡並排，圖片縮小）
 export interface ExtraImage { src: string; alt: string }
 export interface Extra { title: string; lines: string[]; images?: ExtraImage[] }
 
 export interface DiagramTile { label: string; count?: string; color: 'pink' | 'yellow' | 'green' | 'blue'; dashed?: boolean; wide?: boolean; sub: { t?: string; b?: string; th?: string; i?: boolean }[] }
 export interface Diagram { title: string; intro: string; tiles: DiagramTile[]; result: string }
 
+/** 母音種類說明卡：focus＝這課要學（紅）、done＝學過（灰）、notes:false＝不顯示下方補充說明 */
+export interface VowelIntroConfig { focus: ('single' | 'compound' | 'special' | 'sanskrit')[]; done?: ('single' | 'compound' | 'special' | 'sanskrit')[]; notes?: boolean }
+
 export interface Lesson {
   id: string; number: number; title: string; summary: string; status: 'draft' | 'ready'
   rules: Rule[]; consonants: Consonant[]; vowels: Vowel[]; toneTables: ToneTable[]
   vocab: WordItem[]; practice: PracticeGroup[]; patterns: Pattern[]
-  homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean
+  /** 顯示在「母音」區塊最上面（種類說明卡之後）的說明卡 */
+  vowelNotes?: Rule[]
+  /** 設了母音卡的 id：「單字」清單改放在「母音」區塊裡、這張卡所屬的那一組之後（不再單獨一個區塊） */
+  vocabAfterVowel?: string
+  homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean | VowelIntroConfig
 }

@@ -240,6 +240,7 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .vintro-text { flex: 1 1 320px; }
 .vintro-text ul { margin: 0; padding-left: 1.2em; font-size: 1.2rem; font-weight: 700; line-height: 1.9; }
 .vintro-text li.hot { color: var(--accent); }
+.vintro-text li.done { color: var(--muted); }
 .vintro-sub { margin-top: 14px !important; font-size: 1.05rem !important; font-weight: 500 !important; line-height: 1.8 !important; }
 .vintro-sub strong { color: var(--accent); }
 .vpos { margin: 0 auto; display: grid; gap: 8px; grid-template-columns: 56px 130px 56px; grid-template-areas: ". tone ." ". top ." "left cons right" ". bottom ."; padding: 18px; border-radius: 22px; background: var(--bg); border: 1px solid var(--line); }
@@ -308,3 +309,30 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .cword-th { font-size: 1.6rem; line-height: 1.3; }
 .cword .speak { width: 32px; height: 32px; font-size: .9rem; background: var(--card); }
 .cword-zh { margin-left: auto; font-size: .95rem; color: var(--fg); }
+
+/* 母音區塊內的小標題（複合母音／特殊母音） */
+.vgroup-h { margin: 22px 0 -2px; padding-left: 10px; border-left: 5px solid var(--accent); font-size: 1.25rem; color: var(--accent); }
+.vstack > .vgroup-h:first-child { margin-top: 4px; }
+
+/* 練習：一列排 3～4 個單字 */
+.list.compact { grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); }
+.list.compact .row { padding: 8px 10px; gap: 6px; }
+.list.compact .row .big2 { font-size: 1.5rem; }
+
+/* 「這是什麼意思」：預設一張卡一列；標 half 的卡兩張並排、圖片縮小 */
+.memegrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.memegrid > .card { grid-column: 1 / -1; }
+.memegrid > .card.half { grid-column: auto; }
+.memegrid > .card.half img.zoomable { display: block; max-width: 100%; max-height: 240px; width: auto; margin: 0 auto; object-fit: contain; }
+@media (max-width: 640px) { .memegrid > .card.half { grid-column: 1 / -1; } }
+
+/* 單字清單：一列排 2～3 個（格子至少 240px，放得下泰文、拼音、中文與圖片） */
+.list.compact.wide { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.list.compact.wide .row { flex-wrap: wrap; }
+
+/* 補充：兩張卡並排 */
+.cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 16px; align-items: start; }
+/* 母音：同一列排多張小卡 */
+.vrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: start; }
+.vrow .vhead { flex-wrap: wrap; gap: 8px; padding: 12px; }
+.vrow .vwords { padding: 0 12px 12px; }

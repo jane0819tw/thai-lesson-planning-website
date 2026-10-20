@@ -21,6 +21,9 @@ import VowelIntro from './VowelIntro'
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
 type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'tones' | 'vocab' | 'practice' | 'memes'
 
+// 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
+const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && l.practice.length === 1 ? l.practice[0].title : '練習・句型')
+
 export default function LessonPage() {
   const { id } = useParams()
   const [lesson, setLesson] = useState<Lesson | null | undefined>(undefined)
@@ -42,8 +45,8 @@ export default function LessonPage() {
     if (lesson.rules.length) t.push(['rules', '說明'])
     if (lesson.consonants.length) t.push(['consonants', '子音'])
     if (lesson.toneTables.length) t.push(['tones', '聲調表'])
-    if (lesson.vocab.length) t.push(['vocab', '單字'])
-    if (lesson.practice.length || lesson.patterns.length) t.push(['practice', '練習・句型'])
+    if (lesson.vocab.length && !lesson.vocabAfterVowel) t.push(['vocab', '單字'])
+    if (lesson.practice.length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
     if (lesson.memes.length) t.push(['memes', '這是什麼意思'])
     if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6) t.push(['games', '互動練習'])
     if (lesson.extras.length) t.push(['extras', '補充'])
@@ -59,6 +62,59 @@ export default function LessonPage() {
     if (window.innerWidth <= 760) setNavOpen(false)
   }
 
+  // 連續標了 inRow 的母音卡排在同一列（例如特殊母音四張）
+  const vowelGroups = lesson.vowels.reduce<Lesson['vowels'][]>((acc, v) => { const last = acc[acc.length - 1]; if (v.inRow && last && last[0].inRow) last.push(v); else acc.push([v]); return acc }, [])
+  const vowelCard = (v: Lesson['vowels'][number]) => (
+    <article className="vcard" key={v.id}>
+      <div className="vhead">
+        <span className="vipa">{v.ipa}</span>
+        <div className="vforms">
+          {[[v.short, '短音'], [v.long, v.short ? '長音' : '']].map(([f, label], i) => f ? (
+            <div key={i} className="vform-wrap">
+              <button className="vform th" onClick={() => setOpenVowel({ char: vowelForm(f), ipa: v.ipa })} aria-label={`查看 ${vowelForm(f)} 的筆順`}>
+                <span className="vglyph"><VowelText form={f} /></span>
+                {label && <span className="vlabel">{label}</span>}
+              </button>
+              <SpeakButton text={vowelSpeech(f)} />
+            </div>
+          ) : null)}
+        </div>
+      </div>
+      {v.note && <p className="muted vnote">{v.note}</p>}
+      {(v.shortSyllables.length > 0 || (v.long && v.longSyllables.length > 0)) && (
+        <div className="tablewrap">
+          <table className="vtable">
+            <tbody>
+              {[[v.shortSyllables, '短音'], [v.long || !v.short ? v.longSyllables : [], v.short ? '長音' : '例']].map(([list, label]) => (list as string[]).length > 0 && (
+                <tr key={label as string}>
+                  <th scope="row">{label as string}</th>
+                  {Array.from({ length: Math.max(v.shortSyllables.length, v.longSyllables.length) }, (_, i) => (list as string[])[i]).map((s, i) => (
+                    <td key={i}>{s ? <span className="vsyl th">{s}<SpeakButton text={s} /></span> : <span className="muted">—</span>}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {v.words.length > 0 && (
+        <div className="vwords">
+          {v.words.map((w, i) => (
+            <div className="vword" key={w.thai + i}>
+              <span className="th vword-th">{w.star ? '＊' : ''}{w.thai}</span>
+              <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
+              <span className="vword-meta">
+                {showRoman && w.roman && <span className="muted">{w.roman}</span>}
+                {showZh && w.zh && <span>{w.zh}</span>}
+              </span>
+              {w.image && <ZoomImage className="vword-img" src={`${import.meta.env.BASE_URL}${w.image.src}`} alt={w.image.alt} />}
+            </div>
+          ))}
+        </div>
+      )}
+    </article>
+  )
+
   const content = (cur: Tab) => (
     <>
       {cur === 'diagram' && lesson.diagram && <DiagramView d={lesson.diagram} />}
@@ -66,7 +122,7 @@ export default function LessonPage() {
       {cur === 'rules' && (
         <section className="stack">
           {lesson.rules.map(r => (
-            <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p>{r.demo && <RuleDemo tiles={r.demo} />}</article>
+            <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p>{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
           ))}
         </section>
       )}
@@ -74,7 +130,7 @@ export default function LessonPage() {
       {cur === 'games' && <Games consonants={lesson.consonants} vowels={lesson.vowels} />}
 
       {cur === 'extras' && (
-        <section className="stack">
+        <section className="cardgrid">
           {lesson.extras.map(x => (
             <article className="card" key={x.title}>
               <h3>{x.title}</h3>
@@ -113,59 +169,20 @@ export default function LessonPage() {
 
       {cur === 'vowels' && (
         <>
-        {lesson.vowelIntro && <VowelIntro />}
+        {lesson.vowelIntro && <VowelIntro config={typeof lesson.vowelIntro === 'object' ? lesson.vowelIntro : undefined} />}
+        {lesson.vowelNotes?.map(r => <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p>{r.demo && <RuleDemo tiles={r.demo} />}</article>)}
         <section className="vstack">
-          {lesson.vowels.map(v => (
-            <Fragment key={v.id}>
-            {v.preface?.map(r => <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p></article>)}
-            <article className="vcard">
-              <div className="vhead">
-                <span className="vipa">{v.ipa}</span>
-                <div className="vforms">
-                  {[[v.short, '短音'], [v.long, v.short ? '長音' : '']].map(([f, label], i) => f ? (
-                    <div key={i} className="vform-wrap">
-                      <button className="vform th" onClick={() => setOpenVowel({ char: vowelForm(f), ipa: v.ipa })} aria-label={`查看 ${vowelForm(f)} 的筆順`}>
-                        <span className="vglyph"><VowelText form={f} /></span>
-                        {label && <span className="vlabel">{label}</span>}
-                      </button>
-                      <SpeakButton text={vowelSpeech(f)} />
-                    </div>
-                  ) : null)}
-                </div>
-              </div>
-              {v.note && <p className="muted vnote">{v.note}</p>}
-              {(v.shortSyllables.length > 0 || v.longSyllables.length > 0) && (
-                <div className="tablewrap">
-                  <table className="vtable">
-                    <tbody>
-                      {[[v.shortSyllables, '短音'], [v.longSyllables, v.short ? '長音' : '例']].map(([list, label]) => (list as string[]).length > 0 && (
-                        <tr key={label as string}>
-                          <th scope="row">{label as string}</th>
-                          {Array.from({ length: Math.max(v.shortSyllables.length, v.longSyllables.length) }, (_, i) => (list as string[])[i]).map((s, i) => (
-                            <td key={i}>{s ? <span className="vsyl th">{s}<SpeakButton text={s} /></span> : <span className="muted">—</span>}</td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-              {v.words.length > 0 && (
-                <div className="vwords">
-                  {v.words.map((w, i) => (
-                    <div className="vword" key={w.thai + i}>
-                      <span className="th vword-th">{w.star ? '＊' : ''}{w.thai}</span>
-                      <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
-                      <span className="vword-meta">
-                        {showRoman && w.roman && <span className="muted">{w.roman}</span>}
-                        {showZh && w.zh && <span>{w.zh}</span>}
-                      </span>
-                      {w.image && <ZoomImage className="vword-img" src={`${import.meta.env.BASE_URL}${w.image.src}`} alt={w.image.alt} />}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </article>
+          {vowelGroups.map(g => (
+            <Fragment key={g[0].id}>
+            {g[0].heading && <h3 className="vgroup-h">{g[0].heading}</h3>}
+            {g[0].preface?.map(r => <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p>{r.toneTable && <ToneTableView table={r.toneTable} />}</article>)}
+            {g.length > 1 ? <div className="vrow">{g.map(vowelCard)}</div> : vowelCard(g[0])}
+            {lesson.vocabAfterVowel && g.some(v => v.id === lesson.vocabAfterVowel) && lesson.vocab.length > 0 && (
+              <>
+                <h3 className="vgroup-h">單字</h3>
+                <WordList compact="wide" words={lesson.vocab} showZh={showZh} showRoman={showRoman} />
+              </>
+            )}
             </Fragment>
           ))}
         </section>
@@ -179,14 +196,14 @@ export default function LessonPage() {
         </>
       )}
 
-      {cur === 'vocab' && <WordList words={lesson.vocab} showZh={showZh} showRoman={showRoman} />}
+      {cur === 'vocab' && <WordList compact="wide" words={lesson.vocab} showZh={showZh} showRoman={showRoman} />}
 
       {cur === 'practice' && (
         <section className="stack">
           {lesson.practice.map(g => (
             <article className="card" key={g.title}>
-              <h3>{g.title}</h3>
-              <WordList words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />
+              {g.title !== practiceLabel(lesson) && <h3>{g.title}</h3>}
+              <WordList compact words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />
             </article>
           ))}
           {lesson.patterns.length > 0 && (
@@ -199,9 +216,9 @@ export default function LessonPage() {
       )}
 
       {cur === 'memes' && (
-        <section className="stack">
+        <section className="memegrid">
           {lesson.memes.map(m => (
-            <article className="card" key={m.title}>
+            <article className={m.half ? 'card half' : 'card'} key={m.title}>
               <h3>{m.title}</h3>
               {m.big && <div className="th meme-big">{m.big}</div>}
               {m.desc && <p className="muted small">{m.desc}</p>}
