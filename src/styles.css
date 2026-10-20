@@ -247,8 +247,7 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 
 /* 作業 */
 .assignbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0; padding: 10px 14px; background: var(--accent-soft); border-radius: 12px; }
-.assignbar input, .hw-name input, .dict-row input { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--fg); }
-.assignbar .btn { padding: 5px 12px; background: var(--card); }
+.hw-name input, .dict-row input { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--fg); }
 .hw-name { margin: 12px 0; }
 .hw-steps { display: grid; gap: 16px; }
 .hw-sec { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; }
@@ -271,3 +270,4 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .mybook { font-size: .9rem; text-decoration: none; padding: 4px 12px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+.hw-sent { margin: 0; font-weight: 600; color: #1f6b3a; }

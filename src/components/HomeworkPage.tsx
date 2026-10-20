@@ -4,37 +4,26 @@ import { getRepository } from '../data/repository'
 import type { Lesson } from '../types'
 import { ListenQuiz, VowelListenQuiz, vowelSyllables } from './Games'
 import SpeakButton from './SpeakButton'
+import { getApi, type HomeworkResult } from '../reservation/api'
 
-const copy = async (text: string) => { try { await navigator.clipboard.writeText(text); return true } catch { return false } }
 const norm = (s: string) => s.normalize('NFC').replace(/\s+/g, '')
 
-// 老師端：在課程頁產生「指派連結」（可帶學生姓名）
-export function AssignBar({ lessonId }: { lessonId: string }) {
-  const [name, setName] = useState('')
-  const [done, setDone] = useState(false)
-  const url = () => `${location.href.split('#')[0]}#/reading/lesson/${lessonId}/homework${name.trim() ? `?to=${encodeURIComponent(name.trim())}` : ''}`
-  return (
-    <div className="assignbar">
-      <strong>📝 作業</strong>
-      <Link className="btn" to={`/reading/lesson/${lessonId}/homework`}>開啟作業頁</Link>
-      <input value={name} onChange={e => { setName(e.target.value); setDone(false) }} placeholder="學生姓名（選填）" aria-label="學生姓名" />
-      <button className="gbtn" onClick={async () => setDone(await copy(url()))}>{done ? '已複製 ✓' : '複製指派連結'}</button>
-    </div>
-  )
-}
-
-interface Result { listen?: [number, number]; typing?: [number, number]; read?: boolean }
+type Result = HomeworkResult
 
 export default function HomeworkPage() {
   const { id } = useParams()
   const [sp] = useSearchParams()
   const [lesson, setLesson] = useState<Lesson | null | undefined>(undefined)
-  const [name, setName] = useState(() => sp.get('to') ?? '')
+  const token = sp.get('t') ?? ''
+  const api = getApi(sp.get('mock') === '1')
+  const [name, setName] = useState('')
   const [res, setRes] = useState<Result>({})
-  const [copied, setCopied] = useState(false)
+  const [state, setState] = useState<'idle' | 'sending' | 'sent'>('idle')
+  const [err, setErr] = useState('')
+  useEffect(() => { if (token) api.getHomeworkInfo(token).then(i => setName(i.name)).catch(() => setName('')) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { getRepository().getLesson(id ?? '').then(l => setLesson(l ?? null)) }, [id])
 
-  // 聽寫 / 朗讀用的詞：優先用老師指定的作業字，沒有就用單字表
+  // 聽寫用的詞：優先用老師指定的作業字，沒有就用單字表
   const words = useMemo(() => {
     if (!lesson) return [] as string[]
     const src = lesson.homework.length ? lesson.homework : lesson.vocab.map(w => w.thai)
@@ -46,11 +35,10 @@ export default function HomeworkPage() {
   const hasC = lesson.consonants.length >= 4
   const hasV = vowelSyllables(lesson.vowels).length >= 6
 
-  const summary = () => {
-    const f = (r?: [number, number]) => (r ? `${r[0]}/${r[1]}` : '未做')
-    return [`【L${lesson.number} 作業】${name.trim() || '（未填姓名）'}`,
-      hasC || hasV ? `聽音選字：${f(res.listen)}` : '', words.length ? `聽寫：${f(res.typing)}` : '',
-      words.length ? `朗讀：${res.read ? '已完成' : '未完成'}` : '', new Date().toLocaleDateString('zh-TW')].filter(Boolean).join('\n')
+  const submit = async () => {
+    setState('sending'); setErr('')
+    try { await api.submitHomework(token, lesson.number, res); setState('sent') }
+    catch (e) { setErr(e instanceof Error ? e.message : '送出失敗'); setState('idle') }
   }
 
   return (
@@ -58,9 +46,7 @@ export default function HomeworkPage() {
       <p><Link to={`/reading/lesson/${lesson.id}`}>← 回 L{lesson.number}</Link></p>
       <h1>L{lesson.number} 作業</h1>
       <p className="muted">{lesson.title}</p>
-      <div className="hw-name">
-        <label>姓名　<input value={name} onChange={e => setName(e.target.value)} placeholder="請輸入姓名" /></label>
-      </div>
+      {name && <p className="hw-name">👤 {name}</p>}
 
       <div className="hw-steps">
         {(hasC || hasV) && (
@@ -80,22 +66,19 @@ export default function HomeworkPage() {
             <Dictation words={words} onDone={(s, t) => setRes(r => ({ ...r, typing: [s, t] }))} />
           </section>
         )}
-
-        {words.length > 0 && (
-          <section className="hw-sec">
-            <h2><span className="hw-n">{(hasC || hasV ? 1 : 0) + 2}</span> 朗讀{res.read && <em className="hw-done">已完成</em>}</h2>
-            <p className="muted small">把下面的詞大聲唸三遍，錄成語音傳給老師。</p>
-            <div className="hw-words">{words.map(w => <span key={w} className="hw-word th">{w}<SpeakButton text={w} /></span>)}</div>
-            <label className="hw-check"><input type="checkbox" checked={!!res.read} onChange={e => setRes(r => ({ ...r, read: e.target.checked }))} /> 我唸完並錄好音了</label>
-          </section>
-        )}
       </div>
 
       <section className="hw-sec hw-submit">
         <h2>繳交</h2>
-        <p className="muted small">完成後按「複製成績」，貼給老師（LINE／訊息）。</p>
-        <pre className="hw-sum">{summary()}</pre>
-        <button className="gbtn on" onClick={async () => { setCopied(await copy(summary())) }}>{copied ? '已複製 ✓' : '複製成績'}</button>
+        {!token
+          ? <p className="muted small">請從預約頁的「我的課程」進入作業頁，才能送出作業。</p>
+          : state === 'sent'
+            ? <p className="hw-sent">✅ 已送出，老師會收到你的成績。</p>
+            : <>
+              <p className="muted small">做完以上題目後，按「送出作業」，成績會直接傳給老師。</p>
+              <button className="gbtn on" disabled={state === 'sending' || (!res.listen && !res.typing)} onClick={submit}>{state === 'sending' ? '送出中…' : '送出作業'}</button>
+              {err && <p className="bk-msg err">{err}</p>}
+            </>}
       </section>
     </>
   )

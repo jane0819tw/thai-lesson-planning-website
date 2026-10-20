@@ -24,6 +24,7 @@ function syncNow() {
     const problems = [];
     importMails_(problems);
     expireAndRemind_(problems);
+    bustCaches_(); // 信件同步可能改了行事曆／記錄表，讓學生頁的快取作廢
     if (problems.length) notify_('AmazingTalker 同步需要人工確認', problems.join('\n\n'));
   } finally { lock.releaseLock(); }
 }
@@ -151,6 +152,7 @@ function applyStatusChange_(b) {
   }
   syncCalendarEvent_(b);
   writeBooking_(b);
+  bustCaches_();
 }
 
 function addNote_(b, text) { b['備註'] = (b['備註'] ? b['備註'] + '；' : '') + text; }

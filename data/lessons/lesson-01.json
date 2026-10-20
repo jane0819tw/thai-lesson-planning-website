@@ -222,16 +222,33 @@
   "memes": [],
   "extras": [
     {
+      "title": "補充：อ๋อออออ（喔～是喔？）",
+      "lines": [],
+      "images": [
+        {
+          "src": "extras/lesson-01/aooo-meme.png",
+          "alt": "อ๋อออออออออออ (เหรอ?) 貼圖"
+        }
+      ]
+    },
+    {
       "title": "補充：字形相近分組（辨認用）",
-      "lines": [
-        "กฎฏภถณฌญฤฦ",
-        "จงวลสฐธ",
-        "อฮ",
-        "บปษ",
-        "ดตฒคฅศ",
-        "ผพฝฟฬ",
-        "ขฃฆชซ",
-        "＊ม น ฉ ท ฑ ห"
+      "lines": [],
+      "images": [
+        {
+          "src": "extras/lesson-01/similar-letters.webp",
+          "alt": "字形相近分組與企鵝插圖"
+        }
+      ]
+    },
+    {
+      "title": "補充：日本人眼中的泰文字母（ก ถ ฏ ญ）",
+      "lines": [],
+      "images": [
+        {
+          "src": "extras/lesson-01/letter-bird.webp",
+          "alt": "ก ถ ฏ ญ 與文鳥的對應"
+        }
       ]
     }
   ],

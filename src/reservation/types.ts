@@ -13,6 +13,10 @@ export interface StudentView {
   courses?: string[]
 }
 
+/** 學生頁分兩次載入：getStudentInfo（姓名、課程、堂數、我的預約）與 getOpenDays（可預約時段，慢） */
+export type StudentInfo = Omit<StudentView, 'days' | 'asOf'>
+export interface OpenDays { days: Day[]; asOf: string }
+
 // ───────── 老師管理頁 ─────────
 export interface Rule { type: '每週' | '單次' | '限定' | '休假'; weekday: number | ''; date: string; start: string; end: string; label?: string }
 export interface Booking { id: string; source: string; name: string; start: string; length: number; status: string }

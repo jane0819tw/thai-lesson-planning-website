@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import { setSession } from './session'
 import { getApi } from './api'
-import type { StudentView } from './types'
+import type { OpenDays, StudentInfo } from './types'
 import './booking.css'
 
 // 時間皆為台北時間
@@ -20,7 +20,8 @@ export default function BookingPage() {
   const token = sp.get('t') ?? ''
   const api = getApi(sp.get('mock') === '1')
 
-  const [view, setView] = useState<StudentView | null>(null)
+  const [view, setView] = useState<StudentInfo | null>(null)
+  const [open, setOpen] = useState<OpenDays | null>(null) // 時段比較慢，獨立載入，頁面其他部分不用等
   const [error, setError] = useState('')
   const [len, setLen] = useState<25 | 50>(25)
   const [month, setMonth] = useState<string | null>(null)
@@ -33,8 +34,9 @@ export default function BookingPage() {
   const [now, setNow] = useState(Date.now())
   const lessons = useLessons()
 
-  const load = useCallback(async () => { setView(await api.getStudentView(token)) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { load().catch(e => setError(e.message)) }, [load])
+  const loadInfo = useCallback(async () => { setView(await api.getStudentInfo(token)) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
+  const loadDays = useCallback(async (force = false) => { setOpen(await api.getOpenDays(force)) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadInfo().catch(e => setError(e.message)); loadDays().catch(e => setError(e.message)) }, [loadInfo, loadDays])
   // 記住這位學生，讓其他頁面的頁首能回到「我的預約」
   useEffect(() => { if (token && view && view.mode === 'known') setSession({ token, name: view.name }) }, [token, view])
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(i) }, [])
@@ -46,7 +48,7 @@ export default function BookingPage() {
   const fixed = view.lessons?.len
   const L = fixed === 25 || fixed === 50 ? fixed : len
   const ok = (s: { can25: boolean; can50: boolean }) => (L === 25 ? s.can25 : s.can50)
-  const days = view.days.map(d => ({ ...d, free: d.slots.some(ok) }))
+  const days = (open?.days ?? []).map(d => ({ ...d, free: d.slots.some(ok) }))
   // 日期依月份分頁：月份沒選過就用第一個有空位的日子所在的月份
   const months = [...new Set(days.map(d => d.date.slice(0, 7)))]
   const curMonth = month && months.includes(month) ? month : (days.find(d => d.free) ?? days[0])?.date.slice(0, 7) ?? null
@@ -64,7 +66,7 @@ export default function BookingPage() {
   const myWhole = WHOLE_COURSES.filter(c => allowed.includes(c.key))
   const hasCourses = myUnits.length > 0 || myWhole.length > 0
 
-  const refresh = async () => { try { await load(); setMsg(null) } catch (e) { setMsg({ ok: false, text: (e as Error).message }) } }
+  const refresh = async () => { try { await Promise.all([loadInfo(), loadDays(true)]); setMsg(null) } catch (e) { setMsg({ ok: false, text: (e as Error).message }) } }
   const submit = async () => {
     if (!curDate || !curTime) return
     setBusy(true)
@@ -73,7 +75,7 @@ export default function BookingPage() {
       setMsg({ ok: true, text: '已送出！老師確認後，這個頁面的「我的預約」會出現 Zoom 連結。' }); setTime(null)
     } catch (e) { setMsg({ ok: false, text: (e as Error).message }) }
     setBusy(false)
-    try { await load() } catch { /* 送出已成功，重讀失敗不影響 */ }
+    try { await Promise.all([loadInfo(), loadDays(true)]) } catch { /* 送出已成功，重讀失敗不影響 */ }
   }
 
   return (
@@ -94,7 +96,7 @@ export default function BookingPage() {
                       <span className="bk-unit-h">{unitLabel(u)}</span>
                       <ul className="bk-lessons">
                         {lessons.filter(x => x.number >= u.from && x.number <= u.to).map(x => (
-                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link></li>
+                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<Link to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`}>📝 作業</Link></li>
                         ))}
                       </ul>
                     </div>
@@ -159,14 +161,14 @@ export default function BookingPage() {
       <div className="bk-card">
         <div className="bk-row between" style={{ marginBottom: 12 }}>
           <h2 style={{ margin: 0 }}>2. 日期與時間</h2>
-          <span className="bk-row"><span className="bk-muted">最後更新 {view.asOf.slice(5, 16).replace('-', '/')}</span><button onClick={refresh}>重新整理時段</button></span>
+          <span className="bk-row"><span className="bk-muted">{open ? `最後更新 ${open.asOf.slice(5, 16).replace('-', '/')}` : ''}</span><button onClick={refresh}>重新整理時段</button></span>
         </div>
         {months.length > 1 && (
           <div className="bk-row" style={{ marginBottom: 10 }}>
             {months.map(m => <button key={m} className={m === curMonth ? 'sel' : ''} onClick={() => { setMonth(m); setTime(null); setMsg(null) }}>{monthLabel(m)}</button>)}
           </div>
         )}
-        {days.length ? (
+        {!open ? <p className="bk-muted">時段載入中…</p> : days.length ? (
           <>
             <div className="bk-days">
               {monthDays.map(d => {

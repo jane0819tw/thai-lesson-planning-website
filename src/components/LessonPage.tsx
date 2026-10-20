@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { getSession } from '../reservation/session'
 import { getRepository } from '../data/repository'
 import type { Consonant, Lesson } from '../types'
 import SpeakButton from './SpeakButton'
@@ -15,10 +16,9 @@ import Games, { vowelSyllables } from './Games'
 import RuleDemo from './RuleDemo'
 import ToneIntro from './ToneIntro'
 import VowelIntro from './VowelIntro'
-import { AssignBar } from './HomeworkPage'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'tones' | 'vocab' | 'practice' | 'homework' | 'memes'
+type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'tones' | 'vocab' | 'practice' | 'memes'
 
 export default function LessonPage() {
   const { id } = useParams()
@@ -43,7 +43,6 @@ export default function LessonPage() {
     if (lesson.toneTables.length) t.push(['tones', '聲調表'])
     if (lesson.vocab.length) t.push(['vocab', '單字'])
     if (lesson.practice.length || lesson.patterns.length) t.push(['practice', '練習・句型'])
-    if (lesson.links.length) t.push(['homework', '補充連結'])
     if (lesson.memes.length) t.push(['memes', '梗圖'])
     if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6) t.push(['games', '互動練習'])
     if (lesson.extras.length) t.push(['extras', '補充'])
@@ -79,6 +78,7 @@ export default function LessonPage() {
             <article className="card" key={x.title}>
               <h3>{x.title}</h3>
               {x.lines.map((l, i) => <p className="th big2" key={i}>{l}</p>)}
+              {x.images?.map(im => <img key={im.src} src={`${import.meta.env.BASE_URL}${im.src}`} alt={im.alt} style={{ maxWidth: '100%', borderRadius: 12 }} />)}
             </article>
           ))}
         </section>
@@ -184,14 +184,6 @@ export default function LessonPage() {
         </section>
       )}
 
-      {cur === 'homework' && (
-        <section className="stack">
-          {lesson.links.length > 0 && (
-            <article className="card"><h3>補充連結</h3><ul className="plain">{lesson.links.map(l => <li key={l.url}><a href={l.url} target="_blank" rel="noreferrer">{l.title}</a></li>)}</ul></article>
-          )}
-        </section>
-      )}
-
       {cur === 'memes' && (
         <section className="stack">
           {lesson.memes.map(m => (
@@ -208,11 +200,9 @@ export default function LessonPage() {
 
   return (
     <>
-      <p><Link to="/reading">← 認字課程</Link></p>
+      {(() => { const st = getSession(); return <p>{st ? <Link to={`/book?t=${encodeURIComponent(st.token)}`}>← 回我的預約</Link> : <Link to="/reading">← 認字課程</Link>}</p> })()}
       <h1>L{lesson.number}　{lesson.title}</h1>
       <p className="muted">{lesson.summary}</p>
-
-      <AssignBar lessonId={lesson.id} />
 
       <div className="toolbar">
         <label><input type="checkbox" checked={showZh} onChange={e => setShowZh(e.target.checked)} /> 顯示中文翻譯</label>

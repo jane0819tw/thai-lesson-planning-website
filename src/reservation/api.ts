@@ -1,12 +1,18 @@
-import type { AdminState, RecSession, Rule, StudentView, Week } from './types'
+import type { AdminState, OpenDays, RecSession, Rule, StudentInfo, StudentView, Week } from './types'
 
 // Apps Script「網頁應用程式」網址（結尾 /exec）。這個網址本來就會公開，不是密碼。
 // 留空或網址帶 mock=1 時使用假資料，不會碰到真實試算表。
 export const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxfMPqPLR0wlaV4RfW40stOthBs_pikwfAG97W9X7tVhoyHOk6budX-N75V4fuHKGgb/exec'
 
+export interface HomeworkResult { listen?: [number, number]; typing?: [number, number] }
+
 interface Api {
-  getStudentView(token: string): Promise<StudentView>
+  getStudentInfo(token: string): Promise<StudentInfo>
+  /** force＝略過後端快取（學生按「重新整理時段」） */
+  getOpenDays(force?: boolean): Promise<OpenDays>
   submitBooking(token: string, name: string, email: string, start: string, len: number): Promise<{ ok: boolean }>
+  getHomeworkInfo(token: string): Promise<{ name: string }>
+  submitHomework(token: string, lessonNumber: number, result: HomeworkResult): Promise<{ ok: boolean; name: string }>
   adminGetState(): Promise<AdminState>
   adminGetWeek(date: string): Promise<Week>
   adminSaveRules(rules: Rule[]): Promise<boolean>
@@ -36,8 +42,11 @@ async function call<T>(fn: string, args: unknown[]): Promise<T> {
 }
 
 const real: Api = {
-  getStudentView: t => call('getStudentView', [t]),
+  getStudentInfo: t => call('getStudentInfo', [t]),
+  getOpenDays: f => call('getOpenDays', [!!f]),
   submitBooking: (t, n, e, s, l) => call('submitBooking', [t, n, e, s, l]),
+  getHomeworkInfo: t => call('getHomeworkInfo', [t]),
+  submitHomework: (t, n, r) => call('submitHomework', [t, n, r]),
   // 舊版後端的學生資料沒有 courses 欄位：補成空陣列（＝尚未開放任何課程）
   adminGetState: () => call<AdminState>('adminGetState', []).then(st => ({ ...st, students: st.students.map(x => ({ ...x, courses: x.courses ?? [] })) })),
   adminGetWeek: d => call('adminGetWeek', [d]),
@@ -89,15 +98,8 @@ const week = (d: string): Week => {
 }
 
 const mock: Api = {
-  getStudentView: t => t === 'bad' ? delay({ mode: 'invalid' } as StudentView) : delay({
+  getStudentInfo: t => t === 'bad' ? delay({ mode: 'invalid' } as StudentInfo) : delay({
     mode: t ? 'known' : 'generic', name: t ? 'Jenny' : '',
-    days: [
-      { date: day(1), closed: '', label: '', slots: sl(['19:00', true, true], ['19:30', false, false], ['20:00', true, true], ['20:30', true, false]) },
-      { date: day(2), closed: '休假', label: '出國', slots: [] },
-      { date: day(3), closed: '', label: '', slots: sl(['10:00', false, false], ['10:30', false, false]) },
-      { date: day(4), closed: '', label: '', slots: sl(['19:00', true, true], ['19:30', true, false]) },
-    ],
-    asOf: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 19).replace('T', ' '),
     lastLesson: t ? { date: '2026-09-25', progress: '會話Level2L3第一頁', next: '會話Level2L3第2頁開始' } : null,
     lessons: t ? { bought: 10, used: 3, booked: 3, left: 7, len: 25, leftMinutes: 175 } : null,
     courses: t ? ['reading:1', 'video'] : [],
@@ -107,7 +109,18 @@ const mock: Api = {
       { start: `${day(3)} 10:00`, end: `${day(3)} 10:25`, length: 25, count: 1, status: '待確認', zoom: '' },
     ] : [],
   }),
+  getOpenDays: () => delay({
+    days: [
+      { date: day(1), closed: '', label: '', slots: sl(['19:00', true, true], ['19:30', false, false], ['20:00', true, true], ['20:30', true, false]) },
+      { date: day(2), closed: '休假', label: '出國', slots: [] },
+      { date: day(3), closed: '', label: '', slots: sl(['10:00', false, false], ['10:30', false, false]) },
+      { date: day(4), closed: '', label: '', slots: sl(['19:00', true, true], ['19:30', true, false]) },
+    ],
+    asOf: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 19).replace('T', ' '),
+  }),
   submitBooking: (t, n) => (!t && !n ? Promise.reject(new Error('請填姓名')) : delay({ ok: true })),
+  getHomeworkInfo: t => delay({ name: t ? 'Jenny' : '' }),
+  submitHomework: (t, n) => (t ? delay({ ok: true, name: 'Jenny' }) : Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))),
   adminGetState: () => delay(structuredClone(db)),
   adminGetWeek: d => delay(week(d)),
   adminSaveRules: r => { db.rules = r; return delay(true) },

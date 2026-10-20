@@ -282,7 +282,6 @@ export default function AdminPage() {
                   <div><b>L{l.number}</b>　{l.title}</div>
                   <div className="bk-row">
                     <a className="mgr-link" href={`#/reading/lesson/${l.id}`} target="_blank" rel="noopener noreferrer">課程頁</a>
-                    <a className="mgr-link" href={`#/reading/lesson/${l.id}/homework`} target="_blank" rel="noopener noreferrer">作業頁</a>
                   </div>
                 </div>
               ))}

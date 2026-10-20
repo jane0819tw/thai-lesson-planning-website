@@ -4,7 +4,7 @@
  * 學生用的函式公開；admin 開頭的函式需要管理密鑰（指令碼屬性 ADMIN_KEY）。
  */
 
-const PUBLIC_API_ = { getStudentView: getStudentView, submitBooking: submitBooking };
+const PUBLIC_API_ = { getStudentView: getStudentView, getStudentInfo: getStudentInfo, getOpenDays: getOpenDays, submitBooking: submitBooking, getHomeworkInfo: getHomeworkInfo, submitHomework: submitHomework };
 const ADMIN_API_ = {
   adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminSaveRules: adminSaveRules,
   adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetCourses: adminSetCourses,
@@ -112,14 +112,56 @@ function openDays_() {
   return computeOpenSlots_(dates, readRules_(), busyIntervals_(from, to), earliest);
 }
 
+// ---------- 快取（CacheService）----------
+// 所有快取 key 都帶一個「世代號」；任何會改變資料的操作呼叫 bustCaches_()，換新世代號＝舊快取全部作廢。
+
+function cacheGen_() {
+  const c = CacheService.getScriptCache();
+  let g = c.get('gen');
+  if (!g) { g = String(Date.now()); c.put('gen', g, 21600); }
+  return g;
+}
+
+function bustCaches_() {
+  try { CacheService.getScriptCache().put('gen', String(Date.now()), 21600); } catch (e) { /* 快取壞了也不影響功能 */ }
+}
+
+/** 取快取（JSON＋gzip＋base64，單筆上限 100KB）；沒有或 force 時重算並寫回。compute 回傳 null 時不快取。 */
+function cached_(key, ttlSec, force, compute) {
+  const c = CacheService.getScriptCache();
+  const k = cacheGen_() + ':' + key;
+  if (!force) {
+    try {
+      const hit = c.get(k);
+      if (hit) return JSON.parse(Utilities.ungzip(Utilities.newBlob(Utilities.base64Decode(hit), 'application/x-gzip')).getDataAsString());
+    } catch (e) { /* 讀不到就重算 */ }
+  }
+  const v = compute();
+  if (v != null) {
+    try {
+      const enc = Utilities.base64Encode(Utilities.gzip(Utilities.newBlob(JSON.stringify(v))).getBytes());
+      if (enc.length < 100000) c.put(k, enc, ttlSec);
+    } catch (e) { /* 寫不進去就算了 */ }
+  }
+  return v;
+}
+
 // ---------- 學生 API ----------
 
-function getStudentView(token) {
+/** 可預約時段（快取 2 分鐘；force＝學生按「重新整理時段」時略過快取） */
+function getOpenDays(force) {
+  return cached_('openDays', 120, !!force, function () {
+    return { days: openDays_(), asOf: Utilities.formatDate(new Date(), CONFIG.TZ, 'yyyy-MM-dd HH:mm:ss') };
+  });
+}
+
+/** 學生頁不含時段的部分（姓名、課程、堂數、我的預約）。記錄表摘要快取 5 分鐘，其餘是本試算表的分頁，很快。 */
+function getStudentInfo(token) {
   const s = studentByToken_(token);
   if (token && !s) return { mode: 'invalid' };
-  const v = { mode: s ? 'known' : 'generic', name: s ? s.name : '', days: openDays_(), lessons: null, upcoming: [], asOf: Utilities.formatDate(new Date(), CONFIG.TZ, 'yyyy-MM-dd HH:mm:ss') };
+  const v = { mode: s ? 'known' : 'generic', name: s ? s.name : '', lessons: null, upcoming: [] };
   if (s) {
-    const rec = s['課程記錄表'] ? readRecordBundle_(s['課程記錄表']) : null;
+    const rec = s['課程記錄表'] ? cached_('rec:' + s.token, 300, false, function () { return readRecordBundle_(s['課程記錄表']); }) : null;
     v.courses = s.courses;
     v.lessons = rec ? rec.summary : null;
     v.lastLesson = rec ? rec.last : null;
@@ -132,6 +174,34 @@ function getStudentView(token) {
     v.upcoming = buildSessions_(rec ? rec.sessions : [], bks, toLocalStr_(new Date()));
   }
   return v;
+}
+
+/** 舊的一次回傳全部（前端已改成分兩次呼叫，保留給舊版頁面） */
+function getStudentView(token) {
+  const v = getStudentInfo(token);
+  if (v.mode === 'invalid') return v;
+  const d = getOpenDays(false);
+  v.days = d.days; v.asOf = d.asOf;
+  return v;
+}
+
+/** 作業頁用：用預約代碼找出是哪位學生（代碼無效時回傳空姓名） */
+function getHomeworkInfo(token) {
+  const s = studentByToken_(token);
+  return { name: s ? s.name : '' };
+}
+
+/** 學生在作業頁按「送出作業」：寫進「作業」分頁一列。result = { listen: [對, 總], typing: [對, 總] }（沒做的欄位省略） */
+function submitHomework(token, lessonNumber, result) {
+  const s = studentByToken_(token);
+  if (!s) throw new Error('作業連結已失效，請向老師索取新的連結');
+  const n = Number(lessonNumber);
+  if (!(n > 0)) throw new Error('課別不正確');
+  const fmt = function (r) { return r && r.length === 2 ? Number(r[0]) + '/' + Number(r[1]) : '未做'; };
+  result = result || {};
+  getSheet_(CONFIG.SHEETS.HOMEWORK, HOMEWORK_HEADERS)
+    .appendRow([new Date(), s.name, 'L' + n, fmt(result.listen), fmt(result.typing), '']);
+  return { ok: true, name: s.name };
 }
 
 function submitBooking(token, name, email, startStr, length) {
@@ -166,6 +236,7 @@ function submitBooking(token, name, email, startStr, length) {
     };
     syncCalendarEvent_(b);
     writeBooking_(b);
+    bustCaches_();
     notify_('私下學生新預約：' + studentName,
       studentName + '　' + startStr + '（' + length + ' 分）\n\n請到管理頁或試算表確認／拒絕。\n私下預約成立後，記得到 AmazingTalker 手動關閉同一時段。');
     notifyTeacher_('📚 新預約：' + studentName + '\n' + startStr + '（' + length + ' 分）\n\n管理頁：' + CONFIG.ADMIN_URL +
@@ -201,6 +272,7 @@ function adminSaveRules(rules) {
     return r;
   });
   writeRules_(clean);
+  bustCaches_();
   return true;
 }
 
@@ -212,6 +284,7 @@ function adminSetStatus(id, status) {
     if (!b) throw new Error('找不到預約 ' + id);
     b['狀態'] = status;
     applyStatusChange_(b);
+    bustCaches_();
     return true;
   } finally { lock.releaseLock(); }
 }
@@ -297,6 +370,7 @@ function adminSetRecord(name, url) {
     if (!/^https:\/\/docs\.google\.com\/spreadsheets\/d\/[\w-]+/.test(url) && !/^[\w-]{20,}$/.test(url)) throw new Error('請貼上 Google 試算表的網址');
   }
   getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).getRange(s.row, STUDENT_HEADERS.indexOf('課程記錄表') + 1).setValue(url);
+  bustCaches_();
   return true;
 }
 
@@ -344,6 +418,7 @@ function adminCancelRecordLesson(name, start) {
   if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(String(start))) throw new Error('時間格式不正確');
   const msg = clearBookingFromRecord_(s['課程記錄表'], start, 30, '');
   const n = deleteCalendarEventsFor_([s.name, s.display], start);
+  bustCaches_();
   return msg + (n ? '；已刪除行事曆事件 ' + n + ' 個' : '；行事曆上沒有符合的事件');
 }
 

@@ -20,7 +20,8 @@ export interface PracticeGroup { title: string; items: PracticeItem[] }
 export interface Pattern { thai: string; zh: string }
 export interface LinkItem { title: string; url: string }
 export interface Meme { title: string; desc: string; imageUrl?: string | null }
-export interface Extra { title: string; lines: string[] }
+export interface ExtraImage { src: string; alt: string }
+export interface Extra { title: string; lines: string[]; images?: ExtraImage[] }
 
 export interface DiagramTile { label: string; count?: string; color: 'pink' | 'yellow' | 'green' | 'blue'; dashed?: boolean; wide?: boolean; sub: { t?: string; b?: string; th?: string; i?: boolean }[] }
 export interface Diagram { title: string; intro: string; tiles: DiagramTile[]; result: string }
