@@ -7,10 +7,10 @@ import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import type { Unit } from './access'
 import { buildDraft, paintCells, serialize, setHoliday } from './schedule'
 import type { Draft } from './schedule'
-import type { AdminState, RecSession, StudentRow, Week } from './types'
+import type { AdminState, HomeworkRow, RecSession, StudentRow, Week } from './types'
 import './booking.css'
 
-const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生'], ['links', '課程入口']] as const
+const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口']] as const
 type Sec = (typeof SECS)[number][0]
 const SEC_KEY = 'thaiskr_admin_sec'
 const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'sched' } catch { return 'sched' } }
@@ -37,6 +37,7 @@ export default function AdminPage() {
   const [sec, setSec] = useState<Sec>(secGet)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [rec, setRec] = useState<RecSession[] | null>(null)
+  const [hw, setHw] = useState<HomeworkRow[] | null>(null)
   const [onlyActive, setOnlyActive] = useState(false)
   const [newBar, setNewBar] = useState('')
   const [busy, setBusy] = useState({ n: 0, text: '' })
@@ -83,6 +84,12 @@ export default function AdminPage() {
     }
   }, [api, run, loadWeek, step])
   useEffect(() => { if (!needKey) init() }, [needKey, init])
+
+  // 進入「學生作業」時才讀「作業」分頁
+  useEffect(() => {
+    if (sec !== 'homework' || hw || !st) return
+    run('讀取作業中…', () => api.adminGetHomework()).then(setHw).catch(e => flash(false, e.message))
+  }, [sec, hw, st, api, run])
 
   // 進入「所有預約」時才讀各學生的記錄表（每位要開一次檔，比較慢）
   useEffect(() => {
@@ -253,6 +260,24 @@ export default function AdminPage() {
                 </>
               )}
               <p className="bk-muted">改成「已確認／待確認」會把時段放回行事曆；改成其他狀態會移除行事曆事件。私下預約改成已確認時會建立 Zoom 並寫入記錄表。</p>
+            </div>
+          )}
+
+          {sec === 'homework' && (
+            <div className="bk-card">
+              <div className="bk-row between">
+                <h2 style={{ margin: 0 }}>學生作業</h2>
+                <button onClick={() => { setHw(null) }}>重新整理</button>
+              </div>
+              <p className="bk-muted">學生在作業頁按「送出作業」後出現在這裡（最近 300 筆，新的在上面）。同一課重做會多一筆，學生頁顯示最近一次。資料也存在試算表的「作業」分頁。</p>
+              {!hw ? <p className="bk-muted">載入中…</p> : hw.length === 0 ? <p className="bk-muted">還沒有學生送出作業。</p> : (
+                <div className="mgr-scroll">
+                  <table className="mgr-table">
+                    <thead><tr><th>繳交時間</th><th>學生</th><th>課別</th><th>聽音選字</th><th>聽寫</th></tr></thead>
+                    <tbody>{hw.map((r, i) => <tr key={i}><td>{r.time.slice(5).replace('-', '/')}</td><td>{r.name}</td><td>{r.lesson}</td><td>{r.listen}</td><td>{r.typing}</td></tr>)}</tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 

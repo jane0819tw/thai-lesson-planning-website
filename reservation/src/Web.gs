@@ -8,7 +8,7 @@ const PUBLIC_API_ = { getStudentView: getStudentView, getStudentInfo: getStudent
 const ADMIN_API_ = {
   adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminSaveRules: adminSaveRules,
   adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetCourses: adminSetCourses,
-  adminGetRecordSessions: adminGetRecordSessions, adminCancelRecordLesson: adminCancelRecordLesson,
+  adminGetRecordSessions: adminGetRecordSessions, adminCancelRecordLesson: adminCancelRecordLesson, adminGetHomework: adminGetHomework,
 };
 
 function doGet() { return json_({ ok: true, service: 'thaiskr-reservation' }); }
@@ -163,6 +163,7 @@ function getStudentInfo(token) {
   if (s) {
     const rec = s['課程記錄表'] ? cached_('rec:' + s.token, 300, false, function () { return readRecordBundle_(s['課程記錄表']); }) : null;
     v.courses = s.courses;
+    v.homework = homeworkOf_(s.name);
     v.lessons = rec ? rec.summary : null;
     v.lastLesson = rec ? rec.last : null;
     const bks = readBookings_().filter(function (b) {
@@ -185,13 +186,37 @@ function getStudentView(token) {
   return v;
 }
 
-/** 作業頁用：用預約代碼找出是哪位學生（代碼無效時回傳空姓名） */
-function getHomeworkInfo(token) {
-  const s = studentByToken_(token);
-  return { name: s ? s.name : '' };
+// ---------- 作業 ----------
+
+/** 「作業」分頁全部紀錄（舊→新）。分數欄是文字（例 8/9），讀 DisplayValues 才不會被當成日期。 */
+function readHomework_() {
+  const sh = getSheet_(CONFIG.SHEETS.HOMEWORK, HOMEWORK_HEADERS);
+  if (sh.getLastRow() < 2) return [];
+  return sh.getRange(2, 1, sh.getLastRow() - 1, HOMEWORK_HEADERS.length).getValues()
+    .filter(function (r) { return r[0] && r[1]; })
+    .map(function (r) { return { time: toLocalStr_(r[0]), name: String(r[1]), lesson: String(r[2]), listen: String(r[3]), typing: String(r[4]) }; });
 }
 
-/** 學生在作業頁按「送出作業」：寫進「作業」分頁一列。result = { listen: [對, 總], typing: [對, 總] }（沒做的欄位省略） */
+/** 某位學生每一課「最近一次」的成績：{ '1': { time, listen, typing, count } } */
+function homeworkOf_(name, rows) {
+  const out = {};
+  (rows || readHomework_()).forEach(function (r) {
+    if (r.name !== name) return;
+    const n = r.lesson.replace(/^L/, '');
+    const prev = out[n];
+    out[n] = { time: r.time, listen: r.listen, typing: r.typing, count: (prev ? prev.count : 0) + 1 };
+  });
+  return out;
+}
+
+/** 作業頁用：用預約代碼找出是哪位學生，以及這課上一次送出的成績（代碼無效時回傳空姓名） */
+function getHomeworkInfo(token, lessonNumber) {
+  const s = studentByToken_(token);
+  if (!s) return { name: '', last: null };
+  return { name: s.name, last: homeworkOf_(s.name)[String(Number(lessonNumber))] || null };
+}
+
+/** 學生在作業頁按「送出作業」：寫進「作業」分頁一列（可重複送出，每次一列；學生頁顯示最近一次）。result = { listen: [對, 總], typing: [對, 總] }（沒做的欄位省略） */
 function submitHomework(token, lessonNumber, result) {
   const s = studentByToken_(token);
   if (!s) throw new Error('作業連結已失效，請向老師索取新的連結');
@@ -199,9 +224,16 @@ function submitHomework(token, lessonNumber, result) {
   if (!(n > 0)) throw new Error('課別不正確');
   const fmt = function (r) { return r && r.length === 2 ? Number(r[0]) + '/' + Number(r[1]) : '未做'; };
   result = result || {};
-  getSheet_(CONFIG.SHEETS.HOMEWORK, HOMEWORK_HEADERS)
-    .appendRow([new Date(), s.name, 'L' + n, fmt(result.listen), fmt(result.typing), '']);
+  const sh = getSheet_(CONFIG.SHEETS.HOMEWORK, HOMEWORK_HEADERS);
+  const row = sh.getLastRow() + 1;
+  sh.getRange(row, 3, 1, 3).setNumberFormat('@'); // 「8/9」要存成文字，不然會被轉成日期
+  sh.getRange(row, 1, 1, HOMEWORK_HEADERS.length).setValues([[new Date(), s.name, 'L' + n, fmt(result.listen), fmt(result.typing), '']]);
   return { ok: true, name: s.name };
+}
+
+/** 老師頁：最近 300 筆作業（新→舊） */
+function adminGetHomework() {
+  return readHomework_().reverse().slice(0, 300);
 }
 
 function submitBooking(token, name, email, startStr, length) {

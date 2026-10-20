@@ -271,3 +271,19 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .mybook { font-size: .9rem; text-decoration: none; padding: 4px 12px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
 .hw-sent { margin: 0; font-weight: 600; color: #1f6b3a; }
+.hw-pad { margin: 10px 0; padding: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
+.hw-pad .krow { margin-bottom: 6px; }
+.hw-pad .key { min-width: 36px; height: 42px; font-size: 1.25rem; }
+.dict-row.act input { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+/* 作業頁鍵盤：按下變色、放開慢慢淡回 */
+.hw-pad .key { transition: background-color .4s ease, color .4s ease, border-color .4s ease, transform .1s; }
+.hw-pad .key:active { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(2px); transition-duration: 0s; }
+.hw-ked .krow { flex-wrap: nowrap; gap: 4px; margin-bottom: 4px; }
+.hw-ked .key { flex: 1 1 0; min-width: 0; padding: 0; position: relative; height: 44px; font-size: 1.2rem; }
+.hw-ked .key small { position: absolute; top: 1px; right: 3px; font-size: .6rem; line-height: 1; color: var(--muted); }
+.hw-ked .key:active small { color: #fff; }
+.hw-ked .kspace { flex: 0 0 auto; flex-basis: 0; }
+.hw-ked .key.act { font-size: .9rem; }
+/* 鍵盤字體切換：無頭體＝Noto Sans Thai（無圈）；標準＝網站預設的有圈字體 */
+.tf-loopless .th { font-family: 'Noto Sans Thai', 'Noto Sans TC', sans-serif; }
+.hw-last { margin: 8px 0; padding: 8px 12px; background: #e4f4ea; color: #1f6b3a; border-radius: 10px; font-size: .9rem; }

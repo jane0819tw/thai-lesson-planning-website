@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCatalog } from '../data/useCatalog'
 import { speak } from '../audio/speak'
+import { useThaiFont } from './thaiFont'
 import LetterDialog from './LetterDialog'
 
 type Mode = 'learn' | 'kedmanee'
@@ -23,8 +24,9 @@ const KED: [string, string][][] = [
   [['ฟ', 'ฤ'], ['ห', 'ฆ'], ['ก', 'ฏ'], ['ด', 'โ'], ['เ', 'ฌ'], ['้', '็'], ['่', '๋'], ['า', 'ษ'], ['ส', 'ศ'], ['ว', 'ซ'], ['ง', '.']],
   [['ผ', '('], ['ป', ')'], ['แ', 'ฉ'], ['อ', 'ฮ'], ['ิ', 'ฺ'], ['ื', '์'], ['ท', '?'], ['ม', 'ฒ'], ['ใ', 'ฬ'], ['ฝ', 'ฦ']],
 ]
-const isCombining = (ch: string) => /[ัิ-ฺ็-๎]/.test(ch)
-const label = (ch: string) => (isCombining(ch) ? '◌' + ch : ch)
+export { SECTIONS, KED }
+export const isCombining = (ch: string) => /[ัิ-ฺ็-๎]/.test(ch)
+export const label = (ch: string) => (isCombining(ch) ? '◌' + ch : ch)
 
 export default function KeyboardPage() {
   const { consonants } = useCatalog()
@@ -33,6 +35,7 @@ export default function KeyboardPage() {
   const [shift, setShift] = useState(false)
   const [last, setLast] = useState('')
   const [open, setOpen] = useState(false)
+  const [font, nextFont] = useThaiFont()
   const byChar = useMemo(() => new Map(consonants.map(c => [c.char, c])), [consonants])
   const cls = (ch: string) => byChar.get(ch)?.group ?? (isCombining(ch) ? 'vowel' : 'mark')
 
@@ -44,7 +47,7 @@ export default function KeyboardPage() {
   )
 
   return (
-    <>
+    <div className={`tf-${font.id}`}>
       <p><Link to="/reading">← 認字課程</Link></p>
       <h1>泰文鍵盤</h1>
       <div className="outbox">
@@ -69,6 +72,7 @@ export default function KeyboardPage() {
       <div className="tabs" role="tablist">
         <button className={mode === 'learn' ? 'on' : ''} onClick={() => setMode('learn')}>學習版（分類）</button>
         <button className={mode === 'kedmanee' ? 'on' : ''} onClick={() => setMode('kedmanee')}>標準鍵盤 Kedmanee</button>
+        <button onClick={nextFont} title="切換字體">Aa 字體：{font.label}</button>
       </div>
 
       {mode === 'learn' && SECTIONS.map(s => (
@@ -89,6 +93,6 @@ export default function KeyboardPage() {
         </section>
       )}
       {open && last && <LetterDialog char={last} info={info} onClose={() => setOpen(false)} />}
-    </>
+    </div>
   )
 }

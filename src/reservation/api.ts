@@ -1,4 +1,4 @@
-import type { AdminState, OpenDays, RecSession, Rule, StudentInfo, StudentView, Week } from './types'
+import type { AdminState, HomeworkRecord, HomeworkRow, OpenDays, RecSession, Rule, StudentInfo, StudentView, Week } from './types'
 
 // Apps Script「網頁應用程式」網址（結尾 /exec）。這個網址本來就會公開，不是密碼。
 // 留空或網址帶 mock=1 時使用假資料，不會碰到真實試算表。
@@ -11,8 +11,9 @@ interface Api {
   /** force＝略過後端快取（學生按「重新整理時段」） */
   getOpenDays(force?: boolean): Promise<OpenDays>
   submitBooking(token: string, name: string, email: string, start: string, len: number): Promise<{ ok: boolean }>
-  getHomeworkInfo(token: string): Promise<{ name: string }>
+  getHomeworkInfo(token: string, lessonNumber: number): Promise<{ name: string; last: HomeworkRecord | null }>
   submitHomework(token: string, lessonNumber: number, result: HomeworkResult): Promise<{ ok: boolean; name: string }>
+  adminGetHomework(): Promise<HomeworkRow[]>
   adminGetState(): Promise<AdminState>
   adminGetWeek(date: string): Promise<Week>
   adminSaveRules(rules: Rule[]): Promise<boolean>
@@ -45,7 +46,7 @@ const real: Api = {
   getStudentInfo: t => call('getStudentInfo', [t]),
   getOpenDays: f => call('getOpenDays', [!!f]),
   submitBooking: (t, n, e, s, l) => call('submitBooking', [t, n, e, s, l]),
-  getHomeworkInfo: t => call('getHomeworkInfo', [t]),
+  getHomeworkInfo: (t, n) => call('getHomeworkInfo', [t, n]),
   submitHomework: (t, n, r) => call('submitHomework', [t, n, r]),
   // 舊版後端的學生資料沒有 courses 欄位：補成空陣列（＝尚未開放任何課程）
   adminGetState: () => call<AdminState>('adminGetState', []).then(st => ({ ...st, students: st.students.map(x => ({ ...x, courses: x.courses ?? [] })) })),
@@ -57,6 +58,7 @@ const real: Api = {
   adminSetRecord: (n, u) => call('adminSetRecord', [n, u]),
   adminSetCourses: (n, c) => call('adminSetCourses', [n, c]),
   adminGetRecordSessions: () => call('adminGetRecordSessions', []),
+  adminGetHomework: () => call('adminGetHomework', []),
   adminCancelRecordLesson: (n, s) => call('adminCancelRecordLesson', [n, s]),
 }
 
@@ -97,8 +99,11 @@ const week = (d: string): Week => {
   return { monday: days[0].date, today: day(0), days }
 }
 
+const mockHw: Record<string, HomeworkRecord> = { '1': { time: `${day(-1)} 20:15`, listen: '8/9', typing: '5/6', count: 2 } }
+
 const mock: Api = {
   getStudentInfo: t => t === 'bad' ? delay({ mode: 'invalid' } as StudentInfo) : delay({
+    homework: t ? mockHw : {},
     mode: t ? 'known' : 'generic', name: t ? 'Jenny' : '',
     lastLesson: t ? { date: '2026-09-25', progress: '會話Level2L3第一頁', next: '會話Level2L3第2頁開始' } : null,
     lessons: t ? { bought: 10, used: 3, booked: 3, left: 7, len: 25, leftMinutes: 175 } : null,
@@ -119,8 +124,9 @@ const mock: Api = {
     asOf: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 19).replace('T', ' '),
   }),
   submitBooking: (t, n) => (!t && !n ? Promise.reject(new Error('請填姓名')) : delay({ ok: true })),
-  getHomeworkInfo: t => delay({ name: t ? 'Jenny' : '' }),
-  submitHomework: (t, n) => (t ? delay({ ok: true, name: 'Jenny' }) : Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))),
+  getHomeworkInfo: (t, n) => delay({ name: t ? 'Jenny' : '', last: t ? mockHw[String(n)] ?? null : null }),
+  adminGetHomework: () => delay(Object.entries(mockHw).map(([n, r]) => ({ time: r.time, name: 'Jenny', lesson: 'L' + n, listen: r.listen, typing: r.typing }))),
+  submitHomework: (t, n, r) => (t ? (mockHw[String(n)] = { time: `${day(0)} ${hhmm(0)}`, listen: r.listen ? r.listen.join('/') : '未做', typing: r.typing ? r.typing.join('/') : '未做', count: (mockHw[String(n)]?.count ?? 0) + 1 }, delay({ ok: true, name: 'Jenny' })) : Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))),
   adminGetState: () => delay(structuredClone(db)),
   adminGetWeek: d => delay(week(d)),
   adminSaveRules: r => { db.rules = r; return delay(true) },

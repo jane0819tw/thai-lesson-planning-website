@@ -11,7 +11,12 @@ export interface StudentView {
   upcoming: Upcoming[]
   /** 這位學生目前可進入的課程代號：reading:<n>（認字課每 5 課一個單位）或 categories.ts 的 key。舊版後端沒有這欄時為 undefined */
   courses?: string[]
+  /** 每一課最近一次作業成績，key 是課號（'1'）。舊版後端沒有這欄時為 undefined */
+  homework?: Record<string, HomeworkRecord>
 }
+
+export interface HomeworkRecord { time: string; listen: string; typing: string; count: number }
+export interface HomeworkRow { time: string; name: string; lesson: string; listen: string; typing: string }
 
 /** 學生頁分兩次載入：getStudentInfo（姓名、課程、堂數、我的預約）與 getOpenDays（可預約時段，慢） */
 export type StudentInfo = Omit<StudentView, 'days' | 'asOf'>
