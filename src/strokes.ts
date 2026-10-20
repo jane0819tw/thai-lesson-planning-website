@@ -23,9 +23,13 @@ export const isToneMark = (char: string): boolean => /^[\u0e48-\u0e4b]$/.test(ch
 // 兩者中間要插零寬不連字元（U+200C），否則字型會把 ํ+า 又合併回沒有圈圈的 ำ；資料名稱仍用原字
 export const ghostText = (s: string): string => s.replace(/\u0e33/g, '\u0e4d\u200c\u0e32')
 export const vowelForm = (v: string): string => v.replace('-', 'อ')
-/** 母音單獨發音用的文字：「สระ＋以 อ 當載體的名稱」（สระอะ、สระอา、สระเอะ）。
+/** 母音單獨發音用的文字：單一符號（ะ า ิ）直接念符號本身；多個符號（เะ）會被拆成兩個母音，所以補上 อ 寫成「เอะ」。
  *  對應的預錄音檔（gTTS）由 scripts/gen-audio.py 以同樣規則產生。 */
-export const vowelSpeech = (v: string): string => 'สระ' + vowelForm(v)
+export const vowelSpeech = (v: string): string => {
+  const bare = v.replace('-', '')
+  // 單獨一個 อ 會被念成子音名稱（ออ อ่าง），所以 -อ 也補成 ออ
+  return bare.length > 1 || bare === 'อ' ? vowelForm(v) : bare
+}
 
 export function getStrokes(char: string): StrokeData | undefined {
   const s = data[char]
