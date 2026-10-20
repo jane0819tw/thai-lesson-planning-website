@@ -35,6 +35,7 @@ export default function App() {
           <Route path="/reading/stroke-editor" element={<StrokeEditor />} />
           <Route path="/reading/lesson/:id" element={<LessonPage />} />
           <Route path="/reading/lesson/:id/homework" element={<HomeworkPage />} />
+          <Route path="/reading/review/:unit" element={<HomeworkPage />} />
           <Route path="/book" element={<BookingPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/video" element={<VideoIndex />} />

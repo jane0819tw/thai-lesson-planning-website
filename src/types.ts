@@ -44,5 +44,7 @@ export interface Lesson {
   vowelNotes?: Rule[]
   /** 設了母音卡的 id：「單字」清單改放在「母音」區塊裡、這張卡所屬的那一組之後（不再單獨一個區塊） */
   vocabAfterVowel?: string
+  /** 作業頁「延伸影片挑戰」按鈕的連結（站內路徑，例如 /video/xxx）；沒設就顯示「即將開放」 */
+  videoChallenge?: string
   homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean | VowelIntroConfig
 }
