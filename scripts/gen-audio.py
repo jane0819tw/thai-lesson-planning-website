@@ -21,7 +21,9 @@ name_text = lambda s: re.sub(r"\s+", "", s)  # 同 src/audio/speak.ts 的 nameTe
 vowel_speech = lambda f: f.replace("-", "อ") if len(f.replace("-", "")) > 1 or f.replace("-", "") == "อ" else f.replace("-", "")  # 單獨 อ 會被念成子音名稱，補成 ออ
 
 # 個別詞指定來源（優先於自動規則）：聽過覺得某個來源唸得不對時，在這裡換成另一個
-FORCE_GTTS = {"โก๋แก่", "เออเออ"}
+FORCE_GTTS = {"โก๋แก่", "เออเออ", "ขอ", "ผอผึ้ง", "ฃอฃวด"}  # 子音名稱用「連寫」當 key（กอไก่ 這種）
+# 個別詞指定合成文字：ฃ 是廢字，edge-tts 讀不出單獨一個，改念「ฃอ」
+FORCE_SYNTH = {"ฃ": "ฃอ", "ฃอฃวด": "ขอ ฃวด"}  # ฃอ 引擎念不好，發音時偷換成 ขอ（畫面仍顯示 ฃอ ฃวด）
 FORCE_EDGE = {"เตอ"}
 
 gtts_texts = set()  # 以 อ 當載體的單獨母音（อะ、อา、เอะ…）與母音卡的短／長音例字（กะ、กา…）：edge-tts 會唸跑掉，改用 gTTS
@@ -92,6 +94,7 @@ async def main(ids, only=None):
         t, o = collect(json.loads((ROOT / "data" / "lessons" / f"{i}.json").read_text(encoding="utf-8")))
         texts |= t; synth.update(o)
     gtts_texts.update(FORCE_GTTS); gtts_texts.difference_update(FORCE_EDGE)
+    synth.update(FORCE_SYNTH)
     if only:
         texts = {t for t in texts if t in only}
         missing = set(only) - texts
