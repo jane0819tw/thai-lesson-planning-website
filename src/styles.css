@@ -272,6 +272,7 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .gbtn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.topright { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .mybook { font-size: .9rem; text-decoration: none; padding: 4px 12px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
 .hw-sent { margin: 0; font-weight: 600; color: #1f6b3a; }
 .hw-pad { margin: 10px 0; padding: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }

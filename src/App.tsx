@@ -4,6 +4,7 @@ import Home from './components/Home'
 import ReadingIndex from './components/ReadingIndex'
 import LessonPage from './components/LessonPage'
 import StudentLink from './reservation/StudentLink'
+import AdminLink from './reservation/AdminLink'
 import BookingPage from './reservation/BookingPage'
 import AdminPage from './reservation/AdminPage'
 import HomeworkPage from './components/HomeworkPage'
@@ -19,7 +20,10 @@ export default function App() {
     <>
       <header className="top">
         <Link to="/" className="brand"><span className="th">ก</span> 泰語學習</Link>
-        <StudentLink />
+        <span className="topright">
+          <AdminLink />
+          <StudentLink />
+        </span>
       </header>
       <main className="wrap">
         <ErrorBoundary key={loc.pathname + loc.search}>
