@@ -44,6 +44,9 @@ function writeCache(t: string, patch: { info?: StudentInfo; open?: OpenDays }) {
   try { localStorage.setItem(cacheKey(t), JSON.stringify({ ...readCache(t), ...patch })) } catch { /* 存不了就算了 */ }
 }
 
+// 從「我的課程」點進課程或作業頁，按返回時要回到「我的課程」分頁；平常打開一律是「預約」
+const TAB_KEY = 'thaiskr_bk_tab'
+
 export default function BookingPage() {
   const [sp] = useSearchParams()
   const token = sp.get('t') ?? ''
@@ -61,6 +64,8 @@ export default function BookingPage() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
   const [now, setNow] = useState(Date.now())
+  const [tab, setTab] = useState<'book' | 'courses'>(() => { try { return sessionStorage.getItem(TAB_KEY) === 'courses' ? 'courses' : 'book' } catch { return 'book' } })
+  useEffect(() => { try { sessionStorage.removeItem(TAB_KEY) } catch { /* 存不了就算了 */ } }, [])
   const lessons = useLessons()
 
   const loadInfo = useCallback(async () => { const v = await api.getStudentInfo(token); setView(v); if (v.mode !== 'invalid') writeCache(token, { info: v }) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -113,7 +118,14 @@ export default function BookingPage() {
       <p className="bk-sub">{view.name ? `${view.name}，你好！` : ''}選擇課長與時段，送出後等老師確認，確認後可在這個頁面看到 Zoom 連結。時間皆為台北時間。</p>
 
       {view.mode === 'known' && (
-        <div className="bk-card">
+        <div className="tabs bk-tabs" role="tablist">
+          <button role="tab" aria-selected={tab === 'book'} className={tab === 'book' ? 'on' : ''} onClick={() => setTab('book')}>預約</button>
+          <button role="tab" aria-selected={tab === 'courses'} className={tab === 'courses' ? 'on' : ''} onClick={() => setTab('courses')}>我的課程</button>
+        </div>
+      )}
+
+      {view.mode === 'known' && tab === 'courses' && (
+        <div className="bk-card" onClickCapture={e => { if ((e.target as HTMLElement).closest('a')) { try { sessionStorage.setItem(TAB_KEY, 'courses') } catch { /* 存不了就算了 */ } } }}>
           <h2>我的課程</h2>
           {hasCourses ? (
             <>
@@ -147,93 +159,97 @@ export default function BookingPage() {
         </div>
       )}
 
-      {l && (
-        <div className="bk-card">
-          <h2>堂數</h2>
-          <p style={{ margin: 0 }}>
-            <strong className="bk-big">剩餘 {l.left} 堂</strong><br />
-            <span className="bk-muted">{fixed ? `${fixed} 分鐘課程包・` : ''}已購 {l.bought} 堂・已上 {l.used} 堂{l.booked ? `・已預約 ${l.booked} 堂（尚未上課）` : ''}</span>
-          </p>
-          {l.left <= 0 && <p className="bk-msg err">課程堂數已用完，預約前請先和老師聯絡。</p>}
-        </div>
-      )}
-
-      {view.upcoming.length > 0 && (
-        <div className="bk-card">
-          <h2>我的預約</h2>
-          {view.upcoming.map((u, i) => (
-            <div className="bk-item" key={u.start}>
-              <div>
-                {u.start.slice(0, 10).replace(/-/g, '/')} {hm(u.start)}–{hm(u.end)}・{u.count > 1 ? `連續 ${u.count} 堂` : `${u.length} 分`}
-                <div className="bk-muted">{u.status === '已確認' ? '已確認' : '等待老師確認'}</div>
-              </div>
-              {u.status !== '已確認' ? null : u.zoom
-                ? (canJoin(now, u.start, u.end) && <button className="primary" onClick={() => window.open(u.zoom, '_blank', 'noopener')}>進入教室</button>)
-                : <span className="bk-muted">教室連結老師會另外提供</span>}
-              {i === 0 && u.status === '已確認' && view.lastLesson && (view.lastLesson.next || view.lastLesson.progress) && (
-                <div className="bk-note">
-                  {view.lastLesson.next && <div><strong>這堂課內容</strong>　{view.lastLesson.next}</div>}
-                  {view.lastLesson.progress && <div className="bk-muted">上次上到（{view.lastLesson.date.replace(/-/g, '/')}）　{view.lastLesson.progress}</div>}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      <div className="bk-card">
-        <h2>1. 課長</h2>
-        <div className="bk-row">
-          {([25, 50] as const).map(n => (
-            <button key={n} className={L === n ? 'sel' : ''} disabled={!!fixed && fixed !== n} onClick={() => { setLen(n); setTime(null); setMsg(null) }}>{n} 分鐘</button>
-          ))}
-        </div>
-      </div>
-
-      <div className="bk-card">
-        <div className="bk-row between" style={{ marginBottom: 12 }}>
-          <h2 style={{ margin: 0 }}>2. 日期與時間</h2>
-          <span className="bk-row"><span className="bk-muted">{open ? `最後更新 ${open.asOf.slice(5, 16).replace('-', '/')}` : ''}</span><button onClick={refresh}>重新整理時段</button></span>
-        </div>
-        {months.length > 1 && (
-          <div className="bk-row" style={{ marginBottom: 10 }}>
-            {months.map(m => <button key={m} className={m === curMonth ? 'sel' : ''} onClick={() => { setMonth(m); setTime(null); setMsg(null) }}>{monthLabel(m)}</button>)}
+      {(view.mode !== 'known' || tab === 'book') && (
+        <>
+        {l && (
+          <div className="bk-card">
+            <h2>堂數</h2>
+            <p style={{ margin: 0 }}>
+              <strong className="bk-big">剩餘 {l.left} 堂</strong><br />
+              <span className="bk-muted">{fixed ? `${fixed} 分鐘課程包・` : ''}已購 {l.bought} 堂・已上 {l.used} 堂{l.booked ? `・已預約 ${l.booked} 堂（尚未上課）` : ''}</span>
+            </p>
+            {l.left <= 0 && <p className="bk-msg err">課程堂數已用完，預約前請先和老師聯絡。</p>}
           </div>
         )}
-        {!open ? <p className="bk-muted">時段載入中…</p> : days.length ? (
-          <>
-            <div className="bk-days">
-              {monthDays.map(d => {
-                const lb = dayLabel(d.date)
-                return (
-                  <button key={d.date} className={d.date === curDate ? 'sel' : ''} disabled={!d.free} onClick={() => { setDate(d.date); setTime(null) }}>
-                    {lb.md}<br /><span className="bk-muted">{lb.wd}</span>{!d.free && <><br /><span className="bk-tag">{d.closed ? d.label : '已滿'}</span></>}
-                  </button>
-                )
-              })}
-            </div>
-            {cur
-              ? <div className="bk-slots">{cur.slots.map(s => <button key={s.time} className={s.time === curTime || s.time === second ? 'sel' : ''} disabled={!ok(s)} onClick={() => { setTime(s.time); setMsg(null) }}>{s.time}</button>)}</div>
-              : <p className="bk-muted">這個課長目前沒有可預約的時段，換個課長或稍後再來看看。</p>}
-          </>
-        ) : <p className="bk-muted">目前沒有開放的時段，請稍後再來看看。</p>}
-      </div>
 
-      {curTime && (
+        {view.upcoming.length > 0 && (
+          <div className="bk-card">
+            <h2>我的預約</h2>
+            {view.upcoming.map((u, i) => (
+              <div className="bk-item" key={u.start}>
+                <div>
+                  {u.start.slice(0, 10).replace(/-/g, '/')} {hm(u.start)}–{hm(u.end)}・{u.count > 1 ? `連續 ${u.count} 堂` : `${u.length} 分`}
+                  <div className="bk-muted">{u.status === '已確認' ? '已確認' : '等待老師確認'}</div>
+                </div>
+                {u.status !== '已確認' ? null : u.zoom
+                  ? (canJoin(now, u.start, u.end) && <button className="primary" onClick={() => window.open(u.zoom, '_blank', 'noopener')}>進入教室</button>)
+                  : <span className="bk-muted">教室連結老師會另外提供</span>}
+                {i === 0 && u.status === '已確認' && view.lastLesson && (view.lastLesson.next || view.lastLesson.progress) && (
+                  <div className="bk-note">
+                    {view.lastLesson.next && <div><strong>這堂課內容</strong>　{view.lastLesson.next}</div>}
+                    {view.lastLesson.progress && <div className="bk-muted">上次上到（{view.lastLesson.date.replace(/-/g, '/')}）　{view.lastLesson.progress}</div>}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="bk-card">
-          <h2>3. 確認送出</h2>
-          <p>{curDate} {curTime}，{L} 分鐘</p>
-          {view.mode === 'generic' && (
-            <>
-              <label>姓名</label><input className="full" value={name} onChange={e => setName(e.target.value)} autoComplete="name" />
-              <label>Email（確認信會寄到這裡）</label><input className="full" type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
-            </>
-          )}
-          <button className="primary" disabled={busy} onClick={submit}>{busy ? '送出中…' : '送出預約'}</button>
+          <h2>1. 課長</h2>
+          <div className="bk-row">
+            {([25, 50] as const).map(n => (
+              <button key={n} className={L === n ? 'sel' : ''} disabled={!!fixed && fixed !== n} onClick={() => { setLen(n); setTime(null); setMsg(null) }}>{n} 分鐘</button>
+            ))}
+          </div>
         </div>
-      )}
 
-      {msg && <div className={`bk-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
+        <div className="bk-card">
+          <div className="bk-row between" style={{ marginBottom: 12 }}>
+            <h2 style={{ margin: 0 }}>2. 日期與時間</h2>
+            <span className="bk-row"><span className="bk-muted">{open ? `最後更新 ${open.asOf.slice(5, 16).replace('-', '/')}` : ''}</span><button onClick={refresh}>重新整理時段</button></span>
+          </div>
+          {months.length > 1 && (
+            <div className="bk-row" style={{ marginBottom: 10 }}>
+              {months.map(m => <button key={m} className={m === curMonth ? 'sel' : ''} onClick={() => { setMonth(m); setTime(null); setMsg(null) }}>{monthLabel(m)}</button>)}
+            </div>
+          )}
+          {!open ? <p className="bk-muted">時段載入中…</p> : days.length ? (
+            <>
+              <div className="bk-days">
+                {monthDays.map(d => {
+                  const lb = dayLabel(d.date)
+                  return (
+                    <button key={d.date} className={d.date === curDate ? 'sel' : ''} disabled={!d.free} onClick={() => { setDate(d.date); setTime(null) }}>
+                      {lb.md}<br /><span className="bk-muted">{lb.wd}</span>{!d.free && <><br /><span className="bk-tag">{d.closed ? d.label : '已滿'}</span></>}
+                    </button>
+                  )
+                })}
+              </div>
+              {cur
+                ? <div className="bk-slots">{cur.slots.map(s => <button key={s.time} className={s.time === curTime || s.time === second ? 'sel' : ''} disabled={!ok(s)} onClick={() => { setTime(s.time); setMsg(null) }}>{s.time}</button>)}</div>
+                : <p className="bk-muted">這個課長目前沒有可預約的時段，換個課長或稍後再來看看。</p>}
+            </>
+          ) : <p className="bk-muted">目前沒有開放的時段，請稍後再來看看。</p>}
+        </div>
+
+        {curTime && (
+          <div className="bk-card">
+            <h2>3. 確認送出</h2>
+            <p>{curDate} {curTime}，{L} 分鐘</p>
+            {view.mode === 'generic' && (
+              <>
+                <label>姓名</label><input className="full" value={name} onChange={e => setName(e.target.value)} autoComplete="name" />
+                <label>Email（確認信會寄到這裡）</label><input className="full" type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" />
+              </>
+            )}
+            <button className="primary" disabled={busy} onClick={submit}>{busy ? '送出中…' : '送出預約'}</button>
+          </div>
+        )}
+
+        {msg && <div className={`bk-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
+        </>
+      )}
     </div>
   )
 }
