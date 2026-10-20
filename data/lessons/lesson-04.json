@@ -283,12 +283,20 @@
   "links": [],
   "memes": [
     {
-      "title": "ถถถถถ",
-      "desc": "講義「這是什麼意思？」：ถถถถถ 搭配 KOI Thé 手搖飲的圖片（圖片待補）"
+      "title": "這 5 個連續出現的字母是什麼意思？",
+      "big": "ถถถถถ",
+      "desc": "",
+      "imageUrl": null
     },
     {
-      "title": "ผี → ผี → 13",
-      "desc": "講義「這是什麼意思？」：電梯按鈕 14、15、16／11、12、12A，沒有 13 樓（圖片待補）"
+      "title": "這間手搖的 logo 像什麼泰文字？",
+      "desc": "",
+      "imageUrl": "extras/lesson-04/koi-the.png"
+    },
+    {
+      "title": "電梯按鈕：ผี → ผี → 13",
+      "desc": "電梯按鈕 14、15、16／11、12、12A，沒有 13 樓",
+      "imageUrl": "extras/lesson-04/lift-13.png"
     }
   ],
   "extras": [],
