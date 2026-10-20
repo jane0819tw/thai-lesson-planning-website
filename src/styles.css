@@ -52,6 +52,9 @@ table.tone caption { text-align: left; font-weight: 600; padding: 6px 0; }
 table.tone th, table.tone td { border: 1px solid var(--line); padding: 8px; text-align: center; white-space: nowrap; }
 table.tone td.na { color: var(--muted); font-size: .85rem; }
 .big3 { font-size: 1.4rem; }
+table.tone th.th { white-space: nowrap; }
+table.tone .playall { display: block; margin: 6px auto 0; padding: 3px 10px; border: 0; border-radius: 999px; background: var(--accent-soft); font-size: .75rem; font-weight: 400; cursor: pointer; }
+table.tone .playall:hover { filter: brightness(.95); }
 table.tone .speak { width: 28px; height: 28px; font-size: .8rem; margin-left: 4px; }
 .mini { display: flex; flex-wrap: wrap; gap: 4px 8px; justify-content: center; margin-top: 6px; }
 .minichip { background: var(--accent-soft); border-radius: 8px; padding: 1px 8px; }
