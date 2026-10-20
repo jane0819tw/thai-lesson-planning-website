@@ -1,12 +1,6 @@
 {
   "status": "draft",
-  "rules": [
-    {
-      "id": "r3",
-      "title": "拼讀範例",
-      "body": "ก + ะ = กะ（/g/ /a/ → /gaˋ/）；ก + า = กา（/g/ /aa/ → /gaa/）。"
-    }
-  ],
+  "rules": [],
   "consonants": [],
   "vowels": [
     {
@@ -42,7 +36,14 @@
           "zh": "瘋子"
         }
       ],
-      "note": ""
+      "note": "",
+      "preface": [
+        {
+          "id": "r3",
+          "title": "拼讀範例",
+          "body": "ก + ะ = กะ（/g/ /a/ → /gaˋ/）；ก + า = กา（/g/ /aa/ → /gaa/）。"
+        }
+      ]
     },
     {
       "id": "v-i--ิ",
@@ -255,12 +256,7 @@
       "url": "https://www.youtube.com/watch?v=QiMPmDp-q5k"
     }
   ],
-  "memes": [
-    {
-      "title": "ปูหนีบอีปี",
-      "desc": "講義補充頁的梗圖（圖片待補）"
-    }
-  ],
+  "memes": [],
   "extras": [],
   "id": "lesson-02",
   "number": 2,

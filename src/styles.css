@@ -244,7 +244,7 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .vp.tone { grid-area: tone; background: #cfe5c1; font-size: .9rem; }
 .vp.cons { grid-area: cons; background: #d9e4ea; font-size: 1.7rem; min-height: 130px; }
 .vp.vow { background: #edc9c9; }
-.vp.top { grid-area: top; } .vp.bottom { grid-area: bottom; }
+.vp.vtop { grid-area: top; } .vp.bottom { grid-area: bottom; }
 .vp.left { grid-area: left; } .vp.right { grid-area: right; }
 .vp.left, .vp.right { writing-mode: vertical-rl; letter-spacing: .1em; }
 
@@ -290,3 +290,4 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 /* 鍵盤字體切換：無頭體＝Noto Sans Thai（無圈）；標準＝網站預設的有圈字體 */
 .tf-loopless .th { font-family: 'Noto Sans Thai', 'Noto Sans TC', sans-serif; }
 .hw-last { margin: 8px 0; padding: 8px 12px; background: #e4f4ea; color: #1f6b3a; border-radius: 10px; font-size: .9rem; }
+.vform-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }

@@ -16,7 +16,7 @@ export default function VowelIntro() {
       </div>
       <figure className="vpos" aria-label="母音可以出現在子音的上下左右">
         <div className="vp tone">聲調符號</div>
-        <div className="vp vow top">母音</div>
+        <div className="vp vow vtop">母音</div>
         <div className="vp vow left">母音</div>
         <div className="vp cons">子音</div>
         <div className="vp vow right">母音</div>
