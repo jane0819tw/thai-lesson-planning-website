@@ -213,21 +213,29 @@ function homeworkOf_(name, rows) {
 function getHomeworkInfo(token, lessonNumber) {
   const s = studentByToken_(token);
   if (!s) return { name: '', last: null };
-  return { name: s.name, last: homeworkOf_(s.name)[String(Number(lessonNumber))] || null };
+  return { name: s.name, last: homeworkOf_(s.name)[homeworkKey_(lessonNumber)] || null };
+}
+
+/** 作業的課別代號：一般課是數字（3 → '3'）；作業複習是 'R<單位>'（R1 ＝ L1–L5）。不合法回傳空字串 */
+function homeworkKey_(lessonNumber) {
+  const t = String(lessonNumber).trim();
+  if (/^R[1-9]\d*$/i.test(t)) return t.toUpperCase();
+  const n = Number(t);
+  return n > 0 && n === Math.floor(n) ? String(n) : '';
 }
 
 /** 學生在作業頁按「送出作業」：寫進「作業」分頁一列（可重複送出，每次一列；學生頁顯示最近一次）。result = { listen: [對, 總], typing: [對, 總] }（沒做的欄位省略） */
 function submitHomework(token, lessonNumber, result) {
   const s = studentByToken_(token);
   if (!s) throw new Error('作業連結已失效，請向老師索取新的連結');
-  const n = Number(lessonNumber);
-  if (!(n > 0)) throw new Error('課別不正確');
+  const key = homeworkKey_(lessonNumber);
+  if (!key) throw new Error('課別不正確');
   const fmt = function (r) { return r && r.length === 2 ? Number(r[0]) + '/' + Number(r[1]) : '未做'; };
   result = result || {};
   const sh = getSheet_(CONFIG.SHEETS.HOMEWORK, HOMEWORK_HEADERS);
   const row = sh.getLastRow() + 1;
   sh.getRange(row, 3, 1, 3).setNumberFormat('@'); // 「8/9」要存成文字，不然會被轉成日期
-  sh.getRange(row, 1, 1, HOMEWORK_HEADERS.length).setValues([[new Date(), s.name, 'L' + n, fmt(result.listen), fmt(result.typing), '']]);
+  sh.getRange(row, 1, 1, HOMEWORK_HEADERS.length).setValues([[new Date(), s.name, (key.charAt(0) === 'R' ? key : 'L' + key), fmt(result.listen), fmt(result.typing), '']]);
   return { ok: true, name: s.name };
 }
 

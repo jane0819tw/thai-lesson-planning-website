@@ -11,8 +11,8 @@ interface Api {
   /** force＝略過後端快取（學生按「重新整理時段」） */
   getOpenDays(force?: boolean): Promise<OpenDays>
   submitBooking(token: string, name: string, email: string, start: string, len: number): Promise<{ ok: boolean }>
-  getHomeworkInfo(token: string, lessonNumber: number): Promise<{ name: string; last: HomeworkRecord | null }>
-  submitHomework(token: string, lessonNumber: number, result: HomeworkResult): Promise<{ ok: boolean; name: string }>
+  getHomeworkInfo(token: string, lessonNumber: number | string): Promise<{ name: string; last: HomeworkRecord | null }>
+  submitHomework(token: string, lessonNumber: number | string, result: HomeworkResult): Promise<{ ok: boolean; name: string }>
   adminGetHomework(): Promise<HomeworkRow[]>
   adminGetState(): Promise<AdminState>
   adminGetWeek(date: string): Promise<Week>
@@ -125,7 +125,7 @@ const mock: Api = {
   }),
   submitBooking: (t, n) => (!t && !n ? Promise.reject(new Error('請填姓名')) : delay({ ok: true })),
   getHomeworkInfo: (t, n) => delay({ name: t ? 'Jenny' : '', last: t ? mockHw[String(n)] ?? null : null }),
-  adminGetHomework: () => delay(Object.entries(mockHw).map(([n, r]) => ({ time: r.time, name: 'Jenny', lesson: 'L' + n, listen: r.listen, typing: r.typing }))),
+  adminGetHomework: () => delay(Object.entries(mockHw).map(([n, r]) => ({ time: r.time, name: 'Jenny', lesson: /^R/.test(n) ? n : 'L' + n, listen: r.listen, typing: r.typing }))),
   submitHomework: (t, n, r) => (t ? (mockHw[String(n)] = { time: `${day(0)} ${hhmm(0)}`, listen: r.listen ? r.listen.join('/') : '未做', typing: r.typing ? r.typing.join('/') : '未做', count: (mockHw[String(n)]?.count ?? 0) + 1 }, delay({ ok: true, name: 'Jenny' })) : Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))),
   adminGetState: () => delay(structuredClone(db)),
   adminGetWeek: d => delay(week(d)),
