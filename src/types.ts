@@ -12,6 +12,8 @@ export interface Consonant {
 export interface Vowel {
   id: string; ipa: string; short: string; long: string
   shortSyllables: string[]; longSyllables: string[]; words: WordItem[]; note: string
+  /** 顯示在這個母音卡「前面」的說明卡（例如拼讀範例） */
+  preface?: Rule[]
 }
 export interface ToneRow { label: string; cells: string[] }
 export interface ToneTable { title: string; note?: string; rows: ToneRow[] }

@@ -18,7 +18,7 @@ export function ListenQuiz({ items, onDone }: { items: Consonant[]; onDone?: (sc
   const [picked, setPicked] = useState<string | null>(null)
   const [score, setScore] = useState(0)
   const q = qs[i]
-  useEffect(() => { if (q) speak(nameText(q.ans.name), q.ans.audioUrl) }, [q])
+  useEffect(() => { if (q && i > 0) speak(nameText(q.ans.name), q.ans.audioUrl) }, [q]) // eslint-disable-line react-hooks/exhaustive-deps  第一題不自動播（瀏覽器常擋、也避免一進頁面就出聲）
   useEffect(() => { if (!q && qs.length) onDone?.(score, qs.length) }, [q]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!q) return (
@@ -129,7 +129,7 @@ export function VowelListenQuiz({ vowels, onDone }: { vowels: Vowel[]; onDone?: 
   const [picked, setPicked] = useState<string | null>(null)
   const [score, setScore] = useState(0)
   const q = qs[i]
-  useEffect(() => { if (q) speak(q.ans.text) }, [q])
+  useEffect(() => { if (q && i > 0) speak(q.ans.text) }, [q]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!q && qs.length) onDone?.(score, qs.length) }, [q]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!q) return (

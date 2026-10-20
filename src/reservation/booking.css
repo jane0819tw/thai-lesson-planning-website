@@ -107,3 +107,11 @@ a.bk-course:hover { border-color: var(--accent); }
 
 .bk a.mgr-link { display: inline-flex; align-items: center; min-height: 36px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--accent-soft); color: var(--fg); text-decoration: none; }
 .bk a.mgr-link:hover { border-color: var(--accent); color: var(--accent); }
+.bk-hw { display: inline-block; margin-left: 4px; padding: 1px 10px; border-radius: 99px; background: var(--accent-soft, #fdeede); font-size: .85rem; text-decoration: none; }
+.bk-hw b { font-weight: 600; }
+.bk-hw.done { background: #e4f4ea; color: #1f6b3a; }
+.bk-hw u { text-decoration: underline; }
+.mgr-scroll { overflow-x: auto; }
+.mgr-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.mgr-table th, .mgr-table td { text-align: left; padding: 6px 10px; border-top: 1px solid var(--line); white-space: nowrap; }
+.mgr-table th { color: var(--muted); font-weight: 500; border-top: 0; }

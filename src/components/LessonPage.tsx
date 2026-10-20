@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getSession } from '../reservation/session'
 import { getRepository } from '../data/repository'
@@ -10,7 +10,7 @@ import ToneTableView from './ToneTableView'
 import WordList from './WordList'
 import LetterDialog from './LetterDialog'
 import DiagramView from './DiagramView'
-import { vowelForm } from '../strokes'
+import { vowelForm, vowelSpeech } from '../strokes'
 import VowelText from './VowelText'
 import Games, { vowelSyllables } from './Games'
 import RuleDemo from './RuleDemo'
@@ -109,15 +109,20 @@ export default function LessonPage() {
         {lesson.vowelIntro && <VowelIntro />}
         <section className="vstack">
           {lesson.vowels.map(v => (
-            <article className="vcard" key={v.id}>
+            <Fragment key={v.id}>
+            {v.preface?.map(r => <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p></article>)}
+            <article className="vcard">
               <div className="vhead">
                 <span className="vipa">{v.ipa}</span>
                 <div className="vforms">
                   {[[v.short, '短音'], [v.long, v.short ? '長音' : '']].map(([f, label], i) => f ? (
-                    <button key={i} className="vform th" onClick={() => setOpenVowel({ char: vowelForm(f), ipa: v.ipa })} aria-label={`查看 ${vowelForm(f)} 的筆順`}>
-                      <span className="vglyph"><VowelText form={f} /></span>
-                      {label && <span className="vlabel">{label}</span>}
-                    </button>
+                    <div key={i} className="vform-wrap">
+                      <button className="vform th" onClick={() => setOpenVowel({ char: vowelForm(f), ipa: v.ipa })} aria-label={`查看 ${vowelForm(f)} 的筆順`}>
+                        <span className="vglyph"><VowelText form={f} /></span>
+                        {label && <span className="vlabel">{label}</span>}
+                      </button>
+                      <SpeakButton text={vowelSpeech(f)} />
+                    </div>
                   ) : null)}
                 </div>
               </div>
@@ -153,6 +158,7 @@ export default function LessonPage() {
                 </div>
               )}
             </article>
+            </Fragment>
           ))}
         </section>
         </>

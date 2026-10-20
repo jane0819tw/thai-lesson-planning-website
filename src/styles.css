@@ -52,6 +52,9 @@ table.tone caption { text-align: left; font-weight: 600; padding: 6px 0; }
 table.tone th, table.tone td { border: 1px solid var(--line); padding: 8px; text-align: center; white-space: nowrap; }
 table.tone td.na { color: var(--muted); font-size: .85rem; }
 .big3 { font-size: 1.4rem; }
+table.tone th.th { white-space: nowrap; }
+table.tone .playall { display: block; margin: 6px auto 0; padding: 3px 10px; border: 0; border-radius: 999px; background: var(--accent-soft); font-size: .75rem; font-weight: 400; cursor: pointer; }
+table.tone .playall:hover { filter: brightness(.95); }
 table.tone .speak { width: 28px; height: 28px; font-size: .8rem; margin-left: 4px; }
 .mini { display: flex; flex-wrap: wrap; gap: 4px 8px; justify-content: center; margin-top: 6px; }
 .minichip { background: var(--accent-soft); border-radius: 8px; padding: 1px 8px; }
@@ -241,7 +244,7 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .vp.tone { grid-area: tone; background: #cfe5c1; font-size: .9rem; }
 .vp.cons { grid-area: cons; background: #d9e4ea; font-size: 1.7rem; min-height: 130px; }
 .vp.vow { background: #edc9c9; }
-.vp.top { grid-area: top; } .vp.bottom { grid-area: bottom; }
+.vp.vtop { grid-area: top; } .vp.bottom { grid-area: bottom; }
 .vp.left { grid-area: left; } .vp.right { grid-area: right; }
 .vp.left, .vp.right { writing-mode: vertical-rl; letter-spacing: .1em; }
 
@@ -271,3 +274,20 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .mybook { font-size: .9rem; text-decoration: none; padding: 4px 12px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
 .hw-sent { margin: 0; font-weight: 600; color: #1f6b3a; }
+.hw-pad { margin: 10px 0; padding: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; }
+.hw-pad .krow { margin-bottom: 6px; }
+.hw-pad .key { min-width: 36px; height: 42px; font-size: 1.25rem; }
+.dict-row.act input { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+/* 作業頁鍵盤：按下變色、放開慢慢淡回 */
+.hw-pad .key { transition: background-color .4s ease, color .4s ease, border-color .4s ease, transform .1s; }
+.hw-pad .key:active { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(2px); transition-duration: 0s; }
+.hw-ked .krow { flex-wrap: nowrap; gap: 4px; margin-bottom: 4px; }
+.hw-ked .key { flex: 1 1 0; min-width: 0; padding: 0; position: relative; height: 44px; font-size: 1.2rem; }
+.hw-ked .key small { position: absolute; top: 1px; right: 3px; font-size: .6rem; line-height: 1; color: var(--muted); }
+.hw-ked .key:active small { color: #fff; }
+.hw-ked .kspace { flex: 0 0 auto; flex-basis: 0; }
+.hw-ked .key.act { font-size: .9rem; }
+/* 鍵盤字體切換：無頭體＝Noto Sans Thai（無圈）；標準＝網站預設的有圈字體 */
+.tf-loopless .th { font-family: 'Noto Sans Thai', 'Noto Sans TC', sans-serif; }
+.hw-last { margin: 8px 0; padding: 8px 12px; background: #e4f4ea; color: #1f6b3a; border-radius: 10px; font-size: .9rem; }
+.vform-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }

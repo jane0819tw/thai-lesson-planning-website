@@ -11,6 +11,7 @@
     "inventory": "node scripts/gen-inventory.mjs"
   },
   "dependencies": {
+    "@fontsource/noto-sans-thai": "^5.3.0",
     "@fontsource/noto-sans-thai-looped": "^5.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

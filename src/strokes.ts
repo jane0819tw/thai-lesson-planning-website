@@ -23,6 +23,9 @@ export const isToneMark = (char: string): boolean => /^[\u0e48-\u0e4b]$/.test(ch
 // 兩者中間要插零寬不連字元（U+200C），否則字型會把 ํ+า 又合併回沒有圈圈的 ำ；資料名稱仍用原字
 export const ghostText = (s: string): string => s.replace(/\u0e33/g, '\u0e4d\u200c\u0e32')
 export const vowelForm = (v: string): string => v.replace('-', 'อ')
+/** 母音單獨發音用的文字：「สระ＋以 อ 當載體的名稱」（สระอะ、สระอา、สระเอะ）。
+ *  對應的預錄音檔（gTTS）由 scripts/gen-audio.py 以同樣規則產生。 */
+export const vowelSpeech = (v: string): string => 'สระ' + vowelForm(v)
 
 export function getStrokes(char: string): StrokeData | undefined {
   const s = data[char]

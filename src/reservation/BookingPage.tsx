@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import { setSession } from './session'
 import { getApi } from './api'
-import type { OpenDays, StudentInfo } from './types'
+import type { HomeworkRecord, OpenDays, StudentInfo } from './types'
 import './booking.css'
 
 // 時間皆為台北時間
@@ -15,13 +15,34 @@ const addMin = (t: string, n: number) => { const m = +t.slice(0, 2) * 60 + +t.sl
 // 進入教室：上課前 10 分鐘才出現按鈕，結束後 15 分鐘消失
 const canJoin = (now: number, start: string, end: string) => now >= toMs(start) - 10 * 60000 && now <= toMs(end) + 15 * 60000
 
+function HomeworkButton({ to, rec }: { to: string; rec?: HomeworkRecord }) {
+  return (
+    <Link to={to} className={`bk-hw${rec ? ' done' : ''}`}>
+      {rec
+        ? <>📝 作業 <b>✅ 已完成</b>　聽音 {rec.listen}・聽寫 {rec.typing}　<u>再做一次</u></>
+        : <>📝 作業 <b>尚未完成</b>　<u>開始</u></>}
+    </Link>
+  )
+}
+
+// 上次載入的結果先顯示，背景再更新：從課程頁回到預約頁時不用重新等後端（過期資料只會短暫出現）
+const cacheKey = (t: string) => `thaiskr_bk:${t}`
+function readCache(t: string): { info?: StudentInfo; open?: OpenDays } {
+  if (!t) return {}
+  try { return JSON.parse(localStorage.getItem(cacheKey(t)) || '{}') } catch { return {} }
+}
+function writeCache(t: string, patch: { info?: StudentInfo; open?: OpenDays }) {
+  if (!t) return
+  try { localStorage.setItem(cacheKey(t), JSON.stringify({ ...readCache(t), ...patch })) } catch { /* 存不了就算了 */ }
+}
+
 export default function BookingPage() {
   const [sp] = useSearchParams()
   const token = sp.get('t') ?? ''
   const api = getApi(sp.get('mock') === '1')
 
-  const [view, setView] = useState<StudentInfo | null>(null)
-  const [open, setOpen] = useState<OpenDays | null>(null) // 時段比較慢，獨立載入，頁面其他部分不用等
+  const [view, setView] = useState<StudentInfo | null>(() => readCache(token).info ?? null)
+  const [open, setOpen] = useState<OpenDays | null>(() => readCache(token).open ?? null) // 時段比較慢，獨立載入，頁面其他部分不用等
   const [error, setError] = useState('')
   const [len, setLen] = useState<25 | 50>(25)
   const [month, setMonth] = useState<string | null>(null)
@@ -34,8 +55,8 @@ export default function BookingPage() {
   const [now, setNow] = useState(Date.now())
   const lessons = useLessons()
 
-  const loadInfo = useCallback(async () => { setView(await api.getStudentInfo(token)) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
-  const loadDays = useCallback(async (force = false) => { setOpen(await api.getOpenDays(force)) }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const loadInfo = useCallback(async () => { const v = await api.getStudentInfo(token); setView(v); if (v.mode !== 'invalid') writeCache(token, { info: v }) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
+  const loadDays = useCallback(async (force = false) => { const d = await api.getOpenDays(force); setOpen(d); writeCache(token, { open: d }) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { loadInfo().catch(e => setError(e.message)); loadDays().catch(e => setError(e.message)) }, [loadInfo, loadDays])
   // 記住這位學生，讓其他頁面的頁首能回到「我的預約」
   useEffect(() => { if (token && view && view.mode === 'known') setSession({ token, name: view.name }) }, [token, view])
@@ -96,7 +117,7 @@ export default function BookingPage() {
                       <span className="bk-unit-h">{unitLabel(u)}</span>
                       <ul className="bk-lessons">
                         {lessons.filter(x => x.number >= u.from && x.number <= u.to).map(x => (
-                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<Link to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`}>📝 作業</Link></li>
+                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<HomeworkButton to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`} rec={view.homework?.[String(x.number)]} /></li>
                         ))}
                       </ul>
                     </div>

@@ -11,6 +11,8 @@ import '@fontsource/noto-sans-thai-looped/latin-400.css'
 import '@fontsource/noto-sans-thai-looped/latin-500.css'
 import '@fontsource/noto-sans-thai-looped/latin-600.css'
 import '@fontsource/noto-sans-thai-looped/latin-700.css'
+import '@fontsource/noto-sans-thai/thai-400.css'
+import '@fontsource/noto-sans-thai/thai-600.css'
 import './styles.css'
 
 // 任何未捕捉的錯誤都直接顯示在畫面底部（不依賴 React），方便在沒有開發者工具時回報問題
