@@ -336,8 +336,3 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .vrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: start; }
 .vrow .vhead { flex-wrap: wrap; gap: 8px; padding: 12px; }
 .vrow .vwords { padding: 0 12px 12px; }
-
-/* 作業頁：延伸影片挑戰 */
-.hw-video { margin-top: 18px; }
-.hw-video .gbtn { display: inline-block; text-decoration: none; }
-.hw-video .gbtn:disabled { opacity: .6; cursor: not-allowed; }

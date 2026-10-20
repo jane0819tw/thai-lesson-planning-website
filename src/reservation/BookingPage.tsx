@@ -26,6 +26,13 @@ function HomeworkButton({ to, rec }: { to: string; rec?: HomeworkRecord }) {
   )
 }
 
+// 每個作業按鈕下方的「延伸影片挑戰」：課程 JSON 有設 videoChallenge 就連過去，沒設先顯示「即將開放」
+function VideoChallenge({ to }: { to?: string }) {
+  return to
+    ? <Link to={to} className="bk-video">🎬 延伸影片挑戰 →</Link>
+    : <span className="bk-video off">🎬 延伸影片挑戰（即將開放）</span>
+}
+
 // 上次載入的結果先顯示，背景再更新：從課程頁回到預約頁時不用重新等後端（過期資料只會短暫出現）
 const cacheKey = (t: string) => `thaiskr_bk:${t}`
 function readCache(t: string): { info?: StudentInfo; open?: OpenDays } {
@@ -118,10 +125,10 @@ export default function BookingPage() {
                       <span className="bk-unit-h">{unitLabel(u)}</span>
                       <ul className="bk-lessons">
                         {lessons.filter(x => x.number >= u.from && x.number <= u.to).map(x => (
-                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<HomeworkButton to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`} rec={view.homework?.[String(x.number)]} /></li>
+                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<HomeworkButton to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`} rec={view.homework?.[String(x.number)]} /><VideoChallenge to={x.videoChallenge} /></li>
                         ))}
                         {REVIEW_UNITS.includes(u.n) && u.to - u.from === 4 && (
-                          <li key={`review-${u.n}`}><b>複習</b> {reviewTitle(u.n)}{' '}<HomeworkButton to={`/reading/review/${u.n}?t=${encodeURIComponent(token)}`} rec={view.homework?.[reviewKey(u.n)]} /></li>
+                          <li key={`review-${u.n}`}><b>複習</b> {reviewTitle(u.n)}{' '}<HomeworkButton to={`/reading/review/${u.n}?t=${encodeURIComponent(token)}`} rec={view.homework?.[reviewKey(u.n)]} /><VideoChallenge /></li>
                         )}
                       </ul>
                     </div>

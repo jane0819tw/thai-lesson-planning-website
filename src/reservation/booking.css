@@ -111,6 +111,8 @@ a.bk-course:hover { border-color: var(--accent); }
 .bk-hw b { font-weight: 600; }
 .bk-hw.done { background: #e4f4ea; color: #1f6b3a; }
 .bk-hw u { text-decoration: underline; }
+.bk-video, .bk-lessons a.bk-video { display: block; margin: 4px 0 0 4px; padding: 0; border: 0; background: none; font-size: .85rem; color: var(--accent); text-decoration: none; }
+.bk-video.off { color: var(--muted, #7a7168); }
 .mgr-scroll { overflow-x: auto; }
 .mgr-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
 .mgr-table th, .mgr-table td { text-align: left; padding: 6px 10px; border-top: 1px solid var(--line); white-space: nowrap; }

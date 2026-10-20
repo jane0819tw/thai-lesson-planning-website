@@ -144,14 +144,6 @@ export default function HomeworkPage() {
               {err && <p className="bk-msg err">{err}</p>}
             </>}
       </section>
-
-      <section className="hw-sec hw-video">
-        <h2>🎬 延伸影片挑戰</h2>
-        <p className="muted small">做完作業，再用影片多練習一點。</p>
-        {lesson.videoChallenge
-          ? <Link className="gbtn on" to={lesson.videoChallenge}>開始延伸影片挑戰 →</Link>
-          : <button type="button" className="gbtn" disabled>延伸影片挑戰（即將開放）</button>}
-      </section>
     </>
   )
 }
