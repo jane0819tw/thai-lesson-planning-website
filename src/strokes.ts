@@ -24,11 +24,11 @@ export const isToneMark = (char: string): boolean => /^[\u0e48-\u0e4b]$/.test(ch
 export const ghostText = (s: string): string => s.replace(/\u0e33/g, '\u0e4d\u200c\u0e32')
 export const vowelForm = (v: string): string => v.replace('-', 'อ')
 /** 母音單獨發音用的文字：單一符號（ะ า ิ）直接念符號本身；多個符號（เะ）會被拆成兩個母音，所以補上 อ 寫成「เอะ」。
+ *  อ、ไ、ใ、ำ 單念會被念成符號名稱（ออ อ่าง、ไม้มลาย…），所以也補成 ออ、ไอ、ใอ、อำ，只念母音本身。
  *  對應的預錄音檔（gTTS）由 scripts/gen-audio.py 以同樣規則產生。 */
 export const vowelSpeech = (v: string): string => {
   const bare = v.replace('-', '')
-  // 單獨一個 อ 會被念成子音名稱（ออ อ่าง），所以 -อ 也補成 ออ
-  return bare.length > 1 || bare === 'อ' ? vowelForm(v) : bare
+  return bare.length > 1 || ['อ', 'ไ', 'ใ', 'ำ'].includes(bare) ? vowelForm(v) : bare
 }
 
 export function getStrokes(char: string): StrokeData | undefined {

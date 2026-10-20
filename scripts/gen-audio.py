@@ -18,13 +18,13 @@ is_note = lambda s: s == "x" or s == "(x)" or "不發音" in s or s.startswith("
 name_text = lambda s: re.sub(r"\s+", "", s)  # 同 src/audio/speak.ts 的 nameText
 
 # 單一符號（ะ า）直接念符號本身；多個符號（เ-ะ）會被拆成兩個母音，改寫成「เอะ」（同 src/strokes.ts 的 vowelSpeech）
-vowel_speech = lambda f: f.replace("-", "อ") if len(f.replace("-", "")) > 1 or f.replace("-", "") == "อ" else f.replace("-", "")  # 單獨 อ 會被念成子音名稱，補成 ออ
+vowel_speech = lambda f: f.replace("-", "อ") if len(f.replace("-", "")) > 1 or f.replace("-", "") in ("อ", "ไ", "ใ", "ำ") else f.replace("-", "")  # อ ไ ใ 單念會念成符號名稱，補成 ออ ไอ ใอ
 
 # 個別詞指定來源（優先於自動規則）：聽過覺得某個來源唸得不對時，在這裡換成另一個
 FORCE_GTTS = {"โก๋แก่", "เออเออ", "ขอ", "ผอผึ้ง", "ฃอฃวด"}  # 子音名稱用「連寫」當 key（กอไก่ 這種）
 # 個別詞指定合成文字：ฃ 是廢字，edge-tts 讀不出單獨一個，改念「ฃอ」
 FORCE_SYNTH = {"ฃ": "ฃอ", "ฃอฃวด": "ขอ ฃวด"}  # ฃอ 引擎念不好，發音時偷換成 ขอ（畫面仍顯示 ฃอ ฃวด）
-FORCE_EDGE = {"เตอ"}
+FORCE_EDGE = {"เตอ", "เตีย", "เบือะ", "เจือะ", "เจือ", "อัว", "ตัวะ"}
 
 gtts_texts = set()  # 以 อ 當載體的單獨母音（อะ、อา、เอะ…）與母音卡的短／長音例字（กะ、กา…）：edge-tts 會唸跑掉，改用 gTTS
 
@@ -45,7 +45,11 @@ def collect(lesson):
     texts.update(w["thai"] for w in lesson.get("vocab", []))
     for r in lesson.get("rules", []):
         texts.update(t["speak"] for t in r.get("demo", []) if t.get("speak"))
-    for t in lesson.get("toneTables", []):
+    # 聲調表：獨立的 toneTables，以及放在說明卡（rules）或母音前置說明卡（preface）裡的 toneTable
+    tables = list(lesson.get("toneTables", []))
+    tables += [r["toneTable"] for r in lesson.get("rules", []) if r.get("toneTable")]
+    tables += [r["toneTable"] for v in lesson.get("vowels", []) for r in v.get("preface", []) if r.get("toneTable")]
+    for t in tables:
         for row in t["rows"]:
             texts.update(re.sub(r"\s*\(x\)", "", c) for c in row["cells"] if not is_note(c))
     for g in lesson.get("practice", []):
