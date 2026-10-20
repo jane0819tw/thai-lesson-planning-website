@@ -291,12 +291,14 @@
     {
       "title": "這間手搖的 logo 像什麼泰文字？",
       "desc": "",
-      "imageUrl": "extras/lesson-04/koi-the.png"
+      "imageUrl": "extras/lesson-04/koi-the.png",
+      "half": true
     },
     {
       "title": "電梯按鈕：ผี → ผี → 13",
       "desc": "電梯按鈕 14、15、16／11、12、12A，沒有 13 樓",
-      "imageUrl": "extras/lesson-04/lift-13.png"
+      "imageUrl": "extras/lesson-04/lift-13.png",
+      "half": true
     }
   ],
   "extras": [],
