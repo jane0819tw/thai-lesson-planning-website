@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import { setSession } from './session'
 import { getApi } from './api'
+import { REVIEW_UNITS, reviewKey, reviewTitle } from '../reviews'
 import type { HomeworkRecord, OpenDays, StudentInfo } from './types'
 import './booking.css'
 
@@ -119,6 +120,9 @@ export default function BookingPage() {
                         {lessons.filter(x => x.number >= u.from && x.number <= u.to).map(x => (
                           <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<HomeworkButton to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`} rec={view.homework?.[String(x.number)]} /></li>
                         ))}
+                        {REVIEW_UNITS.includes(u.n) && u.to - u.from === 4 && (
+                          <li key={`review-${u.n}`}><b>複習</b> {reviewTitle(u.n)}{' '}<HomeworkButton to={`/reading/review/${u.n}?t=${encodeURIComponent(token)}`} rec={view.homework?.[reviewKey(u.n)]} /></li>
+                        )}
                       </ul>
                     </div>
                   ))}

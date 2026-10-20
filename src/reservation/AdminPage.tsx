@@ -4,6 +4,7 @@ import { getAdminKey, getApi, setAdminKey } from './api'
 import { CATEGORIES } from '../categories'
 import ScheduleGrid from './ScheduleGrid'
 import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
+import { REVIEW_UNITS, reviewRange, reviewTitle, homeworkLessonLabel } from '../reviews'
 import type { Unit } from './access'
 import { buildDraft, paintCells, serialize, setHoliday } from './schedule'
 import type { Draft } from './schedule'
@@ -274,7 +275,7 @@ export default function AdminPage() {
                 <div className="mgr-scroll">
                   <table className="mgr-table">
                     <thead><tr><th>繳交時間</th><th>學生</th><th>課別</th><th>聽音選字</th><th>聽寫</th></tr></thead>
-                    <tbody>{hw.map((r, i) => <tr key={i}><td>{r.time.slice(5).replace('-', '/')}</td><td>{r.name}</td><td>{r.lesson}</td><td>{r.listen}</td><td>{r.typing}</td></tr>)}</tbody>
+                    <tbody>{hw.map((r, i) => <tr key={i}><td>{r.time.slice(5).replace('-', '/')}</td><td>{r.name}</td><td>{homeworkLessonLabel(r.lesson)}</td><td>{r.listen}</td><td>{r.typing}</td></tr>)}</tbody>
                   </table>
                 </div>
               )}
@@ -302,14 +303,25 @@ export default function AdminPage() {
               </div>
               <h2 style={{ marginTop: 20 }}>各課連結</h2>
               <p className="bk-muted" style={{ marginTop: 0 }}>「作業」是給學生做練習的頁面，可以直接把連結傳給學生（課程頁上有「複製指派連結」，能帶學生姓名）。</p>
-              {lessons.map(l => (
-                <div className="bk-item" key={l.id}>
-                  <div><b>L{l.number}</b>　{l.title}</div>
-                  <div className="bk-row">
-                    <a className="mgr-link" href={`#/reading/lesson/${l.id}`} target="_blank" rel="noopener noreferrer">課程頁</a>
+              {lessons.flatMap(l => {
+                const item = (
+                  <div className="bk-item" key={l.id}>
+                    <div><b>L{l.number}</b>　{l.title}</div>
+                    <div className="bk-row">
+                      <a className="mgr-link" href={`#/reading/lesson/${l.id}`} target="_blank" rel="noopener noreferrer">課程頁</a>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+                const unit = REVIEW_UNITS.find(u => reviewRange(u).to === l.number)
+                return unit ? [item, (
+                  <div className="bk-item" key={`review-${unit}`}>
+                    <div><b>複習</b>　{reviewTitle(unit)}</div>
+                    <div className="bk-row">
+                      <a className="mgr-link" href={`#/reading/review/${unit}`} target="_blank" rel="noopener noreferrer">作業複習頁</a>
+                    </div>
+                  </div>
+                )] : [item]
+              })}
             </div>
           )}
 
