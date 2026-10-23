@@ -8,6 +8,20 @@ const SPEEDS = { normal: { pps: 55, min: 1.4 }, slow: { pps: 24, min: 3 } } as c
 type Mode = keyof typeof SPEEDS
 const PAUSE_MS = 500
 
+// 單一子音比母音窄很多，放在同樣 300×300 的格子裡看起來特別小：
+// 子音就把畫面裁成剛好包住四線格與筆畫的正方形（等於放大），母音、聲調符號維持整格
+function viewBoxOf(char: string, data: StrokeData): string {
+  if (!/^[\u0e01-\u0e2e]$/.test(char) || data.scale === 'mark') return `0 0 ${V} ${V}`
+  const nums = data.strokes.flatMap(d => (d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number))
+  const xs = nums.filter((_, i) => i % 2 === 0), ys = nums.filter((_, i) => i % 2 === 1)
+  const g = guideLines(data.fs)
+  const top = Math.min(g[0], ...ys) - 16, bottom = Math.max(g[g.length - 1], ...ys) + 16
+  const half = Math.max(bottom - top, Math.max(...xs.map(x => Math.abs(x - V / 2))) * 2 + 40) / 2
+  if (half * 2 >= V) return `0 0 ${V} ${V}`
+  const cy = Math.min(Math.max((top + bottom) / 2, half), V - half)
+  return `${V / 2 - half} ${cy - half} ${half * 2} ${half * 2}`
+}
+
 export default function StrokePlayer({ char, data }: { char: string; data: StrokeData }) {
   const total = data.strokes.length
   const mg = useMarkGhost(data.scale === 'mark' ? char : null) // 聲調符號：用字型畫真正的符號當底
@@ -59,7 +73,7 @@ export default function StrokePlayer({ char, data }: { char: string; data: Strok
 
   return (
     <div className={`stroke${data.scale === 'mark' ? ' mark' : ''}`}>
-      <svg viewBox={`0 0 ${V} ${V}`} role="img" aria-label={`${char} 的筆順`}>
+      <svg viewBox={viewBoxOf(char, data)} role="img" aria-label={`${char} 的筆順`}>
         {(data.scale === 'mark' ? guideLines().slice(0, 2) : guideLines(data.fs)).map((y, i) => <line key={y} x1={8} x2={V - 8} y1={y} y2={y} className={i === 2 ? 'guide base' : 'guide'} />)}
         <line x1={V / 2} x2={V / 2} y1={30} y2={V - 20} className="guide v" />
         {data.ghost === 'path' && mg

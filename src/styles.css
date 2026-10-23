@@ -284,6 +284,8 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .hw-pad .key { min-width: 36px; height: 42px; font-size: 1.25rem; }
 .dict-row.act input { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
 /* 作業頁鍵盤：按下變色、放開慢慢淡回 */
+/* 手機點按：拿掉灰色點擊框、雙擊縮放的延遲，避免按一下閃兩次 */
+.key, .hw-pad button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
 .hw-pad .key { transition: background-color .4s ease, color .4s ease, border-color .4s ease, transform .1s; }
 .hw-pad .key:active { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(2px); transition-duration: 0s; }
 .hw-ked .krow { flex-wrap: nowrap; gap: 4px; margin-bottom: 4px; }
@@ -336,3 +338,55 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .vrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; align-items: start; }
 .vrow .vhead { flex-wrap: wrap; gap: 8px; padding: 12px; }
 .vrow .vwords { padding: 0 12px 12px; }
+
+/* ───── 手機版：子音／母音教材與字母彈窗 ───── */
+.cardgrid { grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); }
+.list.compact.wide { grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); }
+@media (max-width: 640px) {
+  .wrap { padding: 12px; }
+  h1 { font-size: 1.3rem; }
+
+  /* 子音卡：一列兩張，字和範例字縮小 */
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .card { padding: 10px; }
+  .big { font-size: 2.6rem; }
+  .cwords { gap: 4px; }
+  .cword { gap: 6px; padding: 4px 8px; flex-wrap: wrap; }
+  .cword-th { font-size: 1.3rem; }
+  .cword .speak { width: 28px; height: 28px; }
+  .cword-zh { font-size: .85rem; }
+  .row { padding: 8px 10px; gap: 8px; }
+  .row .wordimg, .vword-img { width: 44px; height: 44px; }
+  .list.compact { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+
+  /* 母音卡 */
+  .vstack { gap: 12px; }
+  .vhead { gap: 10px; padding: 12px; }
+  .vipa { font-size: 1.3rem; min-width: 0; }
+  .vforms { gap: 8px; }
+  .vform { min-width: 84px; padding: 4px 10px 6px; }
+  .vglyph { font-size: 2.8rem; }
+  .vnote { margin: 10px 12px 0; }
+  .vsyl-row { padding: 10px 12px 0; gap: 8px 10px; }
+  .vsyl { font-size: 1.8rem; }
+  .vsyl .speak { width: 30px; height: 30px; }
+  .vwords { grid-template-columns: 1fr; gap: 8px; padding: 12px; }
+  .vword { padding: 8px 10px; }
+  .vword-th { font-size: 1.7rem; }
+  table.vtable { margin: 12px 12px 0; }
+  .vtable th { padding: 8px 10px; }
+  .vtable td { padding: 6px 10px; }
+  .vintro { gap: 14px; }
+  .vintro-text ul { font-size: 1.05rem; line-height: 1.7; }
+  .vgroup-h { font-size: 1.1rem; margin-top: 16px; }
+
+  /* 字母彈窗：改成從下方滑出的面板，筆順圖依螢幕高度縮放，關閉鈕加大好按 */
+  .overlay { place-items: end stretch; padding: 0; }
+  .dialog { width: 100%; max-height: 88vh; border-radius: 18px 18px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+  .dialog .close { top: 6px; right: 6px; width: 40px; height: 40px; font-size: 1.3rem; }
+  .dhead { gap: 10px; flex-wrap: wrap; padding-right: 36px; }
+  .dhead .big { font-size: 2.6rem; }
+  .dialog .stroke svg { width: min(100%, 46vh); margin: 0 auto; }
+  .dialog .strokebar { justify-content: center; }
+  .dialog .strokebar button { padding: 8px 14px; }
+}
