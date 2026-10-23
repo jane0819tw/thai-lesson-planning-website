@@ -11,6 +11,7 @@ import HomeworkPage from './components/HomeworkPage'
 import ChartPage from './components/ChartPage'
 import KeyboardPage from './components/KeyboardPage'
 import StrokeEditor from './components/StrokeEditor'
+import DictationReview from './components/DictationReview'
 import VideoIndex from './components/VideoIndex'
 import VideoPage from './components/VideoPage'
 
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/reading/chart" element={<ChartPage />} />
           <Route path="/reading/keyboard" element={<KeyboardPage />} />
           <Route path="/reading/stroke-editor" element={<StrokeEditor />} />
+          <Route path="/reading/dictation-review" element={<DictationReview />} />
           <Route path="/reading/lesson/:id" element={<LessonPage />} />
           <Route path="/reading/lesson/:id/homework" element={<HomeworkPage />} />
           <Route path="/reading/review/:unit" element={<HomeworkPage />} />

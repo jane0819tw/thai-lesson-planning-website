@@ -170,6 +170,7 @@ export default function AdminPage() {
           ))}
           {/* 其他工具：另開分頁，不影響這頁尚未儲存的開放時段 */}
           <a className="mgr-tool" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
+          <a className="mgr-tool" href="#/reading/dictation-review" target="_blank" rel="noopener noreferrer">🎧 聽寫片段審查</a>
         </nav>
         <div className="mgr-content">
           {sec === 'sched' && (
@@ -300,6 +301,7 @@ export default function AdminPage() {
                 <a className="mgr-link" href="#/reading/chart" target="_blank" rel="noopener noreferrer">子音・母音總表</a>
                 <a className="mgr-link" href="#/reading/keyboard" target="_blank" rel="noopener noreferrer">泰文鍵盤</a>
                 <a className="mgr-link" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
+                <a className="mgr-link" href="#/reading/dictation-review" target="_blank" rel="noopener noreferrer">🎧 聽寫片段審查</a>
               </div>
               <h2 style={{ marginTop: 20 }}>各課連結</h2>
               <p className="bk-muted" style={{ marginTop: 0 }}>「作業」是給學生做練習的頁面，可以直接把連結傳給學生（課程頁上有「複製指派連結」，能帶學生姓名）。</p>

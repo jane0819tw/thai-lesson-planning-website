@@ -1,0 +1,28 @@
+{
+ "lesson": 1,
+ "clips": [
+  {
+   "id": "pBl9uKcZFXo@818.2",
+   "videoId": "pBl9uKcZFXo",
+   "start": 818.2,
+   "end": 819.2,
+   "text": "อ๋อ พี่ชื่อน้อยนะจ๊ะ เป็น HR เป็นคนรับหนูเข้ามาทำงานเอง",
+   "hits": [
+    {
+     "word": "อ๋อ",
+     "from": 0,
+     "to": 3,
+     "source": "講義"
+    }
+   ],
+   "reviewed": true
+  }
+ ],
+ "rejected": [
+  "pBl9uKcZFXo@946.5",
+  "pBl9uKcZFXo@1027.3",
+  "pBl9uKcZFXo@1059.6",
+  "pBl9uKcZFXo@1860.5",
+  "pBl9uKcZFXo@3001.9"
+ ]
+}

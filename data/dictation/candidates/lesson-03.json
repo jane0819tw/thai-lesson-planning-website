@@ -1,0 +1,60 @@
+{
+ "lesson": 3,
+ "clips": [
+  {
+   "id": "pBl9uKcZFXo@2328.9",
+   "videoId": "pBl9uKcZFXo",
+   "start": 2332.4,
+   "end": 2334.3,
+   "text": "สาม เอามือลงจากโต๊ะ",
+   "hits": [
+    {
+     "word": "โต๊ะ",
+     "from": 15,
+     "to": 19,
+     "source": "講義"
+    }
+   ],
+   "reviewed": true
+  }
+ ],
+ "rejected": [
+  "pBl9uKcZFXo@169.4",
+  "pBl9uKcZFXo@173.3",
+  "pBl9uKcZFXo@329.1",
+  "pBl9uKcZFXo@507.3",
+  "pBl9uKcZFXo@512.7",
+  "pBl9uKcZFXo@583.2",
+  "pBl9uKcZFXo@591.1",
+  "pBl9uKcZFXo@635.3",
+  "pBl9uKcZFXo@818.2",
+  "pBl9uKcZFXo@835.5",
+  "pBl9uKcZFXo@918.3",
+  "pBl9uKcZFXo@939.5",
+  "pBl9uKcZFXo@946.5",
+  "pBl9uKcZFXo@1002.1",
+  "pBl9uKcZFXo@1015.4",
+  "pBl9uKcZFXo@1027.3",
+  "pBl9uKcZFXo@1051.3",
+  "pBl9uKcZFXo@1059.6",
+  "pBl9uKcZFXo@1435.9",
+  "pBl9uKcZFXo@1568.1",
+  "pBl9uKcZFXo@1570.3",
+  "pBl9uKcZFXo@1591.8",
+  "pBl9uKcZFXo@1629.6",
+  "pBl9uKcZFXo@1703.5",
+  "pBl9uKcZFXo@1860.5",
+  "pBl9uKcZFXo@1945.1",
+  "pBl9uKcZFXo@1966.5",
+  "pBl9uKcZFXo@1998.3",
+  "pBl9uKcZFXo@2005.7",
+  "pBl9uKcZFXo@2064.3",
+  "pBl9uKcZFXo@2872.6",
+  "pBl9uKcZFXo@3001.9",
+  "pBl9uKcZFXo@3203.7",
+  "pBl9uKcZFXo@3319.7",
+  "pBl9uKcZFXo@3490.3",
+  "pBl9uKcZFXo@4019.5",
+  "pBl9uKcZFXo@4175.2"
+ ]
+}

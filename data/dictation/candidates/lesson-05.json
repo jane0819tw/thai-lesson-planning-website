@@ -1,0 +1,102 @@
+{
+ "lesson": 5,
+ "clips": [
+  {
+   "id": "pBl9uKcZFXo@2945.9",
+   "videoId": "pBl9uKcZFXo",
+   "start": 2946.4,
+   "end": 2947.5,
+   "text": "เห้ย เบาเบา เดี๋ยวก็โดนหม่อมบอสด่าหรอก",
+   "hits": [
+    {
+     "word": "เบาเบา",
+     "from": 5,
+     "to": 11,
+     "source": "規則"
+    }
+   ],
+   "reviewed": true
+  },
+  {
+   "id": "pBl9uKcZFXo@4175.2",
+   "videoId": "pBl9uKcZFXo",
+   "start": 4175.2,
+   "end": 4175.7,
+   "text": "ไป โก โฮม",
+   "hits": [
+    {
+     "word": "ไป",
+     "from": 0,
+     "to": 2,
+     "source": "講義"
+    }
+   ],
+   "reviewed": true
+  }
+ ],
+ "rejected": [
+  "pBl9uKcZFXo@69.8",
+  "pBl9uKcZFXo@102.5",
+  "pBl9uKcZFXo@105.9",
+  "pBl9uKcZFXo@142.0",
+  "pBl9uKcZFXo@167.9",
+  "pBl9uKcZFXo@227.2",
+  "pBl9uKcZFXo@237.6",
+  "pBl9uKcZFXo@289.7",
+  "pBl9uKcZFXo@320.0",
+  "pBl9uKcZFXo@322.7",
+  "pBl9uKcZFXo@334.9",
+  "pBl9uKcZFXo@366.4",
+  "pBl9uKcZFXo@516.6",
+  "pBl9uKcZFXo@538.9",
+  "pBl9uKcZFXo@552.9",
+  "pBl9uKcZFXo@678.9",
+  "pBl9uKcZFXo@682.1",
+  "pBl9uKcZFXo@694.4",
+  "pBl9uKcZFXo@704.1",
+  "pBl9uKcZFXo@813.7",
+  "pBl9uKcZFXo@835.5",
+  "pBl9uKcZFXo@865.6",
+  "pBl9uKcZFXo@890.9",
+  "pBl9uKcZFXo@913.4",
+  "pBl9uKcZFXo@923.4",
+  "pBl9uKcZFXo@928.9",
+  "pBl9uKcZFXo@934.4",
+  "pBl9uKcZFXo@939.5",
+  "pBl9uKcZFXo@955.3",
+  "pBl9uKcZFXo@1102.5",
+  "pBl9uKcZFXo@1356.6",
+  "pBl9uKcZFXo@1580.0",
+  "pBl9uKcZFXo@1591.8",
+  "pBl9uKcZFXo@1681.5",
+  "pBl9uKcZFXo@1860.5",
+  "pBl9uKcZFXo@1919.4",
+  "pBl9uKcZFXo@1926.2",
+  "pBl9uKcZFXo@1936.9",
+  "pBl9uKcZFXo@1954.6",
+  "pBl9uKcZFXo@1957.2",
+  "pBl9uKcZFXo@1979.5",
+  "pBl9uKcZFXo@1985.7",
+  "pBl9uKcZFXo@2014.6",
+  "pBl9uKcZFXo@2186.5",
+  "pBl9uKcZFXo@2223.8",
+  "pBl9uKcZFXo@2399.7",
+  "pBl9uKcZFXo@2513.9",
+  "pBl9uKcZFXo@2520.3",
+  "pBl9uKcZFXo@2618.5",
+  "pBl9uKcZFXo@2847.6",
+  "pBl9uKcZFXo@2850.3",
+  "pBl9uKcZFXo@2861.7",
+  "pBl9uKcZFXo@2983.5",
+  "pBl9uKcZFXo@3175.7",
+  "pBl9uKcZFXo@3194.8",
+  "pBl9uKcZFXo@3416.5",
+  "pBl9uKcZFXo@3421.9",
+  "pBl9uKcZFXo@3423.9",
+  "pBl9uKcZFXo@3535.7",
+  "pBl9uKcZFXo@3822.9",
+  "pBl9uKcZFXo@4113.2",
+  "pBl9uKcZFXo@4207.0",
+  "pBl9uKcZFXo@4229.0"
+ ]
+}

@@ -6,3 +6,6 @@ dist
 
 # 含學生姓名與 Email 的信件樣本，不進版本控制
 data/gmail/
+
+# 聽寫用的 YouTube 字幕快取（影片的著作物，可由 scripts/dictation-build.py 重新抓取）
+data/dictation/subtitles/

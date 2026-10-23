@@ -1,0 +1,78 @@
+{
+ "lesson": 4,
+ "clips": [
+  {
+   "id": "pBl9uKcZFXo@1042.6",
+   "videoId": "pBl9uKcZFXo",
+   "start": 1044.6,
+   "end": 1045.8,
+   "text": "นั่นป้าหมี สับปะรด ไม่ได้ชื่อสับปะรดนะ แต่หูตาแกน่ะเป็นสับปะรด",
+   "hits": [
+    {
+     "word": "แต่หูตาแก",
+     "from": 39,
+     "to": 48,
+     "source": "講義"
+    }
+   ],
+   "reviewed": true
+  },
+  {
+   "id": "pBl9uKcZFXo@1636.0",
+   "videoId": "pBl9uKcZFXo",
+   "start": 1638.5,
+   "end": 1639.3,
+   "text": "สวัสดีค่ะ พี่ๆ โอเค สู้ๆ ได้ งั้นเจอกันพรุ่งนี้นะ สู้สู้จ๊ะ",
+   "hits": [
+    {
+     "word": "สู้สู้จ๊ะ",
+     "from": 50,
+     "to": 59,
+     "source": "規則"
+    }
+   ],
+   "reviewed": true
+  }
+ ],
+ "rejected": [
+  "pBl9uKcZFXo@64.0",
+  "pBl9uKcZFXo@155.0",
+  "pBl9uKcZFXo@160.1",
+  "pBl9uKcZFXo@320.0",
+  "pBl9uKcZFXo@329.1",
+  "pBl9uKcZFXo@331.8",
+  "pBl9uKcZFXo@358.0",
+  "pBl9uKcZFXo@363.5",
+  "pBl9uKcZFXo@366.4",
+  "pBl9uKcZFXo@485.2",
+  "pBl9uKcZFXo@507.3",
+  "pBl9uKcZFXo@541.7",
+  "pBl9uKcZFXo@572.1",
+  "pBl9uKcZFXo@575.2",
+  "pBl9uKcZFXo@1294.2",
+  "pBl9uKcZFXo@1485.1",
+  "pBl9uKcZFXo@1618.6",
+  "pBl9uKcZFXo@1643.0",
+  "pBl9uKcZFXo@1809.7",
+  "pBl9uKcZFXo@1860.5",
+  "pBl9uKcZFXo@1883.1",
+  "pBl9uKcZFXo@2064.3",
+  "pBl9uKcZFXo@2132.7",
+  "pBl9uKcZFXo@2372.2",
+  "pBl9uKcZFXo@2377.7",
+  "pBl9uKcZFXo@2533.6",
+  "pBl9uKcZFXo@2669.7",
+  "pBl9uKcZFXo@2674.1",
+  "pBl9uKcZFXo@2881.7",
+  "pBl9uKcZFXo@2957.1",
+  "pBl9uKcZFXo@3066.8",
+  "pBl9uKcZFXo@3292.3",
+  "pBl9uKcZFXo@3453.8",
+  "pBl9uKcZFXo@3677.0",
+  "pBl9uKcZFXo@3686.1",
+  "pBl9uKcZFXo@3988.0",
+  "pBl9uKcZFXo@4127.4",
+  "pBl9uKcZFXo@4137.9",
+  "pBl9uKcZFXo@4153.7"
+ ]
+}
