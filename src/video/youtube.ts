@@ -3,6 +3,7 @@ export interface YTPlayer {
   playVideo(): void
   pauseVideo(): void
   seekTo(seconds: number, allowSeekAhead: boolean): void
+  loadVideoById(opts: { videoId: string; startSeconds?: number }): void
   getCurrentTime(): number
   getDuration(): number
   /** -1 未開始, 0 結束, 1 播放中, 2 暫停, 3 緩衝, 5 已排入 */
@@ -14,7 +15,7 @@ interface YTNamespace {
   Player: new (el: HTMLElement, opts: {
     videoId: string; width?: string; height?: string
     playerVars?: Record<string, string | number>
-    events?: { onReady?: () => void; onError?: (e: { data: number }) => void }
+    events?: { onReady?: () => void; onError?: (e: { data: number }) => void; onStateChange?: (e: { data: number }) => void }
   }) => YTPlayer
 }
 declare global {

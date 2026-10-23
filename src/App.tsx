@@ -7,6 +7,7 @@ import StudentLink from './reservation/StudentLink'
 import AdminLink from './reservation/AdminLink'
 import BookingPage from './reservation/BookingPage'
 import AdminPage from './reservation/AdminPage'
+import VideoChallengePage from './components/VideoChallengePage'
 import HomeworkPage from './components/HomeworkPage'
 import ChartPage from './components/ChartPage'
 import KeyboardPage from './components/KeyboardPage'
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/reading/dictation-review" element={<DictationReview />} />
           <Route path="/reading/lesson/:id" element={<LessonPage />} />
           <Route path="/reading/lesson/:id/homework" element={<HomeworkPage />} />
+          <Route path="/reading/lesson/:id/video" element={<VideoChallengePage />} />
           <Route path="/reading/review/:unit" element={<HomeworkPage />} />
           <Route path="/book" element={<BookingPage />} />
           <Route path="/admin" element={<AdminPage />} />

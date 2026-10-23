@@ -232,7 +232,7 @@ export default function LessonPage() {
 
   return (
     <>
-      {(() => { const st = getSession(); return <p>{st ? <Link to={`/book?t=${encodeURIComponent(st.token)}`}>← 回我的預約</Link> : <Link to="/reading">← 認字課程</Link>}</p> })()}
+      {(() => { const st = getSession(); return <p>{st ? <Link to={`/book?t=${encodeURIComponent(st.token)}`}>← 回到課程與作業</Link> : <Link to="/reading">← 認字課程</Link>}</p> })()}
       <h1>L{lesson.number}　{lesson.title}</h1>
       <p className="muted">{lesson.summary}</p>
 

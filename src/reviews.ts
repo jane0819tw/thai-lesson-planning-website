@@ -10,4 +10,7 @@ export const reviewRange = (unit: number) => ({ from: (unit - 1) * UNIT_SIZE + 1
 export const reviewRangeLabel = (unit: number) => { const r = reviewRange(unit); return `L${r.from}–L${r.to}` }
 export const reviewTitle = (unit: number) => `${reviewRangeLabel(unit)} 作業複習`
 /** 作業紀錄的課別欄顯示文字：L3 → L3、R1 → 複習 L1–L5 */
-export const homeworkLessonLabel = (s: string) => { const m = /^R(\d+)$/.exec(s); return m ? `複習 ${reviewRangeLabel(Number(m[1]))}` : s }
+export const homeworkLessonLabel = (s: string) => {
+  const m = /^R(\d+)$/.exec(s), v = /^V(\d+)$/.exec(s)
+  return m ? `複習 ${reviewRangeLabel(Number(m[1]))}` : v ? `L${v[1]} 影片挑戰` : s
+}

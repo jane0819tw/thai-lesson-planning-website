@@ -216,10 +216,10 @@ function getHomeworkInfo(token, lessonNumber) {
   return { name: s.name, last: homeworkOf_(s.name)[homeworkKey_(lessonNumber)] || null };
 }
 
-/** 作業的課別代號：一般課是數字（3 → '3'）；作業複習是 'R<單位>'（R1 ＝ L1–L5）。不合法回傳空字串 */
+/** 作業的課別代號：一般課是數字（3 → '3'）；作業複習是 'R<單位>'（R1 ＝ L1–L5）；延伸影片挑戰是 'V<課>'（V3 ＝ L3 影片挑戰，成績記在「聽寫」欄）。不合法回傳空字串 */
 function homeworkKey_(lessonNumber) {
   const t = String(lessonNumber).trim();
-  if (/^R[1-9]\d*$/i.test(t)) return t.toUpperCase();
+  if (/^[RV][1-9]\d*$/i.test(t)) return t.toUpperCase();
   const n = Number(t);
   return n > 0 && n === Math.floor(n) ? String(n) : '';
 }
@@ -235,7 +235,7 @@ function submitHomework(token, lessonNumber, result) {
   const sh = getSheet_(CONFIG.SHEETS.HOMEWORK, HOMEWORK_HEADERS);
   const row = sh.getLastRow() + 1;
   sh.getRange(row, 3, 1, 3).setNumberFormat('@'); // 「8/9」要存成文字，不然會被轉成日期
-  sh.getRange(row, 1, 1, HOMEWORK_HEADERS.length).setValues([[new Date(), s.name, (key.charAt(0) === 'R' ? key : 'L' + key), fmt(result.listen), fmt(result.typing), '']]);
+  sh.getRange(row, 1, 1, HOMEWORK_HEADERS.length).setValues([[new Date(), s.name, (/^[RV]/.test(key) ? key : 'L' + key), fmt(result.listen), fmt(result.typing), '']]);
   return { ok: true, name: s.name };
 }
 

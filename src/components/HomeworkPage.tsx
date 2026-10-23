@@ -11,7 +11,7 @@ import { getApi, type HomeworkResult } from '../reservation/api'
 import type { HomeworkRecord } from '../reservation/types'
 import { reviewKey, reviewRange, reviewTitle } from '../reviews'
 
-const norm = (s: string) => s.normalize('NFC').replace(/\s+/g, '')
+export const norm = (s: string) => s.normalize('NFC').replace(/\s+/g, '')
 
 type Result = HomeworkResult
 
@@ -88,7 +88,7 @@ export default function HomeworkPage() {
 
   return (
     <>
-      <p>{reviewUnit ? (() => { const st = getSession(); return st ? <Link to={`/book?t=${encodeURIComponent(st.token)}`}>← 回我的預約</Link> : <Link to="/reading">← 認字課程</Link> })() : <Link to={`/reading/lesson/${lesson.id}`}>← 回 L{lesson.number}</Link>}</p>
+      <p>{(() => { const st = getSession(); return st ? <Link to={`/book?t=${encodeURIComponent(st.token)}`}>← 回到課程與作業</Link> : reviewUnit ? <Link to="/reading">← 認字課程</Link> : <Link to={`/reading/lesson/${lesson.id}`}>← 回 L{lesson.number}</Link> })()}</p>
       <h1>{reviewUnit ? lesson.title : `L${lesson.number} 作業`}</h1>
       {!reviewUnit && <p className="muted">{lesson.title}</p>}
       {name && <p className="hw-name">👤 {name}</p>}
@@ -133,7 +133,7 @@ export default function HomeworkPage() {
       <section className="hw-sec hw-submit">
         <h2>繳交</h2>
         {!token
-          ? <p className="muted small">請從預約頁的「我的課程」進入作業頁，才能送出作業。</p>
+          ? <p className="muted small">請從預約頁的「我的課程與作業」進入作業頁，才能送出作業。</p>
           : state === 'sent'
             ? <>
               <p className="hw-sent">✅ 已完成！聽音選字 {last?.listen}・聽寫 {last?.typing}，老師會收到你的成績。</p>
@@ -184,7 +184,7 @@ function Dictation({ words, onDone }: { words: string[]; onDone: (score: number,
 }
 
 // 作業頁內建的泰文鍵盤（同「泰文鍵盤」頁的兩種排列），不用離開作業頁
-function Keypad({ onKey, onBack, fontLabel, onFont }: { onKey: (ch: string) => void; onBack: () => void; fontLabel: string; onFont: () => void }) {
+export function Keypad({ onKey, onBack, fontLabel, onFont }: { onKey: (ch: string) => void; onBack: () => void; fontLabel: string; onFont: () => void }) {
   const [mode, setMode] = useState<'learn' | 'ked'>('learn')
   const [shift, setShift] = useState(false)
   const press = (ch: string) => onKey(ch) // 上檔（⇧）會一直保持，要再按 ⇧ 才回到第一頁

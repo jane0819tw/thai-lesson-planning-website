@@ -4,6 +4,7 @@ import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import { setSession } from './session'
 import { getApi } from './api'
 import { REVIEW_UNITS, reviewKey, reviewTitle } from '../reviews'
+import { dictClipsOf, videoKey } from '../dictationClips'
 import type { HomeworkRecord, OpenDays, StudentInfo } from './types'
 import './booking.css'
 
@@ -26,10 +27,10 @@ function HomeworkButton({ to, rec }: { to: string; rec?: HomeworkRecord }) {
   )
 }
 
-// 每個作業按鈕下方的「延伸影片挑戰」：課程 JSON 有設 videoChallenge 就連過去，沒設先顯示「即將開放」
-function VideoChallenge({ to }: { to?: string }) {
+// 每個作業按鈕下方的「延伸影片挑戰」：課程 JSON 有設 videoChallenge 就連過去；沒設但有審查過的聽寫片段就進影片聽寫；都沒有顯示「即將開放」
+function VideoChallenge({ to, rec }: { to?: string; rec?: HomeworkRecord }) {
   return to
-    ? <Link to={to} className="bk-video">🎬 延伸影片挑戰 →</Link>
+    ? <Link to={to} className="bk-video">🎬 延伸影片挑戰{rec ? <> <b>✅ 已完成 {rec.typing}</b> <u>再做一次</u></> : ' →'}<small>（題目持續更新）</small></Link>
     : <span className="bk-video off">🎬 延伸影片挑戰（即將開放）</span>
 }
 
@@ -120,13 +121,13 @@ export default function BookingPage() {
       {view.mode === 'known' && (
         <div className="tabs bk-tabs" role="tablist">
           <button role="tab" aria-selected={tab === 'book'} className={tab === 'book' ? 'on' : ''} onClick={() => setTab('book')}>預約</button>
-          <button role="tab" aria-selected={tab === 'courses'} className={tab === 'courses' ? 'on' : ''} onClick={() => setTab('courses')}>我的課程</button>
+          <button role="tab" aria-selected={tab === 'courses'} className={tab === 'courses' ? 'on' : ''} onClick={() => setTab('courses')}>我的課程與作業</button>
         </div>
       )}
 
       {view.mode === 'known' && tab === 'courses' && (
         <div className="bk-card" onClickCapture={e => { if ((e.target as HTMLElement).closest('a')) { try { sessionStorage.setItem(TAB_KEY, 'courses') } catch { /* 存不了就算了 */ } } }}>
-          <h2>我的課程</h2>
+          <h2>我的課程與作業</h2>
           {hasCourses ? (
             <>
               {myUnits.length > 0 && (
@@ -137,10 +138,10 @@ export default function BookingPage() {
                       <span className="bk-unit-h">{unitLabel(u)}</span>
                       <ul className="bk-lessons">
                         {lessons.filter(x => x.number >= u.from && x.number <= u.to).map(x => (
-                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<HomeworkButton to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`} rec={view.homework?.[String(x.number)]} /><VideoChallenge to={x.videoChallenge} /></li>
+                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<HomeworkButton to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`} rec={view.homework?.[String(x.number)]} /><VideoChallenge to={x.videoChallenge ?? (dictClipsOf(x.number).length ? `/reading/lesson/${x.id}/video?t=${encodeURIComponent(token)}` : undefined)} rec={view.homework?.[videoKey(x.number)]} /></li>
                         ))}
                         {REVIEW_UNITS.includes(u.n) && u.to - u.from === 4 && (
-                          <li key={`review-${u.n}`}><b>複習</b> {reviewTitle(u.n)}{' '}<HomeworkButton to={`/reading/review/${u.n}?t=${encodeURIComponent(token)}`} rec={view.homework?.[reviewKey(u.n)]} /><VideoChallenge /></li>
+                          <li key={`review-${u.n}`}><b>複習</b> {reviewTitle(u.n)}{' '}<HomeworkButton to={`/reading/review/${u.n}?t=${encodeURIComponent(token)}`} rec={view.homework?.[reviewKey(u.n)]} /></li>
                         )}
                       </ul>
                     </div>
