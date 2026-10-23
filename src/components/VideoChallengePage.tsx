@@ -84,7 +84,7 @@ function Challenge({ clips, token, state, err, last, onSubmit, onAgain }: {
   const [checked, setChecked] = useState(false)
   const [active, setActive] = useState(0)
   const [slow, setSlow] = useState(false)
-  const [pad, setPad] = useState(true)
+  const [pad, setPad] = useState(false)
   const [hint, setHint] = useState<Record<string, boolean>>({})
   const [font, nextFont] = useThaiFont()
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
@@ -172,12 +172,6 @@ function Challenge({ clips, token, state, err, last, onSubmit, onAgain }: {
           {status !== 'ready' && <p className="vc-msg">{status === 'error' ? errorMsg : '播放器載入中…'}</p>}
         </div>
         <label className="hw-check"><input type="checkbox" checked={slow} onChange={e => setSlow(e.target.checked)} /> 放慢速度（0.75 倍）</label>
-        {src && (
-          <p className="vc-src small muted">
-            影片來源：{src.channel && <>{src.channel}・</>}{src.title ?? 'YouTube 影片'}<br />
-            <a href={src.url} target="_blank" rel="noopener noreferrer">前往 YouTube 觀看完整影片 ↗</a>
-          </p>
-        )}
       </div>
       <div className="vc-rows">
       {clips.map((c, i) => {
@@ -197,6 +191,12 @@ function Challenge({ clips, token, state, err, last, onSubmit, onAgain }: {
       })}
       </div>
       </div>
+      {src && (
+        <p className="vc-src small muted">
+          影片來源：{src.channel && <>{src.channel}・</>}{src.title ?? 'YouTube 影片'}<br />
+          <a href={src.url} target="_blank" rel="noopener noreferrer">前往 YouTube 觀看完整影片 ↗</a>
+        </p>
+      )}
 
       {!checked && (
         <>

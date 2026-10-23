@@ -154,7 +154,7 @@ function Dictation({ words, onDone }: { words: string[]; onDone: (score: number,
   const [checked, setChecked] = useState(false)
   const [active, setActive] = useState(0)
   const [font, nextFont] = useThaiFont()
-  const [pad, setPad] = useState(true) // 用網站鍵盤；關掉就用手機／電腦自己的泰文輸入法
+  const [pad, setPad] = useState(false) // 用網站鍵盤；預設關，用手機／電腦自己的泰文輸入法
   const score = words.filter((w, i) => norm(ans[i]) === norm(w)).length
   const edit = (f: (t: string) => string) => setAns(a => a.map((x, j) => (j === active ? f(x) : x)))
   return (
@@ -188,7 +188,8 @@ export function Keypad({ onKey, onBack, fontLabel, onFont }: { onKey: (ch: strin
   const [mode, setMode] = useState<'learn' | 'ked'>('learn')
   const [shift, setShift] = useState(false)
   const press = (ch: string) => onKey(ch) // 上檔（⇧）會一直保持，要再按 ⇧ 才回到第一頁
-  const K = ({ ch }: { ch: string }) => <button type="button" className="key th" onClick={() => press(ch)}>{keyLabel(ch)}</button>
+  // 一般函式、不要寫成元件：寫成 <K /> 每按一次整排按鈕都會重建，手機上會閃兩下
+  const key = (ch: string) => <button type="button" key={ch} className="key th" onClick={() => press(ch)}>{keyLabel(ch)}</button>
   return (
     <div className="hw-pad">
       <div className="tabs" role="tablist">
@@ -197,7 +198,7 @@ export function Keypad({ onKey, onBack, fontLabel, onFont }: { onKey: (ch: strin
         <button type="button" className="act" onClick={onBack}>⌫</button>
         <button type="button" className="act" onClick={onFont} title="切換字體">Aa 字體：{fontLabel}</button>
       </div>
-      {mode === 'learn' && SECTIONS.map(s => <div className="krow" key={s.title}>{s.keys.split(' ').map(ch => <K key={ch} ch={ch} />)}</div>)}
+      {mode === 'learn' && SECTIONS.map(s => <div className="krow" key={s.title}>{s.keys.split(' ').map(key)}</div>)}
       {mode === 'ked' && (
         <div className="hw-ked">
           {KED.map((r, i) => {
