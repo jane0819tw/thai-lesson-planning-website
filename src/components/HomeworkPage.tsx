@@ -6,6 +6,7 @@ import { getRepository } from '../data/repository'
 import type { Lesson } from '../types'
 import { ListenQuiz, VowelListenQuiz, vowelSyllables } from './Games'
 import SpeakButton from './SpeakButton'
+import { getSession } from '../reservation/session'
 import { getApi, type HomeworkResult } from '../reservation/api'
 import type { HomeworkRecord } from '../reservation/types'
 import { reviewKey, reviewRange, reviewTitle } from '../reviews'
@@ -87,7 +88,7 @@ export default function HomeworkPage() {
 
   return (
     <>
-      <p>{reviewUnit ? <Link to="/reading">← 認字課程</Link> : <Link to={`/reading/lesson/${lesson.id}`}>← 回 L{lesson.number}</Link>}</p>
+      <p>{reviewUnit ? (() => { const st = getSession(); return st ? <Link to={`/book?t=${encodeURIComponent(st.token)}`}>← 回我的預約</Link> : <Link to="/reading">← 認字課程</Link> })() : <Link to={`/reading/lesson/${lesson.id}`}>← 回 L{lesson.number}</Link>}</p>
       <h1>{reviewUnit ? lesson.title : `L${lesson.number} 作業`}</h1>
       {!reviewUnit && <p className="muted">{lesson.title}</p>}
       {name && <p className="hw-name">👤 {name}</p>}
