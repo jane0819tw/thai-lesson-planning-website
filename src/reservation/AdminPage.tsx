@@ -40,6 +40,7 @@ export default function AdminPage() {
   const [rec, setRec] = useState<RecSession[] | null>(null)
   const [hw, setHw] = useState<HomeworkRow[] | null>(null)
   const [onlyActive, setOnlyActive] = useState(false)
+  const [who, setWho] = useState<'all' | 'private' | 'at'>('all')
   const [newBar, setNewBar] = useState('')
   const [busy, setBusy] = useState({ n: 0, text: '' })
   const seen = useRef<Set<string> | null>(null)
@@ -123,14 +124,18 @@ export default function AdminPage() {
     return () => { clearInterval(timer); document.removeEventListener('click', ask); window.removeEventListener('focus', focus) }
   }, [st !== null, api]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const act = async (label: string, f: () => Promise<unknown>, okText: string, keepWeek = false) => {
+  const act = async <T,>(label: string, f: () => Promise<T>, okText: string | ((r: T) => string), keepWeek = false) => {
     try {
-      await run(label, async () => {
-        await f()
-        const [s, w, r] = await Promise.all([api.adminGetState(), keepWeek ? wk : api.adminGetWeek(wk?.monday ?? ''), rec ? api.adminGetRecordSessions() : null])
-        setSt(s); setWk(w); if (r) setRec(r)
-      })
-      flash(true, okText)
+      const res = await run(label, f)
+      const ok = typeof okText === 'function' ? okText(res) : okText
+      // 動作已經成功；之後重新載入失敗只是畫面沒更新，不要講成動作失敗
+      try {
+        await run('重新載入中…', async () => {
+          const [s, w, r] = await Promise.all([api.adminGetState(), keepWeek ? wk : api.adminGetWeek(wk?.monday ?? ''), rec ? api.adminGetRecordSessions() : null])
+          setSt(s); setWk(w); if (r) setRec(r)
+        })
+        flash(true, ok)
+      } catch (e) { flash(false, `${ok}，但重新載入畫面失敗，請重新整理頁面。（${(e as Error).message}）`) }
     } catch (e) { flash(false, (e as Error).message) }
   }
 
@@ -330,13 +335,32 @@ export default function AdminPage() {
           {sec === 'students' && (
             <div className="bk-card">
               <h2>學生預約連結</h2>
-              {st.students.length ? st.students.map(s => (
+              {(() => { const n = st.students.filter(s => s.display).length; return (
+                <div className="tabs" role="tablist" style={{ marginBottom: 8 }}>
+                  {([['all', `全部 ${st.students.length}`], ['private', `私下 ${st.students.length - n}`], ['at', `AmazingTalker ${n}`]] as const).map(([k, label]) => (
+                    <button key={k} role="tab" aria-selected={who === k} className={who === k ? 'on' : ''} onClick={() => setWho(k)}>{label}</button>
+                  ))}
+                </div>
+              ) })()}
+              {st.students.length ? st.students.filter(s => who === 'all' || (who === 'at') === !!s.display).map(s => (
                 <StudentItem key={s.name} s={s} units={units}
+                  onDelete={() => { if (confirm(`確定刪除學生「${s.name}」？他們的連結會立刻失效（預約與作業紀錄會保留）。`)) act('刪除學生中…', () => api.adminDeleteStudent(s.name), `已刪除 ${s.name}`, true) }}
+                  onSaveDisplay={d => act('儲存平台名稱中…', () => api.adminSetDisplay(s.name, d), `已儲存 ${s.name} 的平台名稱`, true)}
                   onSaveCourses={list => act('儲存開放課程中…', () => api.adminSetCourses(s.name, list), `已儲存 ${s.name} 的開放課程`, true)}
                   onRenew={() => { if (confirm('舊連結會立刻失效，確定嗎？')) act('產生新連結中…', () => api.adminRenewLink(s.name), '已產生新連結') }}
                   onSaveRec={url => act('儲存課程記錄表中…', () => api.adminSetRecord(s.name, url), '已儲存課程記錄表', true)} />
               )) : <p className="bk-muted">還沒有學生。</p>}
-              <NewStudent onAdd={(n, e) => act('新增學生中…', () => api.adminCreateStudent(n, e), '已新增學生')} />
+              {who === 'at' && (
+                <p className="bk-row" style={{ marginTop: 12 }}>
+                  <button onClick={() => act('從預約紀錄列入中…', () => api.adminImportPlatformStudents(),
+                    r => r.added.length || r.linked.length
+                      ? [r.added.length && `新增 ${r.added.length} 位：${r.added.join('、')}`, r.linked.length && `補上平台名稱 ${r.linked.length} 位：${r.linked.join('、')}`].filter(Boolean).join('；')
+                      : '預約紀錄裡的 AmazingTalker 學生都已經在列表裡了', true)}>從預約紀錄列入 AmazingTalker 學生</button>
+                  <span className="bk-muted">之後收到新的平台預約信，也會自動列入。</span>
+                </p>
+              )}
+              <NewStudent at={who === 'at'} onAdd={(n, e, d) => act('新增學生中…', () => api.adminCreateStudent(n, e, d), d ? '已新增 AmazingTalker 學生' : '已新增學生')} />
+              <p className="bk-muted">有填「AmazingTalker 名稱」的學生在平台上預約，他們的連結只會看到「我的課程與作業」，看不到預約。</p>
               <p className="bk-muted">貼上學生的「課程記錄表」網址後，學生頁會顯示剩餘堂數，確認預約時會自動把日期與 Zoom 連結填進下一堂。</p>
               <p className="bk-muted">新學生也可以用沒有代碼的通用連結（<code>#/book</code>）自己填姓名與 Email，送出後你確認時會自動建檔。</p>
             </div>
@@ -364,16 +388,18 @@ const Diag = ({ lines, fatal, always }: { lines: string[]; fatal: string; always
 
 const Busy = ({ text }: { text: string }) => <div className="mgr-busy"><div><i /><span>{text}</span></div></div>
 
-function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses }: { s: StudentRow; units: Unit[]; onRenew: () => void; onSaveRec: (url: string) => void; onSaveCourses: (list: string[]) => void }) {
+function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDisplay, onDelete }: { s: StudentRow; units: Unit[]; onRenew: () => void; onDelete: () => void; onSaveRec: (url: string) => void; onSaveCourses: (list: string[]) => void; onSaveDisplay: (display: string) => void }) {
   const [url, setUrl] = useState(s.record ?? '')
+  const [display, setDisplay] = useState(s.display ?? '')
   const [courses, setCourses] = useState<string[]>(s.courses)
   const [copied, setCopied] = useState(false)
   return (
     <div className="bk-item">
-      <div>{s.name}<div className="bk-muted">{s.email}</div>{s.token && <div className="mgr-link">{linkOf(s)}</div>}</div>
+      <div>{s.name}{s.display && <span className="mgr-at">AT・{s.display}</span>}<div className="bk-muted">{s.email}</div>{s.token && <div className="mgr-link">{linkOf(s)}</div>}</div>
       <div className="bk-row">
         {s.token && <button onClick={() => navigator.clipboard.writeText(linkOf(s)).then(() => setCopied(true))}>{copied ? '已複製' : '複製連結'}</button>}
         <button onClick={onRenew}>{s.token ? '換新連結' : '產生連結'}</button>
+        <button className="danger" onClick={onDelete}>刪除</button>
       </div>
       <div className="mgr-courses">
         <span className="bk-muted">開放課程</span>
@@ -386,19 +412,26 @@ function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses }: { s: Stude
         <input style={{ flex: 1, minWidth: 200 }} placeholder="課程記錄表（試算表網址）" value={url} onChange={e => setUrl(e.target.value)} />
         <button onClick={() => onSaveRec(url)}>儲存</button>
       </div>
+      <div className="bk-row" style={{ flexBasis: '100%' }}>
+        <input style={{ flex: 1, minWidth: 200 }} placeholder="AmazingTalker 名稱（平台學生才填）" value={display} onChange={e => setDisplay(e.target.value)} />
+        <button disabled={display.trim() === (s.display ?? '')} onClick={() => onSaveDisplay(display)}>儲存</button>
+      </div>
     </div>
   )
 }
 
 const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every(x => b.includes(x))
 
-function NewStudent({ onAdd }: { onAdd: (name: string, email: string) => void }) {
-  const [n, setN] = useState(''), [e, setE] = useState('')
+// 在「AmazingTalker」分頁新增時填平台名稱（必填），新學生直接歸在平台學生
+function NewStudent({ at, onAdd }: { at: boolean; onAdd: (name: string, email: string, display: string) => void }) {
+  const [n, setN] = useState(''), [e, setE] = useState(''), [d, setD] = useState('')
   return (
     <div className="bk-row" style={{ marginTop: 12 }}>
       <input placeholder="姓名" value={n} onChange={x => setN(x.target.value)} />
-      <input type="email" placeholder="Email" value={e} onChange={x => setE(x.target.value)} />
-      <button onClick={() => { onAdd(n, e); setN(''); setE('') }}>新增學生</button>
+      {at
+        ? <input placeholder="AmazingTalker 名稱（和平台上一字不差）" value={d} onChange={x => setD(x.target.value)} />
+        : <input type="email" placeholder="Email" value={e} onChange={x => setE(x.target.value)} />}
+      <button disabled={at && !d.trim()} onClick={() => { onAdd(n, at ? '' : e, at ? d : ''); setN(''); setE(''); setD('') }}>{at ? '新增 AmazingTalker 學生' : '新增學生'}</button>
     </div>
   )
 }

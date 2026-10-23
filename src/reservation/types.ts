@@ -13,6 +13,8 @@ export interface StudentView {
   courses?: string[]
   /** 每一課最近一次作業成績，key 是課號（'1'）。舊版後端沒有這欄時為 undefined */
   homework?: Record<string, HomeworkRecord>
+  /** 平台（AmazingTalker）學生：在平台上預約，學生頁只顯示「我的課程與作業」 */
+  platform?: boolean
 }
 
 export interface HomeworkRecord { time: string; listen: string; typing: string; count: number }
@@ -26,7 +28,7 @@ export interface OpenDays { days: Day[]; asOf: string }
 export interface Rule { type: '每週' | '單次' | '限定' | '休假'; weekday: number | ''; date: string; start: string; end: string; label?: string }
 export interface Booking { id: string; source: string; name: string; start: string; length: number; status: string }
 export interface Pending { id: string; name: string; start: string; length: number; note: string }
-export interface StudentRow { name: string; email: string; token: string; record?: string; courses: string[] }
+export interface StudentRow { name: string; /** 平台顯示名稱：有填＝AmazingTalker 學生 */ display?: string; email: string; token: string; record?: string; courses: string[] }
 export interface AdminState { rules: Rule[]; bookings: Booking[]; pending: Pending[]; students: StudentRow[] }
 export interface WeekLesson { id: string; name: string; source: string; status: string; len: number; start: number; end: number }
 export interface WeekEvent { title: string; start: number; end: number }

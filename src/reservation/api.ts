@@ -18,9 +18,12 @@ interface Api {
   adminGetWeek(date: string): Promise<Week>
   adminSaveRules(rules: Rule[]): Promise<boolean>
   adminSetStatus(id: string, status: string): Promise<boolean>
-  adminCreateStudent(name: string, email: string): Promise<boolean>
+  adminCreateStudent(name: string, email: string, display?: string): Promise<boolean>
+  adminDeleteStudent(name: string): Promise<boolean>
   adminRenewLink(name: string): Promise<boolean>
   adminSetRecord(name: string, url: string): Promise<boolean>
+  adminSetDisplay(name: string, display: string): Promise<boolean>
+  adminImportPlatformStudents(): Promise<{ added: string[]; linked: string[] }>
   adminSetCourses(name: string, courses: string[]): Promise<boolean>
   adminGetRecordSessions(): Promise<RecSession[]>
   adminCancelRecordLesson(name: string, start: string): Promise<boolean>
@@ -37,7 +40,12 @@ async function call<T>(fn: string, args: unknown[]): Promise<T> {
   try { r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args, ...(fn.startsWith('admin') ? { key: getAdminKey() } : {}) }) }) }
   catch { throw new Error('連線失敗，請檢查網路後再試') }
   let d: { ok: boolean; data?: T; error?: string }
-  try { d = await r.json() } catch { throw new Error('伺服器回應格式不正確（網址是否為最新部署的 /exec？）') }
+  const text = await r.text().catch(() => '')
+  try { d = JSON.parse(text) } catch {
+    // Apps Script 沒跑到 doPost（授權、逾時、程式碼有錯）時會回 HTML 錯誤頁，把狀態碼和頁面文字帶出來方便查
+    const snippet = text.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160)
+    throw new Error(`伺服器回應格式不正確（${fn}，HTTP ${r.status}${snippet ? `：${snippet}` : '，空白回應'}）`)
+  }
   if (!d.ok) throw new Error(d.error || '發生錯誤')
   return d.data as T
 }
@@ -53,9 +61,12 @@ const real: Api = {
   adminGetWeek: d => call('adminGetWeek', [d]),
   adminSaveRules: r => call('adminSaveRules', [r]),
   adminSetStatus: (id, st) => call('adminSetStatus', [id, st]),
-  adminCreateStudent: (n, e) => call('adminCreateStudent', [n, e]),
+  adminCreateStudent: (n, e, d) => call('adminCreateStudent', [n, e, d ?? '']),
+  adminDeleteStudent: n => call('adminDeleteStudent', [n]),
   adminRenewLink: n => call('adminRenewLink', [n]),
   adminSetRecord: (n, u) => call('adminSetRecord', [n, u]),
+  adminSetDisplay: (n, d) => call('adminSetDisplay', [n, d]),
+  adminImportPlatformStudents: () => call('adminImportPlatformStudents', []),
   adminSetCourses: (n, c) => call('adminSetCourses', [n, c]),
   adminGetRecordSessions: () => call('adminGetRecordSessions', []),
   adminGetHomework: () => call('adminGetHomework', []),
@@ -81,7 +92,7 @@ const db: AdminState = {
     { id: 'B0021', source: 'AmazingTalker', name: 'Jenny', start: `${day(2)} 21:00`, length: 50, status: '已過期' },
   ],
   pending: [{ id: 'B0020', name: 'Amy', start: `${day(1)} 19:00`, length: 50, note: 'Email: amy@example.com' }],
-  students: [{ name: 'Jenny', email: 'jenny@example.com', token: 'abc123', record: 'https://docs.google.com/spreadsheets/d/xxx', courses: ['reading:1', 'video'] }],
+  students: [{ name: 'Jenny', email: 'jenny@example.com', token: 'abc123', record: 'https://docs.google.com/spreadsheets/d/xxx', courses: ['reading:1', 'video'] }, { name: '王小明', display: 'Ming W.', email: '', token: 'at', courses: ['reading:1'] }],
 }
 const week = (d: string): Week => {
   const base = d || day(0)
@@ -104,6 +115,7 @@ const mockHw: Record<string, HomeworkRecord> = { '1': { time: `${day(-1)} 20:15`
 const mock: Api = {
   getStudentInfo: t => t === 'bad' ? delay({ mode: 'invalid' } as StudentInfo) : delay({
     homework: t ? mockHw : {},
+    platform: t === 'at', // ?mock=1&t=at 可看平台學生的畫面
     mode: t ? 'known' : 'generic', name: t ? 'Jenny' : '',
     lastLesson: t ? { date: '2026-09-25', progress: '會話Level2L3第一頁', next: '會話Level2L3第2頁開始' } : null,
     lessons: t ? { bought: 10, used: 3, booked: 3, left: 7, len: 25, leftMinutes: 175 } : null,
@@ -131,9 +143,12 @@ const mock: Api = {
   adminGetWeek: d => delay(week(d)),
   adminSaveRules: r => { db.rules = r; return delay(true) },
   adminSetStatus: (id, st) => { db.pending = db.pending.filter(p => p.id !== id); db.bookings.forEach(b => { if (b.id === id) b.status = st }); return delay(true) },
-  adminCreateStudent: n => { if (!n) return Promise.reject(new Error('請填姓名')); db.students.push({ name: n, email: '', token: '', courses: [] }); return delay(true) },
+  adminCreateStudent: (n, e, d) => { if (!n) return Promise.reject(new Error('請填姓名')); db.students.push({ name: n, display: d?.trim() ?? '', email: e, token: 'mock' + db.students.length, courses: [] }); return delay(true) },
+  adminDeleteStudent: n => { db.students = db.students.filter(s => s.name !== n); return delay(true) },
   adminRenewLink: n => { db.students.forEach(s => { if (s.name === n) s.token = Math.random().toString(36).slice(2) }); return delay(true) },
   adminSetRecord: (n, u) => { db.students.forEach(s => { if (s.name === n) s.record = u }); return delay(true) },
+  adminImportPlatformStudents: () => delay({ added: [], linked: [] }),
+  adminSetDisplay: (n, d) => { db.students.forEach(s => { if (s.name === n) s.display = d.trim() }); return delay(true) },
   adminSetCourses: (n, c) => { db.students.forEach(s => { if (s.name === n) s.courses = c }); return delay(true) },
   adminGetRecordSessions: () => delay([{ name: 'Ariel', start: `${day(3)} 09:00`, end: `${day(3)} 09:30` }, { name: 'Ariel', start: `${day(3)} 09:30`, end: `${day(3)} 10:00` }]),
   adminCancelRecordLesson: () => delay(true),

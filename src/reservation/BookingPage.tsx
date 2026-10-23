@@ -71,7 +71,8 @@ export default function BookingPage() {
 
   const loadInfo = useCallback(async () => { const v = await api.getStudentInfo(token); setView(v); if (v.mode !== 'invalid') writeCache(token, { info: v }) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
   const loadDays = useCallback(async (force = false) => { const d = await api.getOpenDays(force); setOpen(d); writeCache(token, { open: d }) }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { loadInfo().catch(e => setError(e.message)); loadDays().catch(e => setError(e.message)) }, [loadInfo, loadDays])
+  // 平台學生用不到時段；上次載入已知是平台學生就不抓（第一次還是會抓，抓完不顯示）
+  useEffect(() => { loadInfo().catch(e => setError(e.message)); if (!readCache(token).info?.platform) loadDays().catch(e => setError(e.message)) }, [loadInfo, loadDays]) // eslint-disable-line react-hooks/exhaustive-deps
   // 記住這位學生，讓其他頁面的頁首能回到「我的預約」
   useEffect(() => { if (token && view && view.mode === 'known') setSession({ token, name: view.name }) }, [token, view])
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 15000); return () => clearInterval(i) }, [])
@@ -95,6 +96,7 @@ export default function BookingPage() {
   const second = L === 50 && curTime ? addMin(curTime, 30) : null
   const monthLabel = (m: string) => (m.slice(0, 4) !== months[0].slice(0, 4) ? m.slice(0, 4) + '年' : '') + +m.slice(5) + '月'
   const l = view.lessons
+  const platform = view.mode === 'known' && !!view.platform
   // 可進入的課程：老師在「學生」分頁勾選（存在試算表）。認字課每 5 課一個單位
   const allowed = view.courses ?? []
   const myUnits = readingUnits(lessons.map(x => x.number)).filter(u => allowed.includes(u.id))
@@ -115,19 +117,19 @@ export default function BookingPage() {
 
   return (
     <div className="bk">
-      <h1>預約泰語課</h1>
-      <p className="bk-sub">{view.name ? `${view.name}，你好！` : ''}選擇課長與時段，送出後等老師確認，確認後可在這個頁面看到 Zoom 連結。時間皆為台北時間。</p>
+      <h1>{platform ? '我的課程與作業' : '預約泰語課'}</h1>
+      <p className="bk-sub">{view.name ? `${view.name}，你好！` : ''}{platform ? '這裡可以進入課程、寫作業。' : '選擇課長與時段，送出後等老師確認，確認後可在這個頁面看到 Zoom 連結。時間皆為台北時間。'}</p>
 
-      {view.mode === 'known' && (
+      {view.mode === 'known' && !platform && (
         <div className="tabs bk-tabs" role="tablist">
           <button role="tab" aria-selected={tab === 'book'} className={tab === 'book' ? 'on' : ''} onClick={() => setTab('book')}>預約</button>
           <button role="tab" aria-selected={tab === 'courses'} className={tab === 'courses' ? 'on' : ''} onClick={() => setTab('courses')}>我的課程與作業</button>
         </div>
       )}
 
-      {view.mode === 'known' && tab === 'courses' && (
+      {view.mode === 'known' && (tab === 'courses' || platform) && (
         <div className="bk-card" onClickCapture={e => { if ((e.target as HTMLElement).closest('a')) { try { sessionStorage.setItem(TAB_KEY, 'courses') } catch { /* 存不了就算了 */ } } }}>
-          <h2>我的課程與作業</h2>
+          {!platform && <h2>我的課程與作業</h2>}
           {hasCourses ? (
             <>
               {myUnits.length > 0 && (
@@ -160,7 +162,7 @@ export default function BookingPage() {
         </div>
       )}
 
-      {(view.mode !== 'known' || tab === 'book') && (
+      {!platform && (view.mode !== 'known' || tab === 'book') && (
         <>
         {l && (
           <div className="bk-card">

@@ -78,6 +78,8 @@ function handleMail_(m, problems) {
       syncCalendarEvent_(b);
     }
     writeBooking_(b);
+    // 新的平台學生自動列入學生表（之後老師在學生頁產生連結給他們看課程與作業）
+    try { ensurePlatformStudents_([{ name: b['學生'], display: p.student }]); } catch (e) { problems.push('列入學生表失敗：' + p.student + '（' + e.message + '）'); }
     return { type: 'request', note: b['編號'] + ' ' + b['狀態'] };
   }
 

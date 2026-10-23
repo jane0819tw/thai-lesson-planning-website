@@ -7,7 +7,7 @@
 const PUBLIC_API_ = { getStudentView: getStudentView, getStudentInfo: getStudentInfo, getOpenDays: getOpenDays, submitBooking: submitBooking, getHomeworkInfo: getHomeworkInfo, submitHomework: submitHomework };
 const ADMIN_API_ = {
   adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminSaveRules: adminSaveRules,
-  adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetCourses: adminSetCourses,
+  adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetDisplay: adminSetDisplay, adminImportPlatformStudents: adminImportPlatformStudents, adminDeleteStudent: adminDeleteStudent, adminSetCourses: adminSetCourses,
   adminGetRecordSessions: adminGetRecordSessions, adminCancelRecordLesson: adminCancelRecordLesson, adminGetHomework: adminGetHomework,
 };
 
@@ -87,6 +87,42 @@ function ensureStudent_(name, email) {
   getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).appendRow([name, '', email || '', '', newToken_(), '']);
 }
 
+/**
+ * AmazingTalker 預約裡出現的學生，學生表沒有就建檔（姓名＝預約裡的學生、平台顯示名稱＝平台上的名字、附預約代碼）；
+ * 已有同名學生但平台名稱是空的就補上。回傳 { added: [...], linked: [...] }
+ */
+function ensurePlatformStudents_(pairs) {
+  const sh = getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS);
+  const list = readStudents_();
+  const out = { added: [], linked: [] };
+  const seen = {};
+  pairs.forEach(function (p) {
+    const display = String(p.display || '').trim(), name = String(p.name || '').trim() || display;
+    if (!display || seen[display]) return;
+    seen[display] = true;
+    if (list.some(function (s) { return String(s.display).trim() === display; })) return;
+    const same = list.filter(function (s) { return s.name === name; })[0];
+    if (same) {
+      if (String(same.display).trim()) return; // 同名但已對應到別的平台名稱，不動
+      sh.getRange(same.row, STUDENT_HEADERS.indexOf('平台顯示名稱') + 1).setValue(display);
+      same.display = display;
+      out.linked.push(name);
+      return;
+    }
+    sh.appendRow([name, display, '', '', newToken_(), '', '']);
+    list.push({ name: name, display: display });
+    out.added.push(name);
+  });
+  if (out.added.length || out.linked.length) bustCaches_();
+  return out;
+}
+
+/** 老師頁按鈕：把「預約」分頁裡所有 AmazingTalker 預約的學生列入學生表 */
+function adminImportPlatformStudents() {
+  return ensurePlatformStudents_(readBookings_().filter(function (b) { return b['來源'] === 'AmazingTalker'; })
+    .map(function (b) { return { name: b['學生'], display: b['平台顯示名稱'] }; }));
+}
+
 function emailFromNote_(note) {
   const m = String(note || '').match(/Email[:：]\s*(\S+)/);
   return m ? m[1] : '';
@@ -163,6 +199,7 @@ function getStudentInfo(token) {
   if (s) {
     const rec = s['課程記錄表'] ? cached_('rec:' + s.token, 300, false, function () { return readRecordBundle_(s['課程記錄表']); }) : null;
     v.courses = s.courses;
+    v.platform = String(s.display || '').trim() !== ''; // 學生表有填「平台顯示名稱」＝在 AmazingTalker 預約，學生頁只顯示課程與作業
     v.homework = homeworkOf_(s.name);
     v.lessons = rec ? rec.summary : null;
     v.lastLesson = rec ? rec.last : null;
@@ -291,7 +328,7 @@ function adminGetState() {
   const pending = readBookings_().filter(function (b) { return b['來源'] === '私下' && b['狀態'] === STATUS.PENDING; })
     .map(function (b) { return { id: b['編號'], name: b['學生'], start: toLocalStr_(b['開始']), length: b['課長'], note: b['備註'] }; });
   const students = readStudents_().map(function (s) {
-    return { name: s.name, email: s.email, token: s.token || '', record: s['課程記錄表'] || '', courses: s.courses };
+    return { name: s.name, display: String(s.display || ''), email: s.email, token: s.token || '', record: s['課程記錄表'] || '', courses: s.courses };
   });
   // 所有來源、尚未結束（或一天內剛結束）的預約，供老師頁直接調整狀態
   const since = Date.now() - 86400000;
@@ -329,11 +366,23 @@ function adminSetStatus(id, status) {
   } finally { lock.releaseLock(); }
 }
 
-function adminCreateStudent(name, email) {
+function adminCreateStudent(name, email, display) {
   name = String(name || '').trim();
+  display = String(display || '').trim();
   if (!name) throw new Error('請填姓名');
   if (readStudents_().some(function (s) { return s.name === name; })) throw new Error('已有同名學生，請用「換新連結」');
-  getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).appendRow([name, '', email || '', '', newToken_(), '']);
+  if (display && readStudents_().some(function (s) { return String(s.display).trim() === display; })) throw new Error('這個平台名稱已經綁定其他學生');
+  getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).appendRow([name, display, email || '', '', newToken_(), '']);
+  bustCaches_();
+  return true;
+}
+
+/** 從學生表刪除這位學生（連結立刻失效）；預約與作業紀錄不刪 */
+function adminDeleteStudent(name) {
+  const s = readStudents_().filter(function (x) { return x.name === name; })[0];
+  if (!s) throw new Error('找不到學生');
+  getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).deleteRow(s.row);
+  bustCaches_();
   return true;
 }
 
@@ -401,6 +450,18 @@ function adminGetWeek(anyDate) {
 }
 
 /** 綁定學生的課程記錄表（貼網址；留空＝解除綁定）。會先試著打開確認有權限。 */
+/** 平台顯示名稱（AmazingTalker 上的名字）：有填＝平台學生，學生頁只顯示課程與作業；也用來對應平台預約信 */
+function adminSetDisplay(name, display) {
+  display = String(display || '').trim();
+  const list = readStudents_();
+  const s = list.filter(function (x) { return x.name === name; })[0];
+  if (!s) throw new Error('找不到學生');
+  if (display && list.some(function (x) { return x.name !== name && String(x.display).trim() === display; })) throw new Error('這個平台名稱已經綁定其他學生');
+  getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).getRange(s.row, STUDENT_HEADERS.indexOf('平台顯示名稱') + 1).setValue(String(display || '').trim());
+  bustCaches_();
+  return true;
+}
+
 function adminSetRecord(name, url) {
   url = String(url || '').trim();
   const s = readStudents_().filter(function (x) { return x.name === name; })[0];

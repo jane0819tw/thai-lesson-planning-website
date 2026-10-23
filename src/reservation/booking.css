@@ -50,6 +50,7 @@
 .bk .mgr-tabs button.sel { color: var(--accent); border-bottom-color: var(--accent); background: none; }
 .mgr-check { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
 .mgr-link { word-break: break-all; font-size: .85rem; color: var(--muted); }
+.mgr-at { margin-left: 8px; padding: 1px 8px; border-radius: 99px; font-size: .8rem; background: #e0f2fe; color: #075985; }
 .mini { min-height: 0 !important; padding: 1px 6px !important; font-size: .7rem; margin-top: 2px; }
 
 .mgr-g { display: grid; grid-template-columns: 44px repeat(7, minmax(84px, 1fr)); min-width: 680px; font-size: .78rem; user-select: none; -webkit-user-select: none; }
