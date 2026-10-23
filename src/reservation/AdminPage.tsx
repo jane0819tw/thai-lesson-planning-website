@@ -131,7 +131,10 @@ export default function AdminPage() {
       // 動作已經成功；之後重新載入失敗只是畫面沒更新，不要講成動作失敗
       try {
         await run('重新載入中…', async () => {
-          const [s, w, r] = await Promise.all([api.adminGetState(), keepWeek ? wk : api.adminGetWeek(wk?.monday ?? ''), rec ? api.adminGetRecordSessions() : null])
+          // 一個一個讀：同時送好幾個請求比較容易遇到 Google 的 404 錯誤頁
+          const s = await api.adminGetState()
+          const w = keepWeek ? wk : await api.adminGetWeek(wk?.monday ?? '')
+          const r = rec ? await api.adminGetRecordSessions() : null
           setSt(s); setWk(w); if (r) setRec(r)
         })
         flash(true, ok)

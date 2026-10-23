@@ -34,7 +34,11 @@ const KEY_NAME = 'thaiskr_admin_key'
 export const getAdminKey = () => { try { return localStorage.getItem(KEY_NAME) || '' } catch { return '' } }
 export const setAdminKey = (k: string) => { try { k ? localStorage.setItem(KEY_NAME, k) : localStorage.removeItem(KEY_NAME) } catch { /* 無痕模式等情況存不了 */ } }
 
-async function call<T>(fn: string, args: unknown[]): Promise<T> {
+// 只讀的操作遇到 Google 偶發的 HTML 錯誤頁（「目前無法開啟這個檔案」404，常在同時送出好幾個請求時發生）就自動重試；
+// 會寫入的操作不重試，免得做兩次
+const isRead = (fn: string) => /^(get|adminGet)/.test(fn)
+
+async function call<T>(fn: string, args: unknown[], attempt = 0): Promise<T> {
   let r: Response
   // text/plain 避免瀏覽器送 CORS preflight（Apps Script 不支援 OPTIONS）
   try { r = await fetch(ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ fn, args, ...(fn.startsWith('admin') ? { key: getAdminKey() } : {}) }) }) }
@@ -42,6 +46,7 @@ async function call<T>(fn: string, args: unknown[]): Promise<T> {
   let d: { ok: boolean; data?: T; error?: string }
   const text = await r.text().catch(() => '')
   try { d = JSON.parse(text) } catch {
+    if (isRead(fn) && attempt < 2) { await new Promise(res => setTimeout(res, 800 * (attempt + 1))); return call<T>(fn, args, attempt + 1) }
     // Apps Script 沒跑到 doPost（授權、逾時、程式碼有錯）時會回 HTML 錯誤頁，把狀態碼和頁面文字帶出來方便查
     const snippet = text.replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160)
     throw new Error(`伺服器回應格式不正確（${fn}，HTTP ${r.status}${snippet ? `：${snippet}` : '，空白回應'}）`)
