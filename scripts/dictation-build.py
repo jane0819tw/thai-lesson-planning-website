@@ -13,7 +13,7 @@
 重跑不會蓋掉人工審過的結果：既有片段（含你編輯過的）原樣保留，
 admin 頁刪除的片段記在 rejected，不會再被加回來；--reset 只清掉這支影片「還沒審過」的片段。
 
-需要：pip install youtube-transcript-api pythainlp
+需要：pip3 install --user -r scripts/requirements.txt
 輸出：
   data/dictation/videos.json                影片清單（標題、頻道、連結、字幕種類；已有的欄位不會被覆蓋，備註可自己改）
   data/dictation/subtitles/<videoId>.json   原始字幕快取
@@ -36,6 +36,7 @@ OUT = ROOT / "data" / "dictation"
 MIN_SEC, MAX_SEC = 1.5, 8.0
 PER_WORD = 3        # 每個講義字最多留幾句
 RULE_CLIPS = 40     # 每課規則字最多留幾句
+NAME_HINT = 5       # 同一支影片某規則字出現這麼多次，提示確認是不是人名或口頭禪
 TONE = "่้๊๋"
 TONE_RE = re.compile(f"[{TONE}]")
 THAI_RE = re.compile(r"[฀-๿]")
@@ -284,6 +285,21 @@ def main():
         nl = sum(1 for c in clips for h in c["hits"] if h["source"] == "講義")
         nr = sum(1 for c in clips for h in c["hits"] if h["source"] == "規則")
         print(f"L{n}: 新增 {added} 句，共 {len(clips)} 句（講義字標示 {nl}、規則字標示 {nr}）→ {out.relative_to(ROOT)}")
+        mine = [c for c in clips if c["videoId"] == video_id]
+        done = sum(1 for c in mine if c.get("reviewed"))
+        nrej = sum(1 for r in rejected if r.startswith(f"{video_id}@"))
+        print(f"    本片：待審 {len(mine) - done}、已審 {done}、排除 {nrej}")
+        rule_count = {}
+        for c in mine:
+            for h in c["hits"]:
+                if h["source"] == "規則":
+                    rule_count[h["word"]] = rule_count.get(h["word"], 0) + 1
+        if rule_count:
+            ranked = sorted(rule_count.items(), key=lambda kv: -kv[1])
+            print("    規則字：" + "、".join(f"{w}×{k}" for w, k in ranked))
+            names = [w for w, k in ranked if k >= NAME_HINT]
+            if names:
+                print(f"    ⚠ 出現 {NAME_HINT} 次以上，確認是不是人名或口頭禪：{'、'.join(names)}")
 
 
 if __name__ == "__main__":
