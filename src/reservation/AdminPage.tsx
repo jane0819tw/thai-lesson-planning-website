@@ -40,7 +40,11 @@ export default function AdminPage() {
   const [weekErr, setWeekErr] = useState('')
   const [tab, setTab] = useState<'cal' | 'reg'>('cal')
   const [calView, setCalView] = useState(calGet)
-  const [mo, setMo] = useState<Month | null>(null)
+  // 讀過的月份留著（key 是 yyyy-MM），切回月檢視或來回翻月不用再等後端；會改到課表的動作後才重讀
+  const [months, setMonths] = useState<Record<string, Month>>({})
+  const monthsRef = useRef(months); monthsRef.current = months
+  const [moKey, setMoKey] = useState('')
+  const mo = months[moKey] ?? null
   const [moErr, setMoErr] = useState('')
   const [sec, setSec] = useState<Sec>(secGet)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
@@ -77,8 +81,10 @@ export default function AdminPage() {
   }, [api, run, step])
 
   const loadMonth = useCallback(async (date: string) => {
-    setMo(null); setMoErr('')
-    try { setMo(await run('載入月曆中…', () => api.adminGetMonth(date))) } catch (e) { setMoErr((e as Error).message) }
+    const key = (date || new Date(Date.now() + 8 * 3600000).toISOString()).slice(0, 7) // 沒給日期＝台北的這個月
+    setMoKey(key); setMoErr('')
+    if (monthsRef.current[key]) return
+    try { const m = await run('載入月曆中…', () => api.adminGetMonth(key + '-01')); setMonths(c => ({ ...c, [m.month]: m })) } catch (e) { setMoErr((e as Error).message) }
   }, [api, run])
   const goCal = (v: 'week' | 'month', date?: string) => {
     setCalView(v); try { localStorage.setItem(CAL_KEY, v) } catch { /* 存不了就算了 */ }
@@ -154,7 +160,8 @@ export default function AdminPage() {
           const w = keepWeek ? wk : await api.adminGetWeek(wk?.monday ?? '')
           const m = mo && !keepWeek ? await api.adminGetMonth(mo.month + '-01') : null
           const r = rec ? await api.adminGetRecordSessions() : null
-          setSt(s); setWk(w); if (m) setMo(m); if (r) setRec(r)
+          setSt(s); setWk(w); if (r) setRec(r)
+          if (!keepWeek) setMonths(m ? { [m.month]: m } : {}) // 其他月份的快取可能過時，丟掉
         })
         flash(true, ok)
       } catch (e) { flash(false, `${ok}，但重新載入畫面失敗，請重新整理頁面。（${(e as Error).message}）`) }
