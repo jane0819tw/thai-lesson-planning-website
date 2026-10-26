@@ -12,7 +12,7 @@ const CONFIG = {
   ADMIN_URL: 'https://jane0819tw.github.io/thai-lesson-planning-website/#/admin', // 老師 LINE 通知附上的管理頁連結
   NOTIFY_EMAIL: '',             // 空白 = 執行者自己的 Email
   BOOKING_DAYS_AHEAD: 92,       // 預約頁顯示未來幾天（約三個月）
-  MIN_NOTICE_HOURS: 12,         // 至少提前幾小時才能預約
+  MIN_NOTICE_HOURS: 24,         // 至少提前幾小時才能預約（前端 BookingPage 的 NOTICE_HOURS 要一致）
   SHEETS: { BOOKINGS: '預約', STUDENTS: '學生', LOG: '信件紀錄', RULES: '開放時段', HOMEWORK: '作業' },
 };
 

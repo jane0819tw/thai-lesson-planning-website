@@ -25,6 +25,7 @@
 .bk-item { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .bk-item:first-of-type { border-top: 0; }
 .bk-note { flex-basis: 100%; background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; white-space: pre-line; }
+.bk-notice { margin: 0 0 12px; }
 .bk-msg { padding: 10px 12px; border-radius: 8px; margin: 12px 0; }
 .bk-msg.ok { background: color-mix(in srgb, var(--bk-ok) 15%, transparent); color: var(--bk-ok); }
 .bk-msg.err { background: color-mix(in srgb, var(--bk-err) 15%, transparent); color: var(--bk-err); }

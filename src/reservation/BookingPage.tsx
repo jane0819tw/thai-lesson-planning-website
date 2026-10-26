@@ -16,6 +16,8 @@ const dayLabel = (d: string) => { const [y, m, dd] = d.split('-').map(Number); r
 const addMin = (t: string, n: number) => { const m = +t.slice(0, 2) * 60 + +t.slice(3) + n; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0') }
 // 進入教室：上課前 10 分鐘才出現按鈕，結束後 15 分鐘消失
 const canJoin = (now: number, start: string, end: string) => now >= toMs(start) - 10 * 60000 && now <= toMs(end) + 15 * 60000
+// 只開放 24 小時之後的時段（後端 Config.gs 的 MIN_NOTICE_HOURS 也是 24；前端再濾一次，頁面開著放久了也不會露出 24 小時內的格子）
+const NOTICE_HOURS = 24
 
 function HomeworkButton({ to, rec }: { to: string; rec?: HomeworkRecord }) {
   return (
@@ -84,7 +86,11 @@ export default function BookingPage() {
   const fixed = view.lessons?.len
   const L = fixed === 25 || fixed === 50 ? fixed : len
   const ok = (s: { can25: boolean; can50: boolean }) => (L === 25 ? s.can25 : s.can50)
-  const days = (open?.days ?? []).map(d => ({ ...d, free: d.slots.some(ok) }))
+  const earliest = now + NOTICE_HOURS * 3600000
+  const days = (open?.days ?? [])
+    .map(d => ({ ...d, slots: d.slots.filter(s => toMs(`${d.date} ${s.time}`) >= earliest) }))
+    .filter(d => d.closed || d.slots.length)
+    .map(d => ({ ...d, free: d.slots.some(ok) }))
   // 日期依月份分頁：月份沒選過就用第一個有空位的日子所在的月份
   const months = [...new Set(days.map(d => d.date.slice(0, 7)))]
   const curMonth = month && months.includes(month) ? month : (days.find(d => d.free) ?? days[0])?.date.slice(0, 7) ?? null
@@ -212,6 +218,7 @@ export default function BookingPage() {
             <h2 style={{ margin: 0 }}>2. 日期與時間</h2>
             <span className="bk-row"><span className="bk-muted">{open ? `最後更新 ${open.asOf.slice(5, 16).replace('-', '/')}` : ''}</span><button onClick={refresh}>重新整理時段</button></span>
           </div>
+          <p className="bk-note bk-notice">⏰ 只開放 <b>{NOTICE_HOURS} 小時之後</b>的時段。想約 {NOTICE_HOURS} 小時內的課，或想約的時間沒有開放，請直接傳訊息詢問老師。</p>
           {months.length > 1 && (
             <div className="bk-row" style={{ marginBottom: 10 }}>
               {months.map(m => <button key={m} className={m === curMonth ? 'sel' : ''} onClick={() => { setMonth(m); setTime(null); setMsg(null) }}>{monthLabel(m)}</button>)}

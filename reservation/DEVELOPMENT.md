@@ -61,7 +61,7 @@ AmazingTalker 通知信 ─▶ Gmail 標籤 ─▶ Apps Script（每 10 分鐘 s
 | 限定 | 該日**只**開放這一段（忽略當天的每週規則） |
 | 休假 | 整天不開放（說明會顯示給學生） |
 
-- 以 30 分鐘為一格；格子在以下情況不可約：早於「現在＋`MIN_NOTICE_HOURS`(12h)」、與行事曆已有行程重疊。
+- 以 30 分鐘為一格；格子在以下情況不可約：早於「現在＋`MIN_NOTICE_HOURS`(24h)」、與行事曆已有行程重疊。
 - 行事曆有整天行程的日子視同休假。
 - `can25`＝該格空；`can50`＝該格與下一格都空。已被占用的格子仍回傳（前端灰色顯示）。
 - 預設每週時間（`DEFAULT_WEEKLY`）只在「開放時段」分頁完全空白時於 `setup` 寫入一次。
@@ -189,7 +189,7 @@ Server-to-Server OAuth，token 以 CacheService 快取約 50 分鐘。會議類�
 | Zoom 金鑰 `ZOOM_ACCOUNT_ID`／`ZOOM_CLIENT_ID`／`ZOOM_CLIENT_SECRET` | 指令碼屬性 |
 | 前端 `ENDPOINT` | `web/config.js`（公開網址，不是密碼） |
 
-常用 `CONFIG`：`GMAIL_LABEL`、`IMPORT_AFTER`、`SLOT_MINUTES`(30)、`ALLOWED_LENGTHS`([25,50])、`BOOKING_DAYS_AHEAD`(21)、`MIN_NOTICE_HOURS`(12)、`CALENDAR_ID`（空＝預設行事曆）。
+常用 `CONFIG`：`GMAIL_LABEL`、`IMPORT_AFTER`、`SLOT_MINUTES`(30)、`ALLOWED_LENGTHS`([25,50])、`BOOKING_DAYS_AHEAD`(21)、`MIN_NOTICE_HOURS`(24)、`CALENDAR_ID`（空＝預設行事曆）。
 
 OAuth scopes 見 `appsscript.json`（Gmail 唯讀、行事曆、試算表、寄信、觸發器、外部請求）。
 
