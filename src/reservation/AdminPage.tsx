@@ -7,7 +7,7 @@ import MonthGrid from './MonthGrid'
 import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import { REVIEW_UNITS, reviewRange, reviewTitle, homeworkLessonLabel } from '../reviews'
 import type { Unit } from './access'
-import { buildDraft, paintCells, serialize, setHoliday } from './schedule'
+import { buildDraft, paintCells, serialize, setNote } from './schedule'
 import type { Draft } from './schedule'
 import type { AdminState, HomeworkRow, Month, RecSession, StudentRow, Week } from './types'
 import './booking.css'
@@ -226,10 +226,10 @@ export default function AdminPage() {
                   <ScheduleGrid
                     tab={tab} draft={draft} wk={wk}
                     onPaint={(key, mins, on) => { setDraft(d => paintCells(d!, tab, key, mins, on)); setDirty(true) }}
-                    onHoliday={date => {
-                      if (draft.ov[date]?.closed) setDraft(setHoliday(draft, date, null))
-                      else { const label = prompt('休假說明（學生會在日期上看到）', '休假'); if (label === null) return; setDraft(setHoliday(draft, date, label)) }
-                      setDirty(true)
+                    onNote={date => {
+                      const label = prompt('休假說明（只有老師看得到，不會關閉時段；要關的時段請在格子上點掉。清空＝刪除）', draft.notes[date] ?? '休假')
+                      if (label === null) return
+                      setDraft(setNote(draft, date, label)); setDirty(true)
                     }}
                     onWeek={loadWeek}
                   />
@@ -250,7 +250,7 @@ export default function AdminPage() {
                   </div>
                 )}
               </div>
-              <p className="bk-muted">點格子就能開放或取消開放（滑鼠可拖曳多格）。學生只會在綠色格子中、扣掉行事曆已有行程後，看到可預約的時段。</p>
+              <p className="bk-muted">點格子就能開放或取消開放（滑鼠可拖曳多格）。學生只會在綠色格子中、扣掉行事曆已有行程後，看到可預約的時段。「休假說明」只是給自己看的提醒（會顯示在月曆上），不會關閉時段，學生也看不到。</p>
             </>
           )}
 

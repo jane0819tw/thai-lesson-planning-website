@@ -1,5 +1,5 @@
 export interface Slot { time: string; can25: boolean; can50: boolean }
-export interface Day { date: string; closed: string; label: string; slots: Slot[] }
+export interface Day { date: string; closed: string; /** 後端已不帶休假說明（只給老師看），一律空字串 */ label: string; slots: Slot[] }
 export interface Upcoming { start: string; end: string; length: number; count: number; status: string; zoom: string }
 export interface StudentView {
   mode: 'invalid' | 'known' | 'generic'
@@ -25,7 +25,7 @@ export type StudentInfo = Omit<StudentView, 'days' | 'asOf'>
 export interface OpenDays { days: Day[]; asOf: string }
 
 // ───────── 老師管理頁 ─────────
-export interface Rule { type: '每週' | '單次' | '限定' | '休假'; weekday: number | ''; date: string; start: string; end: string; label?: string }
+export interface Rule { type: '每週' | '單次' | '限定' | '休假' | '備註'; weekday: number | ''; date: string; start: string; end: string; label?: string }
 export interface Booking { id: string; source: string; name: string; start: string; length: number; status: string }
 export interface Pending { id: string; name: string; start: string; length: number; note: string }
 export interface StudentRow { name: string; /** 平台顯示名稱：有填＝AmazingTalker 學生 */ display?: string; email: string; token: string; record?: string; courses: string[] }

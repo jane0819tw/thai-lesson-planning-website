@@ -105,7 +105,8 @@ const db: AdminState = {
     { type: '每週', weekday: 2, date: '', start: '19:00', end: '21:00' },
     { type: '單次', weekday: '', date: day(5), start: '10:00', end: '12:00' },
     { type: '限定', weekday: '', date: day(6), start: '20:00', end: '21:00' },
-    { type: '休假', weekday: '', date: day(2), start: '', end: '', label: '出國' },
+    { type: '休假', weekday: '', date: day(2), start: '', end: '', label: '' },
+    { type: '備註', weekday: '', date: day(2), start: '', end: '', label: '出國' },
   ],
   bookings: [
     { id: 'B0020', source: '私下', name: 'Amy', start: `${day(1)} 19:00`, length: 50, status: '待確認' },
@@ -149,7 +150,7 @@ const mock: Api = {
   getOpenDays: () => delay({
     days: [
       { date: day(1), closed: '', label: '', slots: sl(['19:00', true, true], ['19:30', false, false], ['20:00', true, true], ['20:30', true, false]) },
-      { date: day(2), closed: '休假', label: '出國', slots: [] },
+      { date: day(2), closed: '休假', label: '', slots: [] },
       { date: day(3), closed: '', label: '', slots: sl(['10:00', false, false], ['10:30', false, false]) },
       { date: day(4), closed: '', label: '', slots: sl(['19:00', true, true], ['19:30', true, false]) },
     ],

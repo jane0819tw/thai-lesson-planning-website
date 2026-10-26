@@ -7,28 +7,28 @@ import type { Week, WeekEvent, WeekLesson } from './types'
 const WD = ['', '一', '二', '三', '四', '五', '六', '日']
 const H = 22 // 每個半小時格的高度（px）
 
-interface Col { key: string | number; head: ReactNode; set: Set<number>; lessons: WeekLesson[]; events: WeekEvent[]; closed: boolean; label: string; past: boolean; today: boolean; allDay: string[] }
+interface Col { key: string | number; head: ReactNode; set: Set<number>; lessons: WeekLesson[]; events: WeekEvent[]; closed: boolean; note: string; past: boolean; today: boolean; allDay: string[] }
 
 interface Props {
   tab: 'cal' | 'reg'
   draft: Draft
   wk: Week | null
   onPaint: (key: string | number, mins: number[], on: boolean) => void
-  onHoliday: (date: string) => void
+  onNote: (date: string) => void
   onWeek: (date: string) => void
 }
 
-export default function ScheduleGrid({ tab, draft, wk, onPaint, onHoliday, onWeek }: Props) {
+export default function ScheduleGrid({ tab, draft, wk, onPaint, onNote, onWeek }: Props) {
   const reg = tab === 'reg'
   const paint = useRef<{ on: boolean; last?: { k: string; m: number } } | null>(null)
   useEffect(() => { const up = () => { paint.current = null }; window.addEventListener('pointerup', up); return () => window.removeEventListener('pointerup', up) }, [])
 
   if (!reg && !wk) return <p className="bk-muted">載入中…</p>
   const cols: Col[] = reg
-    ? [1, 2, 3, 4, 5, 6, 7].map(w => ({ key: w, head: `週${WD[w]}`, set: draft.reg[w], lessons: [], events: [], closed: false, label: '', past: false, today: false, allDay: [] }))
+    ? [1, 2, 3, 4, 5, 6, 7].map(w => ({ key: w, head: `週${WD[w]}`, set: draft.reg[w], lessons: [], events: [], closed: false, note: '', past: false, today: false, allDay: [] }))
     : wk!.days.map(d => ({
         key: d.date, head: <>週{WD[wdOf(d.date)]}<br />{+d.date.slice(5, 7)}/{+d.date.slice(8)}</>, set: effective(draft, d.date), lessons: d.lessons, events: d.events,
-        closed: !!draft.ov[d.date]?.closed, label: draft.ov[d.date]?.label ?? '', past: d.date < wk!.today, today: d.date === wk!.today, allDay: d.allDay,
+        closed: !!draft.ov[d.date]?.closed, note: draft.notes[d.date] ?? '', past: d.date < wk!.today, today: d.date === wk!.today, allDay: d.allDay,
       }))
 
   let lo = LO0
@@ -77,9 +77,9 @@ export default function ScheduleGrid({ tab, draft, wk, onPaint, onHoliday, onWee
           {cols.map(c => (
             <div className={`mgr-gh${c.today ? ' today' : ''}`} key={c.key}>
               {c.head}
-              {c.closed && <span className="mgr-tag">{c.label}</span>}
+              {c.note && <span className="mgr-tag mgr-note">{c.note}</span>}
               {c.allDay.map(t => <span className="mgr-tag" key={t}>{t}</span>)}
-              {!reg && !c.past && <button className="mini" onClick={() => onHoliday(String(c.key))}>{c.closed ? '取消休假' : '休假'}</button>}
+              {!reg && !c.past && <button className="mini" onClick={() => onNote(String(c.key))}>{c.note ? '改說明' : '休假說明'}</button>}
             </div>
           ))}
           <div className="mgr-gt" style={{ height: n * H }}>

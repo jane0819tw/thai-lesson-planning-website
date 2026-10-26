@@ -49,7 +49,7 @@ function readRules_() {
   const sh = getSheet_(CONFIG.SHEETS.RULES, RULE_HEADERS);
   if (sh.getLastRow() < 2) return [];
   return sh.getRange(2, 1, sh.getLastRow() - 1, RULE_HEADERS.length).getDisplayValues()
-    .filter(function (r) { return r[0] === '休假' ? r[2] : (r[0] && r[3] && r[4]); })
+    .filter(function (r) { return r[0] === '休假' || r[0] === '備註' ? r[2] : (r[0] && r[3] && r[4]); })
     .map(function (r) { return { type: r[0], weekday: r[1] ? Number(r[1]) : '', date: r[2], start: r[3], end: r[4], label: r[5] }; });
 }
 
@@ -58,8 +58,9 @@ function writeRules_(rules) {
   if (sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, RULE_HEADERS.length).clearContent();
   if (!rules.length) return;
   const rows = rules.map(function (r) {
+    const dayOnly = r.type === '休假' || r.type === '備註'; // 只有日期與說明，沒有時間
     return [r.type, r.type === '每週' ? String(r.weekday) : '', r.type === '每週' ? '' : r.date,
-      r.type === '休假' ? '' : r.start, r.type === '休假' ? '' : r.end, r.type === '休假' ? (r.label || '') : ''];
+      dayOnly ? '' : r.start, dayOnly ? '' : r.end, dayOnly ? (r.label || '') : ''];
   });
   sh.getRange(2, 1, rows.length, RULE_HEADERS.length).setNumberFormat('@').setValues(rows);
 }
@@ -145,7 +146,9 @@ function openDays_() {
   const from = parseLocal_(dates[0] + ' 00:00');
   const to = new Date(parseLocal_(dates[dates.length - 1] + ' 00:00').getTime() + 2 * 86400000);
   const earliest = toLocalStr_(new Date(now.getTime() + CONFIG.MIN_NOTICE_HOURS * 3600000));
-  return computeOpenSlots_(dates, readRules_(), busyIntervals_(from, to), earliest);
+  // 休假說明只給老師看：學生端不帶說明文字
+  return computeOpenSlots_(dates, readRules_(), busyIntervals_(from, to), earliest)
+    .map(function (d) { d.label = ''; return d; });
 }
 
 // ---------- 快取（CacheService）----------
@@ -340,8 +343,8 @@ function adminGetState() {
 
 function adminSaveRules(rules) {
   const clean = rules.map(function (r) {
-    if (r.type === '休假') {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(r.date)) throw new Error('休假需要日期');
+    if (r.type === '休假' || r.type === '備註') {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(r.date)) throw new Error(r.type + '需要日期');
       return r;
     }
     if (!/^\d{2}:\d{2}$/.test(r.start) || !/^\d{2}:\d{2}$/.test(r.end) || hhmmToMin_(r.start) >= hhmmToMin_(r.end)) throw new Error('時間範圍不正確：' + r.start + '–' + r.end);

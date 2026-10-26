@@ -35,7 +35,7 @@ export default function MonthGrid({ mo, draft, onMonth, onDay }: Props) {
             return (
               <button className={cls} key={d.date} onClick={() => onDay(d.date)} title="切到這一週">
                 <span className="mgr-mn">{+d.date.slice(8)}</span>
-                {o?.closed && <span className="mgr-tag">{o.label}</span>}
+                {draft.notes[d.date] && <span className="mgr-tag mgr-note">{draft.notes[d.date]}</span>}
                 {d.allDay.map(t => <span className="mgr-tag" key={t}>{t}</span>)}
                 {/* 預約表的課和行事曆上的其他行程（例如記錄表手寫的課）依時間排在一起 */}
                 {[
