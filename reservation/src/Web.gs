@@ -338,7 +338,9 @@ function adminGetState() {
   const bookings = readBookings_().filter(function (b) { return b['開始'] && new Date(b['實際結束'] || b['開始']).getTime() >= since; })
     .sort(function (a, b) { return new Date(a['開始']) - new Date(b['開始']); })
     .map(function (b) { return { id: b['編號'], source: b['來源'], name: b['學生'], start: toLocalStr_(b['開始']), length: b['課長'], status: b['狀態'] }; });
-  return { rules: readRules_(), pending: pending, students: students, bookings: bookings };
+  // sheetUrl／scriptUrl：這支程式所在的試算表（後台紀錄都寫在這裡）與 Apps Script 專案，給老師頁放開啟按鈕
+  return { rules: readRules_(), pending: pending, students: students, bookings: bookings,
+    sheetUrl: getSs_().getUrl(), scriptUrl: 'https://script.google.com/home/projects/' + ScriptApp.getScriptId() + '/edit' };
 }
 
 function adminSaveRules(rules) {

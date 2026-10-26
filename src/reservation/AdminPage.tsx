@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getAdminKey, getApi, setAdminKey } from './api'
+import { ENDPOINT, getAdminKey, getApi, setAdminKey } from './api'
 import { CATEGORIES } from '../categories'
 import ScheduleGrid from './ScheduleGrid'
 import MonthGrid from './MonthGrid'
@@ -12,13 +12,17 @@ import type { Draft } from './schedule'
 import type { AdminState, HomeworkRow, Month, RecSession, StudentRow, Week } from './types'
 import './booking.css'
 
-const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口']] as const
+const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
 type Sec = (typeof SECS)[number][0]
 const SEC_KEY = 'thaiskr_admin_sec'
 const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'sched' } catch { return 'sched' } }
 // 行事曆用週檢視或月檢視（記在這個瀏覽器；沒選過＝月）
 const CAL_KEY = 'thaiskr_admin_calview'
 const calGet = (): 'week' | 'month' => { try { return localStorage.getItem(CAL_KEY) === 'week' ? 'week' : 'month' } catch { return 'month' } }
+// 後台試算表與 Apps Script 專案的網址：老師在「後台設定」貼上綁定，存在這個瀏覽器（後端還沒部署新版也能用）
+const BACKEND_KEY = 'thaiskr_admin_backend'
+type BackendLinks = { sheet: string; script: string }
+const backendGet = (): BackendLinks => { try { const v = JSON.parse(localStorage.getItem(BACKEND_KEY) || '{}'); return { sheet: v.sheet || '', script: v.script || '' } } catch { return { sheet: '', script: '' } } }
 const STATUSES = ['待確認', '已確認', '已拒絕', '已過期', '已取消']
 const BASE_TITLE = typeof document === 'undefined' ? '' : document.title
 const todayStr = () => new Date().toISOString().slice(0, 10)
@@ -47,6 +51,7 @@ export default function AdminPage() {
   const mo = months[moKey] ?? null
   const [moErr, setMoErr] = useState('')
   const [sec, setSec] = useState<Sec>(secGet)
+  const [backend, setBackend] = useState(backendGet)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [rec, setRec] = useState<RecSession[] | null>(null)
   const [hw, setHw] = useState<HomeworkRow[] | null>(null)
@@ -203,6 +208,8 @@ export default function AdminPage() {
             <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}</button>
           ))}
           {/* 其他工具：另開分頁，不影響這頁尚未儲存的開放時段 */}
+          {(backend.sheet || st.sheetUrl) && <a className="mgr-tool" href={backend.sheet || st.sheetUrl} target="_blank" rel="noopener noreferrer">📊 後台試算表</a>}
+          {(backend.script || st.scriptUrl) && <a className="mgr-tool" href={backend.script || st.scriptUrl} target="_blank" rel="noopener noreferrer">⚙️ Apps Script</a>}
           <a className="mgr-tool" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
           <a className="mgr-tool" href="#/reading/dictation-review" target="_blank" rel="noopener noreferrer">🎧 聽寫片段審查</a>
         </nav>
@@ -324,6 +331,12 @@ export default function AdminPage() {
             </div>
           )}
 
+          {sec === 'backend' && (
+            <BackendSettings links={backend} st={st} onSave={v => {
+              try { localStorage.setItem(BACKEND_KEY, JSON.stringify(v)) } catch { /* 存不了就算了 */ }
+              setBackend(v); flash(true, '已儲存後台連結（只存在這個瀏覽器）')
+            }} />
+          )}
           {sec === 'links' && (
             <div className="bk-card">
               <h2>課程入口</h2>
@@ -447,11 +460,45 @@ function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDispla
       <div className="bk-row" style={{ flexBasis: '100%' }}>
         <input style={{ flex: 1, minWidth: 200 }} placeholder="課程記錄表（試算表網址）" value={url} onChange={e => setUrl(e.target.value)} />
         <button onClick={() => onSaveRec(url)}>儲存</button>
+        {/^https?:/.test(s.record ?? '') && <a className="mgr-link" href={s.record} target="_blank" rel="noopener noreferrer">開啟記錄表</a>}
       </div>
       <div className="bk-row" style={{ flexBasis: '100%' }}>
         <input style={{ flex: 1, minWidth: 200 }} placeholder="AmazingTalker 名稱（平台學生才填）" value={display} onChange={e => setDisplay(e.target.value)} />
         <button disabled={display.trim() === (s.display ?? '')} onClick={() => onSaveDisplay(display)}>儲存</button>
       </div>
+    </div>
+  )
+}
+
+function BackendSettings({ links, st, onSave }: { links: BackendLinks; st: AdminState; onSave: (v: BackendLinks) => void }) {
+  const [sheet, setSheet] = useState(links.sheet), [script, setScript] = useState(links.script)
+  const bad = (u: string) => !!u.trim() && !/^https:\/\//.test(u.trim())
+  const open = (u?: string) => u ? <a className="mgr-link" href={u} target="_blank" rel="noopener noreferrer">開啟</a> : null
+  return (
+    <div className="bk-card">
+      <h2>後台設定</h2>
+      <p className="bk-muted" style={{ marginTop: 0 }}>綁定後，左側會出現「📊 後台試算表」「⚙️ Apps Script」按鈕，方便進去檢查資料與部署。網址只存在這個瀏覽器，換電腦要再貼一次。留空＝用後端回報的網址（後端要部署新版才有）。</p>
+      <h3>後台試算表</h3>
+      <p className="bk-muted">預約、學生、作業、信件紀錄、開放時段都寫在這份試算表。</p>
+      <div className="bk-row">
+        <input style={{ flex: 1, minWidth: 200 }} placeholder="https://docs.google.com/spreadsheets/d/…" value={sheet} onChange={e => setSheet(e.target.value)} />
+        {open(sheet.trim() && !bad(sheet) ? sheet.trim() : st.sheetUrl)}
+      </div>
+      {!sheet.trim() && <p className="bk-muted">後端回報：{st.sheetUrl || '（舊版後端沒有回報，請貼上網址）'}</p>}
+      <h3>Apps Script 專案</h3>
+      <p className="bk-muted">在試算表「擴充功能 → Apps Script」打開後，複製瀏覽器網址列貼上；部署新版本在右上角「部署 → 管理部署作業」。</p>
+      <div className="bk-row">
+        <input style={{ flex: 1, minWidth: 200 }} placeholder="https://script.google.com/home/projects/…/edit" value={script} onChange={e => setScript(e.target.value)} />
+        {open(script.trim() && !bad(script) ? script.trim() : st.scriptUrl)}
+      </div>
+      {!script.trim() && <p className="bk-muted">後端回報：{st.scriptUrl || '（舊版後端沒有回報，請貼上網址）'}</p>}
+      {(bad(sheet) || bad(script)) && <div className="bk-msg err">網址要以 https:// 開頭</div>}
+      <div className="bk-row" style={{ marginTop: 12 }}>
+        <button className="primary" disabled={bad(sheet) || bad(script) || (sheet.trim() === links.sheet && script.trim() === links.script)} onClick={() => onSave({ sheet: sheet.trim(), script: script.trim() })}>儲存</button>
+      </div>
+      <h3>目前連線的網頁應用程式</h3>
+      <p className="bk-muted">網站呼叫的 /exec 網址（寫在 src/reservation/api.ts）。部署成「新版本」網址不會變；若「新增部署作業」產生新網址，要更新這裡。</p>
+      <div className="mgr-link" style={{ wordBreak: 'break-all' }}>{ENDPOINT || '（未設定，使用假資料）'}</div>
     </div>
   )
 }
