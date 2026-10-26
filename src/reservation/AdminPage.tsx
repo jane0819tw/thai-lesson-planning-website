@@ -220,7 +220,7 @@ export default function AdminPage() {
                     <button className={calView === 'week' ? 'sel' : ''} onClick={() => goCal('week')}>週</button>
                   </div>
                 )}
-                <p className="bk-muted" style={{ marginTop: 0 }}>{tab === 'reg' ? '每週固定開放的時段，套用到每一個星期。' : calView === 'month' ? '整個月的課（待確認／已確認）。點某一天切到那一週，在週檢視調整開放時段。' : '某一週的實際日期。改動只影響那一天（單日設定），不會改到固定時間。'} 時間為台北時間。</p>
+                <p className="bk-muted" style={{ marginTop: 0 }}>{tab === 'reg' ? '每週固定開放的時段，套用到每一個星期。' : calView === 'month' ? '整個月的課（待確認／已確認）與行事曆其他行程。點某一天切到那一週，在週檢視調整開放時段。' : '某一週的實際日期。改動只影響那一天（單日設定），不會改到固定時間。'} 時間為台北時間。</p>
                 {tab === 'cal' && calView === 'month' ? (moErr ? <div className="bk-msg err">{moErr}</div> : <MonthGrid mo={mo} draft={draft} onMonth={loadMonth} onDay={date => goCal('week', date)} />)
                 : tab === 'cal' && weekErr ? <div className="bk-msg err">{weekErr}</div> : (
                   <ScheduleGrid
@@ -240,7 +240,7 @@ export default function AdminPage() {
                     <span><i style={{ background: 'color-mix(in srgb, var(--accent) 28%, var(--card))', borderColor: 'var(--accent)' }} />私下學生</span>
                     <span><i style={{ background: 'color-mix(in srgb, #2563eb 24%, var(--card))', borderColor: '#2563eb' }} />AmazingTalker</span>
                     <span><i style={{ borderStyle: 'dashed' }} />虛線＝待確認</span>
-                    {calView === 'week' && <span><i style={{ background: 'var(--accent-soft)' }} />其他行程</span>}
+                    <span><i style={{ background: 'var(--accent-soft)' }} />其他行程</span>
                   </>}
                 </div>
                 {dirty && (

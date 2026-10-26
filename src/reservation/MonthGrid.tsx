@@ -13,10 +13,10 @@ interface Props {
   onDay: (date: string) => void
 }
 
-/** 老師頁月曆：每天列出當天的課（只看，不能改開放時段）。點某一天切到那一週。 */
+/** 老師頁月曆：每天列出當天的課與行事曆其他行程（只看，不能改開放時段）。點某一天切到那一週。 */
 export default function MonthGrid({ mo, draft, onMonth, onDay }: Props) {
   if (!mo) return <p className="bk-muted">載入中…</p>
-  const total = mo.days.filter(d => d.date.startsWith(mo.month)).reduce((n, d) => n + d.lessons.length, 0)
+  const total = mo.days.filter(d => d.date.startsWith(mo.month)).reduce((n, d) => n + d.lessons.length, 0) // 只算預約表的課
   return (
     <>
       <div className="bk-row" style={{ marginBottom: 10 }}>
@@ -37,10 +37,12 @@ export default function MonthGrid({ mo, draft, onMonth, onDay }: Props) {
                 <span className="mgr-mn">{+d.date.slice(8)}</span>
                 {o?.closed && <span className="mgr-tag">{o.label}</span>}
                 {d.allDay.map(t => <span className="mgr-tag" key={t}>{t}</span>)}
-                {[...d.lessons].sort((a, b) => a.start - b.start).map(l => (
-                  <span key={l.id} className={`mgr-ml ${l.source === '私下' ? 'priv' : 'at'}${l.status === '待確認' ? ' pend' : ''}`} title={`${l.name} ${hm(l.start)} ${l.len}分 ${l.status}`}>
-                    {hm(l.start)} {l.name}
-                  </span>
+                {/* 預約表的課和行事曆上的其他行程（例如記錄表手寫的課）依時間排在一起 */}
+                {[
+                  ...d.lessons.map(l => ({ key: l.id, start: l.start, cls: `${l.source === '私下' ? 'priv' : 'at'}${l.status === '待確認' ? ' pend' : ''}`, text: l.name, title: `${l.name} ${hm(l.start)} ${l.len}分 ${l.status}` })),
+                  ...d.events.map((e, i) => ({ key: 'ev' + i, start: e.start, cls: 'ev', text: e.title, title: `${e.title} ${hm(e.start)}–${hm(e.end)}` })),
+                ].sort((a, b) => a.start - b.start).map(x => (
+                  <span key={x.key} className={`mgr-ml ${x.cls}`} title={x.title}>{hm(x.start)} {x.text}</span>
                 ))}
               </button>
             )
