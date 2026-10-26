@@ -1,6 +1,9 @@
 /* 預約頁：全部限定在 .bk 底下，不影響其他頁面 */
-.bk { --bk-ok: #15803d; --bk-err: #b91c1c; --bk-note: #6d28d9; max-width: 640px; margin: 0 auto; }
-@media (prefers-color-scheme: dark) { .bk { --bk-ok: #4ade80; --bk-err: #f87171; --bk-note: #c4b5fd; } }
+/* --bk-soft：中性淺底（一般按鈕、關閉格、備註等）；accent 只留給選取／主要按鈕 */
+.bk { --bk-ok: #3f7d5a; --bk-err: #b91c1c; --bk-warn: #a8662a; --bk-note: #6d28d9; --bk-soft: color-mix(in srgb, var(--line) 45%, var(--card));
+  /* 預約頁不用全站的磚橘 accent（太接近錯誤紅），改用低彩度的墨藍；課程色塊也調成同一組柔和色調：私下學生＝赭黃、AmazingTalker＝霧藍 */
+  --accent: #2f4a6d; --accent-soft: #e7ecf2; --bk-priv: #c08a3e; --bk-at: #6f8fb3; max-width: 640px; margin: 0 auto; }
+@media (prefers-color-scheme: dark) { .bk { --bk-ok: #86c09d; --bk-err: #f87171; --bk-warn: #e0b07a; --bk-note: #c4b5fd; --accent: #a9c0dc; --accent-soft: #1e2632; --bk-priv: #d6a861; --bk-at: #7f9cc0; } }
 .bk h1 { font-size: 1.4rem; margin: 0 0 4px; }
 .bk h2 { font-size: 1.05rem; margin: 0 0 12px; }
 .bk-sub { color: var(--muted); margin: 0 0 20px; }
@@ -9,7 +12,7 @@
 .bk-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
 .bk-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .bk-row.between { justify-content: space-between; }
-.bk button { cursor: pointer; font: inherit; color: inherit; border: 1px solid var(--line); background: var(--accent-soft); border-radius: 8px; padding: 8px 14px; min-height: 40px; }
+.bk button { cursor: pointer; font: inherit; color: inherit; border: 1px solid var(--line); background: var(--bk-soft); border-radius: 8px; padding: 8px 14px; min-height: 40px; }
 .bk button.sel, .bk button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 .bk button.primary { font-weight: 600; }
 .bk button.sel .bk-muted { color: inherit; opacity: .85; }
@@ -19,21 +22,21 @@
 .bk label { display: block; margin: 0 0 4px; font-size: .9rem; color: var(--muted); }
 .bk-days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
 .bk-days button { flex: 0 0 auto; text-align: center; line-height: 1.3; min-width: 64px; }
-.bk-tag { font-size: .75rem; color: var(--bk-err); }
-.bk-tag.off { color: var(--muted); } /* 不開放（休假）：不是錯誤，用中性色 */
+.bk-tag { font-size: .75rem; color: var(--muted); } /* 已滿／不開放都不是錯誤，用中性色 */
 .bk-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
 .bk-slots button:disabled { text-decoration: line-through; }
 .bk-item { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
 .bk-item:first-of-type { border-top: 0; }
-.bk-note { flex-basis: 100%; background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; white-space: pre-line; }
+.bk-note { flex-basis: 100%; background: var(--bk-soft); border-radius: 8px; padding: 8px 12px; white-space: pre-line; }
 .bk-notice { margin: 0 0 12px; }
 .bk-msg { padding: 10px 12px; border-radius: 8px; margin: 12px 0; }
 .bk-msg.ok { background: color-mix(in srgb, var(--bk-ok) 15%, transparent); color: var(--bk-ok); }
 .bk-msg.err { background: color-mix(in srgb, var(--bk-err) 15%, transparent); color: var(--bk-err); }
+.bk-msg.warn { background: color-mix(in srgb, var(--bk-warn) 15%, transparent); color: var(--bk-warn); } /* 提醒，不是失敗 */
 
 /* ───────── 老師管理頁 ───────── */
 .bk.wide { max-width: 1040px; }
-.bk code { background: var(--accent-soft); padding: 0 4px; border-radius: 4px; }
+.bk code { background: var(--bk-soft); padding: 0 4px; border-radius: 4px; }
 .bk button.danger { color: var(--bk-err); }
 .bk select { font: inherit; color: inherit; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 8px 10px; min-height: 40px; }
 .mgr-shell { display: flex; gap: 20px; align-items: flex-start; }
@@ -52,7 +55,7 @@
 .bk .mgr-tabs button.sel { color: var(--accent); border-bottom-color: var(--accent); background: none; }
 .mgr-check { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
 .mgr-link { word-break: break-all; font-size: .85rem; color: var(--muted); }
-.mgr-at { margin-left: 8px; padding: 1px 8px; border-radius: 99px; font-size: .8rem; background: #e0f2fe; color: #075985; }
+.mgr-at { margin-left: 8px; padding: 1px 8px; border-radius: 99px; font-size: .8rem; background: color-mix(in srgb, var(--bk-at) 18%, var(--card)); color: var(--accent); }
 .mini { min-height: 0 !important; padding: 1px 6px !important; font-size: .7rem; margin-top: 2px; }
 
 .mgr-g { display: grid; grid-template-columns: 44px repeat(7, minmax(84px, 1fr)); min-width: 680px; font-size: .78rem; user-select: none; -webkit-user-select: none; }
@@ -66,13 +69,13 @@
 .mgr-gc .cell:nth-child(2n) { border-bottom-style: solid; }
 .mgr-gc .cell:hover { background: color-mix(in srgb, var(--bk-ok) 14%, transparent); }
 .mgr-gc .cell.on { background: color-mix(in srgb, var(--bk-ok) 38%, var(--card)); }
-.mgr-gc .cell.off { cursor: default; background: var(--accent-soft); }
+.mgr-gc .cell.off { cursor: default; background: var(--bk-soft); }
 .mgr-gc.closed .cell { background: repeating-linear-gradient(45deg, var(--line), var(--line) 6px, transparent 6px, transparent 12px); }
 .mgr-gb { position: absolute; left: 3px; right: 3px; border-radius: 6px; padding: 2px 5px; overflow: hidden; line-height: 1.25; border: 1px solid transparent; white-space: nowrap; text-overflow: ellipsis; font-size: .76rem; }
-.mgr-gb.priv { background: color-mix(in srgb, var(--accent) 28%, var(--card)); border-color: var(--accent); }
-.mgr-gb.at { background: color-mix(in srgb, #2563eb 24%, var(--card)); border-color: #2563eb; }
+.mgr-gb.priv { background: color-mix(in srgb, var(--bk-priv) 28%, var(--card)); border-color: var(--bk-priv); }
+.mgr-gb.at { background: color-mix(in srgb, var(--bk-at) 26%, var(--card)); border-color: var(--bk-at); }
 .mgr-gb.pend { border-style: dashed; opacity: .85; }
-.mgr-gb.ev { background: var(--accent-soft); border-color: var(--line); color: var(--muted); pointer-events: none; }
+.mgr-gb.ev { background: var(--bk-soft); border-color: var(--line); color: var(--muted); pointer-events: none; }
 /* 月曆：一格一天，列出當天的課 */
 .mgr-m { display: grid; grid-template-columns: repeat(7, minmax(72px, 1fr)); min-width: 540px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); font-size: .76rem; }
 .mgr-mh { text-align: center; padding: 4px 2px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--card); color: var(--muted); }
@@ -84,10 +87,10 @@
 .mgr-mn { font-weight: 600; }
 .mgr-md.today .mgr-mn { align-self: flex-start; padding: 0 6px; border-radius: 99px; background: var(--accent); color: var(--bg); }
 .mgr-ml { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 1px 4px; border-radius: 4px; border: 1px solid transparent; }
-.mgr-ml.priv { background: color-mix(in srgb, var(--accent) 28%, var(--card)); border-color: var(--accent); }
-.mgr-ml.at { background: color-mix(in srgb, #2563eb 24%, var(--card)); border-color: #2563eb; }
+.mgr-ml.priv { background: color-mix(in srgb, var(--bk-priv) 28%, var(--card)); border-color: var(--bk-priv); }
+.mgr-ml.at { background: color-mix(in srgb, var(--bk-at) 26%, var(--card)); border-color: var(--bk-at); }
 .mgr-ml.pend { border-style: dashed; opacity: .85; }
-.mgr-ml.ev { background: var(--accent-soft); border-color: var(--line); color: var(--muted); }
+.mgr-ml.ev { background: var(--bk-soft); border-color: var(--line); color: var(--muted); }
 .mgr-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; font-size: .8rem; color: var(--muted); }
 .mgr-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
 .mgr-savebar { position: sticky; bottom: 0; margin: 12px -16px -16px; padding: 10px 16px; background: var(--card); border-top: 1px solid var(--line); border-radius: 0 0 12px 12px; display: flex; gap: 8px; align-items: center; justify-content: space-between; }
@@ -118,15 +121,15 @@ a.bk-course:hover { border-color: var(--accent); }
 .mgr-courses { flex-basis: 100%; display: flex; gap: 6px 14px; flex-wrap: wrap; align-items: center; padding-top: 4px; }
 .mgr-courses label { display: inline-flex; gap: 6px; align-items: center; margin: 0; color: var(--fg); }
 
-.mgr-diag { white-space: pre-wrap; font: .8rem/1.5 ui-monospace, monospace; background: var(--accent-soft); border: 1px dashed var(--accent); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
+.mgr-diag { white-space: pre-wrap; font: .8rem/1.5 ui-monospace, monospace; background: var(--bk-soft); border: 1px dashed var(--line); border-radius: 8px; padding: 10px 12px; margin: 0 0 12px; }
 
 .bk a.mgr-tool { display: flex; align-items: center; justify-content: center; gap: 4px; margin-top: 10px; min-height: 40px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--fg); text-decoration: none; text-align: center; }
 .bk a.mgr-tool:hover { border-color: var(--accent); color: var(--accent); }
 @media (max-width: 720px) { .bk a.mgr-tool { margin-top: 0; flex: 0 0 auto; white-space: nowrap; } }
 
-.bk a.mgr-link { display: inline-flex; align-items: center; min-height: 36px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--accent-soft); color: var(--fg); text-decoration: none; }
+.bk a.mgr-link { display: inline-flex; align-items: center; min-height: 36px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bk-soft); color: var(--fg); text-decoration: none; }
 .bk a.mgr-link:hover { border-color: var(--accent); color: var(--accent); }
-.bk-hw { display: inline-block; margin-left: 4px; padding: 1px 10px; border-radius: 99px; background: var(--accent-soft, #fdeede); font-size: .85rem; text-decoration: none; }
+.bk-hw { display: inline-block; margin-left: 4px; padding: 1px 10px; border-radius: 99px; background: var(--accent-soft); font-size: .85rem; text-decoration: none; }
 .bk-hw b { font-weight: 600; }
 .bk-hw.done { background: #e4f4ea; color: #1f6b3a; }
 .bk-hw u { text-decoration: underline; }

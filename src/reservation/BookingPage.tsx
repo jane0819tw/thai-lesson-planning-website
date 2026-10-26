@@ -212,7 +212,7 @@ export default function BookingPage() {
               <strong className="bk-big">剩餘 {l.left} 堂</strong><br />
               <span className="bk-muted">{fixed ? `${fixed} 分鐘課程包・` : ''}已購 {l.bought} 堂・已上 {l.used} 堂{l.booked ? `・已預約 ${l.booked} 堂（尚未上課）` : ''}</span>
             </p>
-            {l.left <= 0 && <p className="bk-msg err">課程堂數已用完，預約前請先和老師聯絡。</p>}
+            {l.left <= 0 && <p className="bk-msg warn">課程堂數已用完，預約前請先和老師聯絡。</p>}
           </div>
         )}
 

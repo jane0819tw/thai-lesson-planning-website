@@ -266,10 +266,10 @@ export default function AdminPage() {
                 <div className="mgr-legend">
                   {!(tab === 'cal' && calView === 'month') && <span><i style={{ background: 'color-mix(in srgb, var(--bk-ok) 38%, var(--card))' }} />開放預約</span>}
                   {tab === 'cal' && <>
-                    <span><i style={{ background: 'color-mix(in srgb, var(--accent) 28%, var(--card))', borderColor: 'var(--accent)' }} />私下學生</span>
-                    <span><i style={{ background: 'color-mix(in srgb, #2563eb 24%, var(--card))', borderColor: '#2563eb' }} />AmazingTalker</span>
+                    <span><i style={{ background: 'color-mix(in srgb, var(--bk-priv) 28%, var(--card))', borderColor: 'var(--bk-priv)' }} />私下學生</span>
+                    <span><i style={{ background: 'color-mix(in srgb, var(--bk-at) 26%, var(--card))', borderColor: 'var(--bk-at)' }} />AmazingTalker</span>
                     <span><i style={{ borderStyle: 'dashed' }} />虛線＝待確認</span>
-                    <span><i style={{ background: 'var(--accent-soft)' }} />其他行程</span>
+                    <span><i style={{ background: 'var(--bk-soft)' }} />其他行程</span>
                   </>}
                 </div>
                 {dirty && (
@@ -327,7 +327,7 @@ export default function AdminPage() {
                 : pv.items.length ? pv.items.map(it => <PendingVideoItem key={it.name + it.start} it={it} onSave={url => saveVideo(it, url)} />)
                 : <p className="bk-muted">影片連結都補齊了。</p>}
               {pv && pv.problems.length > 0 && (
-                <div className="bk-msg err">
+                <div className="bk-msg warn">
                   以下學生需要錄影，但沒辦法檢查：
                   {pv.problems.map(p => <div key={p.name}>・{p.name}：{p.reason}</div>)}
                 </div>
