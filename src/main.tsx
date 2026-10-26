@@ -13,6 +13,11 @@ import '@fontsource/noto-sans-thai-looped/latin-600.css'
 import '@fontsource/noto-sans-thai-looped/latin-700.css'
 import '@fontsource/noto-sans-thai/thai-400.css'
 import '@fontsource/noto-sans-thai/thai-600.css'
+// 認字課程（/reading）的泰文改用 Sarabun；筆順描紅的底字仍用 LayijiTrace
+import '@fontsource/sarabun/thai-400.css'
+import '@fontsource/sarabun/thai-500.css'
+import '@fontsource/sarabun/thai-600.css'
+import '@fontsource/sarabun/thai-700.css'
 import './styles.css'
 
 // 任何未捕捉的錯誤都直接顯示在畫面底部（不依賴 React），方便在沒有開發者工具時回報問題
