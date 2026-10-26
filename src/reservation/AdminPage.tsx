@@ -225,8 +225,6 @@ export default function AdminPage() {
             <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}{k === 'videos' && !!pv?.items.length && <span className="mgr-badge">{pv.items.length}</span>}</button>
           ))}
           {/* 其他工具：另開分頁，不影響這頁尚未儲存的開放時段 */}
-          {(backend.sheet || st.sheetUrl) && <a className="mgr-tool" href={backend.sheet || st.sheetUrl} target="_blank" rel="noopener noreferrer">📊 後台試算表</a>}
-          {(backend.script || st.scriptUrl) && <a className="mgr-tool" href={backend.script || st.scriptUrl} target="_blank" rel="noopener noreferrer">⚙️ Apps Script</a>}
           <a className="mgr-tool" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
           <a className="mgr-tool" href="#/reading/dictation-review" target="_blank" rel="noopener noreferrer">🎧 聽寫片段審查</a>
         </nav>
@@ -535,7 +533,7 @@ function BackendSettings({ links, st, onSave }: { links: BackendLinks; st: Admin
   return (
     <div className="bk-card">
       <h2>後台設定</h2>
-      <p className="bk-muted" style={{ marginTop: 0 }}>綁定後，左側會出現「📊 後台試算表」「⚙️ Apps Script」按鈕，方便進去檢查資料與部署。網址只存在這個瀏覽器，換電腦要再貼一次。留空＝用後端回報的網址（後端要部署新版才有）。</p>
+      <p className="bk-muted" style={{ marginTop: 0 }}>綁定後，按各欄旁的「開啟」就能進去檢查資料與部署。網址只存在這個瀏覽器，換電腦要再貼一次。留空＝用後端回報的網址（後端要部署新版才有）。</p>
       <h3>後台試算表</h3>
       <p className="bk-muted">預約、學生、作業、信件紀錄、開放時段都寫在這份試算表。</p>
       <div className="bk-row">
