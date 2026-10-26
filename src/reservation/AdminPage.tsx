@@ -16,9 +16,9 @@ const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', 
 type Sec = (typeof SECS)[number][0]
 const SEC_KEY = 'thaiskr_admin_sec'
 const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'sched' } catch { return 'sched' } }
-// 行事曆用週檢視或月檢視（記在這個瀏覽器）
+// 行事曆用週檢視或月檢視（記在這個瀏覽器；沒選過＝月）
 const CAL_KEY = 'thaiskr_admin_calview'
-const calGet = (): 'week' | 'month' => { try { return localStorage.getItem(CAL_KEY) === 'month' ? 'month' : 'week' } catch { return 'week' } }
+const calGet = (): 'week' | 'month' => { try { return localStorage.getItem(CAL_KEY) === 'week' ? 'week' : 'month' } catch { return 'month' } }
 const STATUSES = ['待確認', '已確認', '已拒絕', '已過期', '已取消']
 const BASE_TITLE = typeof document === 'undefined' ? '' : document.title
 const todayStr = () => new Date().toISOString().slice(0, 10)
