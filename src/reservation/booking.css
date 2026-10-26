@@ -1,6 +1,6 @@
 /* 預約頁：全部限定在 .bk 底下，不影響其他頁面 */
-.bk { --bk-ok: #15803d; --bk-err: #b91c1c; max-width: 640px; margin: 0 auto; }
-@media (prefers-color-scheme: dark) { .bk { --bk-ok: #4ade80; --bk-err: #f87171; } }
+.bk { --bk-ok: #15803d; --bk-err: #b91c1c; --bk-note: #6d28d9; max-width: 640px; margin: 0 auto; }
+@media (prefers-color-scheme: dark) { .bk { --bk-ok: #4ade80; --bk-err: #f87171; --bk-note: #c4b5fd; } }
 .bk h1 { font-size: 1.4rem; margin: 0 0 4px; }
 .bk h2 { font-size: 1.05rem; margin: 0 0 12px; }
 .bk-sub { color: var(--muted); margin: 0 0 20px; }
@@ -20,6 +20,7 @@
 .bk-days { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
 .bk-days button { flex: 0 0 auto; text-align: center; line-height: 1.3; min-width: 64px; }
 .bk-tag { font-size: .75rem; color: var(--bk-err); }
+.bk-tag.off { color: var(--muted); } /* 不開放（休假）：不是錯誤，用中性色 */
 .bk-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
 .bk-slots button:disabled { text-decoration: line-through; }
 .bk-item { display: flex; justify-content: space-between; gap: 8px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
@@ -58,7 +59,7 @@
 .mgr-gh { text-align: center; padding: 4px 2px 6px; border-bottom: 1px solid var(--line); border-left: 1px solid var(--line); background: var(--card); line-height: 1.3; }
 .mgr-gh.today { color: var(--accent); font-weight: 700; }
 .mgr-tag { display: block; font-size: .7rem; color: var(--muted); font-weight: 400; }
-.mgr-note { color: var(--accent); font-weight: 600; } /* 休假說明：只給老師看的提醒 */
+.mgr-note { align-self: flex-start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 6px; border-radius: 4px; background: color-mix(in srgb, var(--bk-note) 14%, var(--card)); color: var(--bk-note); } /* 休假說明：只給老師看的提醒，用中性的紫色，不要像錯誤 */
 .mgr-gt { position: relative; } .mgr-gt span { position: absolute; right: 6px; transform: translateY(-50%); color: var(--muted); font-size: .72rem; }
 .mgr-gc { position: relative; border-left: 1px solid var(--line); }
 .mgr-gc .cell { height: 22px; border-bottom: 1px dashed var(--line); cursor: pointer; }
@@ -66,7 +67,7 @@
 .mgr-gc .cell:hover { background: color-mix(in srgb, var(--bk-ok) 14%, transparent); }
 .mgr-gc .cell.on { background: color-mix(in srgb, var(--bk-ok) 38%, var(--card)); }
 .mgr-gc .cell.off { cursor: default; background: var(--accent-soft); }
-.mgr-gc.closed .cell { background: repeating-linear-gradient(45deg, var(--accent-soft), var(--accent-soft) 6px, transparent 6px, transparent 12px); }
+.mgr-gc.closed .cell { background: repeating-linear-gradient(45deg, var(--line), var(--line) 6px, transparent 6px, transparent 12px); }
 .mgr-gb { position: absolute; left: 3px; right: 3px; border-radius: 6px; padding: 2px 5px; overflow: hidden; line-height: 1.25; border: 1px solid transparent; white-space: nowrap; text-overflow: ellipsis; font-size: .76rem; }
 .mgr-gb.priv { background: color-mix(in srgb, var(--accent) 28%, var(--card)); border-color: var(--accent); }
 .mgr-gb.at { background: color-mix(in srgb, #2563eb 24%, var(--card)); border-color: #2563eb; }
@@ -79,7 +80,7 @@
 .bk button.mgr-md:hover { background: var(--accent-soft); }
 .mgr-md.other { opacity: .45; }
 .mgr-md.past .mgr-mn { color: var(--muted); }
-.mgr-md.closed { background: repeating-linear-gradient(45deg, var(--accent-soft), var(--accent-soft) 6px, var(--card) 6px, var(--card) 12px) !important; }
+.mgr-md.closed { background: repeating-linear-gradient(45deg, var(--line), var(--line) 6px, var(--card) 6px, var(--card) 12px) !important; }
 .mgr-mn { font-weight: 600; }
 .mgr-md.today .mgr-mn { align-self: flex-start; padding: 0 6px; border-radius: 99px; background: var(--accent); color: var(--bg); }
 .mgr-ml { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 1px 4px; border-radius: 4px; border: 1px solid transparent; }

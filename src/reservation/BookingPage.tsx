@@ -231,7 +231,7 @@ export default function BookingPage() {
                   const lb = dayLabel(d.date)
                   return (
                     <button key={d.date} className={d.date === curDate ? 'sel' : ''} disabled={!d.free} onClick={() => { setDate(d.date); setTime(null) }}>
-                      {lb.md}<br /><span className="bk-muted">{lb.wd}</span>{!d.free && <><br /><span className="bk-tag">{d.closed ? '不開放' : '已滿'}</span></>}
+                      {lb.md}<br /><span className="bk-muted">{lb.wd}</span>{!d.free && <><br />{d.closed ? <span className="bk-tag off">不開放</span> : <span className="bk-tag">已滿</span>}</>}
                     </button>
                   )
                 })}
