@@ -530,6 +530,10 @@ function BackendSettings({ links, st, onSave }: { links: BackendLinks; st: Admin
   const [sheet, setSheet] = useState(links.sheet), [script, setScript] = useState(links.script)
   const bad = (u: string) => !!u.trim() && !/^https:\/\//.test(u.trim())
   const open = (u?: string) => u ? <a className="mgr-link" href={u} target="_blank" rel="noopener noreferrer">開啟</a> : null
+  // 欄位留空時，改用後端回報的網址：有就做成按鈕，沒有就提示要貼上
+  const reported = (u: string | undefined, label: string) => u
+    ? <div className="bk-row"><span className="bk-muted">後端回報：</span><a className="mgr-link" href={u} title={u} target="_blank" rel="noopener noreferrer">{label}</a></div>
+    : <p className="bk-muted">後端回報：（舊版後端沒有回報，請貼上網址）</p>
   return (
     <div className="bk-card">
       <h2>後台設定</h2>
@@ -538,16 +542,16 @@ function BackendSettings({ links, st, onSave }: { links: BackendLinks; st: Admin
       <p className="bk-muted">預約、學生、作業、信件紀錄、開放時段都寫在這份試算表。</p>
       <div className="bk-row">
         <input style={{ flex: 1, minWidth: 200 }} placeholder="https://docs.google.com/spreadsheets/d/…" value={sheet} onChange={e => setSheet(e.target.value)} />
-        {open(sheet.trim() && !bad(sheet) ? sheet.trim() : st.sheetUrl)}
+        {open(sheet.trim() && !bad(sheet) ? sheet.trim() : undefined)}
       </div>
-      {!sheet.trim() && <p className="bk-muted">後端回報：{st.sheetUrl || '（舊版後端沒有回報，請貼上網址）'}</p>}
+      {!sheet.trim() && reported(st.sheetUrl, '📊 開啟後端回報的試算表')}
       <h3>Apps Script 專案</h3>
       <p className="bk-muted">在試算表「擴充功能 → Apps Script」打開後，複製瀏覽器網址列貼上；部署新版本在右上角「部署 → 管理部署作業」。</p>
       <div className="bk-row">
         <input style={{ flex: 1, minWidth: 200 }} placeholder="https://script.google.com/home/projects/…/edit" value={script} onChange={e => setScript(e.target.value)} />
-        {open(script.trim() && !bad(script) ? script.trim() : st.scriptUrl)}
+        {open(script.trim() && !bad(script) ? script.trim() : undefined)}
       </div>
-      {!script.trim() && <p className="bk-muted">後端回報：{st.scriptUrl || '（舊版後端沒有回報，請貼上網址）'}</p>}
+      {!script.trim() && reported(st.scriptUrl, '⚙️ 開啟後端回報的 Apps Script')}
       {(bad(sheet) || bad(script)) && <div className="bk-msg err">網址要以 https:// 開頭</div>}
       <div className="bk-row" style={{ marginTop: 12 }}>
         <button className="primary" disabled={bad(sheet) || bad(script) || (sheet.trim() === links.sheet && script.trim() === links.script)} onClick={() => onSave({ sheet: sheet.trim(), script: script.trim() })}>儲存</button>
