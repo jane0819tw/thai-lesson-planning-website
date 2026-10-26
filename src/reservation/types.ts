@@ -36,7 +36,9 @@ export interface Rule { type: '每週' | '單次' | '限定' | '休假' | '備�
 export interface Booking { id: string; source: string; name: string; start: string; length: number; status: string }
 export interface Pending { id: string; name: string; start: string; length: number; note: string }
 export interface StudentRow { name: string; /** 平台顯示名稱：有填＝AmazingTalker 學生 */ display?: string; email: string; token: string; record?: string; courses: string[]; /** 課後錄影開始日期 yyyy-MM-dd；空白＝不需要 */ recording?: string }
-export interface AdminState { rules: Rule[]; bookings: Booking[]; pending: Pending[]; students: StudentRow[]; sheetUrl?: string; scriptUrl?: string } // 後台試算表、Apps Script 專案網址（舊版後端沒有）
+/** 預約備註裡還沒按 × 的錯誤訊息（Zoom／記錄表失敗等），items 是一段一段的訊息 */
+export interface NoteIssue { id: string; source: string; name: string; start: string; status: string; items: string[] }
+export interface AdminState { rules: Rule[]; bookings: Booking[]; pending: Pending[]; students: StudentRow[]; /** 舊版後端沒有 */ issues?: NoteIssue[]; sheetUrl?: string; scriptUrl?: string } // 後台試算表、Apps Script 專案網址（舊版後端沒有）
 export interface WeekLesson { id: string; name: string; source: string; status: string; len: number; start: number; end: number }
 export interface WeekEvent { title: string; start: number; end: number }
 export interface WeekDay { date: string; closed: string; open: number[]; allDay: string[]; lessons: WeekLesson[]; events: WeekEvent[] }

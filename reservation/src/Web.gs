@@ -10,6 +10,7 @@ const ADMIN_API_ = {
   adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetDisplay: adminSetDisplay, adminImportPlatformStudents: adminImportPlatformStudents, adminDeleteStudent: adminDeleteStudent, adminSetCourses: adminSetCourses,
   adminGetRecordSessions: adminGetRecordSessions, adminCancelRecordLesson: adminCancelRecordLesson, adminGetHomework: adminGetHomework,
   adminSetRecording: adminSetRecording, adminGetPendingVideos: adminGetPendingVideos, adminSetVideoLink: adminSetVideoLink,
+  adminDismissNote: adminDismissNote,
 };
 
 function doGet() { return json_({ ok: true, service: 'thaiskr-reservation' }); }
@@ -350,9 +351,34 @@ function adminGetState() {
   const bookings = readBookings_().filter(function (b) { return b['開始'] && new Date(b['實際結束'] || b['開始']).getTime() >= since; })
     .sort(function (a, b) { return new Date(a['開始']) - new Date(b['開始']); })
     .map(function (b) { return { id: b['編號'], source: b['來源'], name: b['學生'], start: toLocalStr_(b['開始']), length: b['課長'], status: b['狀態'] }; });
+  // 備註裡還沒按 × 的錯誤（Zoom、記錄表失敗等），新的在前
+  const issues = readBookings_().map(function (b) { return { b: b, items: noteIssues_(b['備註'], b['備註已讀']) }; })
+    .filter(function (x) { return x.items.length; })
+    .sort(function (x, y) { return new Date(y.b['建立時間'] || y.b['開始']) - new Date(x.b['建立時間'] || x.b['開始']); })
+    .map(function (x) { const b = x.b; return { id: b['編號'], source: b['來源'], name: b['學生'], start: b['開始'] ? toLocalStr_(b['開始']) : '', status: b['狀態'], items: x.items }; });
   // sheetUrl／scriptUrl：這支程式所在的試算表（後台紀錄都寫在這裡）與 Apps Script 專案，給老師頁放開啟按鈕
-  return { rules: readRules_(), pending: pending, students: students, bookings: bookings,
+  return { rules: readRules_(), pending: pending, students: students, bookings: bookings, issues: issues,
     sheetUrl: getSs_().getUrl(), scriptUrl: 'https://script.google.com/home/projects/' + ScriptApp.getScriptId() + '/edit' };
+}
+
+/** 備註用「；」串起好幾段（見 Sync.gs addNote_），挑出錯誤的段落，扣掉老師已讀過的 */
+function noteIssues_(note, read) {
+  const seen = {};
+  String(read || '').split('；').forEach(function (t) { seen[t.trim()] = true; });
+  return String(note || '').split('；').map(function (t) { return t.trim(); })
+    .filter(function (t) { return t && !seen[t] && /失敗|尚未|請人工確認|已用完|找不到/.test(t); });
+}
+
+/** 老師按 ×：把目前的備註記成已讀，備註本身不動 */
+function adminDismissNote(id) {
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const b = readBookings_().filter(function (x) { return x['編號'] === id; })[0];
+    if (!b) throw new Error('找不到預約 ' + id);
+    b['備註已讀'] = b['備註'];
+    writeBooking_(b);
+    return true;
+  } finally { lock.releaseLock(); }
 }
 
 function adminSaveRules(rules) {

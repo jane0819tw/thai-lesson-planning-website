@@ -12,7 +12,7 @@ import type { Draft } from './schedule'
 import type { AdminState, HomeworkRow, Month, PendingVideo, PendingVideos, RecSession, StudentRow, Week } from './types'
 import './booking.css'
 
-const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['videos', '待補錄影'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
+const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['issues', '錯誤訊息'], ['videos', '待補錄影'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
 type Sec = (typeof SECS)[number][0]
 const SEC_KEY = 'thaiskr_admin_sec'
 const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'sched' } catch { return 'sched' } }
@@ -190,6 +190,13 @@ export default function AdminPage() {
     } catch (e) { flash(false, (e as Error).message) }
   }
 
+  const dismissNote = async (id: string) => {
+    try {
+      await run('標成已讀中…', () => api.adminDismissNote(id))
+      setSt(s => s && { ...s, issues: s.issues?.filter(x => x.id !== id) })
+    } catch (e) { flash(false, (e as Error).message) }
+  }
+
   const save = async () => {
     if (!draft) return
     try {
@@ -222,7 +229,7 @@ export default function AdminPage() {
       <div className="mgr-shell">
         <nav className="mgr-side">
           {SECS.map(([k, n]) => (
-            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}{k === 'videos' && !!pv?.items.length && <span className="mgr-badge">{pv.items.length}</span>}</button>
+            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}{k === 'issues' && !!st.issues?.length && <span className="mgr-badge">{st.issues.length}</span>}{k === 'videos' && !!pv?.items.length && <span className="mgr-badge">{pv.items.length}</span>}</button>
           ))}
           {/* 其他工具：另開分頁，不影響這頁尚未儲存的開放時段 */}
           <a className="mgr-tool" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
@@ -289,6 +296,23 @@ export default function AdminPage() {
                 </div>
               )) : <p className="bk-muted">目前沒有待確認的預約。</p>}
               <p className="bk-muted">確認後，記得到 AmazingTalker 手動關閉同一時段。</p>
+            </div>
+          )}
+
+          {sec === 'issues' && (
+            <div className="bk-card">
+              <h2>預約的錯誤訊息</h2>
+              <p className="bk-muted">試算表「預約」分頁備註裡記下的錯誤（Zoom 建立失敗、記錄表寫入失敗等）。處理完按 × 標成已讀；同一筆之後若又有新的錯誤，會再出現。</p>
+              {!st.issues ? <p className="bk-muted">後端尚未更新，請重新部署 Apps Script。</p>
+                : st.issues.length ? st.issues.map(it => (
+                  <div className="bk-item" key={it.id}>
+                    <div>
+                      {it.name}　{it.start}<span className="bk-muted">（{it.id}・{it.source}・{it.status}）</span>
+                      {it.items.map((t, i) => <div key={i} className="bk-muted">・{t}</div>)}
+                    </div>
+                    <button title="已讀" aria-label="標成已讀" onClick={() => dismissNote(it.id)}>×</button>
+                  </div>
+                )) : <p className="bk-muted">目前沒有未讀的錯誤訊息。</p>}
             </div>
           )}
 

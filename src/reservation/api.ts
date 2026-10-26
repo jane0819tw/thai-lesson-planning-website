@@ -19,6 +19,8 @@ interface Api {
   adminGetMonth(date: string): Promise<Month>
   adminSaveRules(rules: Rule[]): Promise<boolean>
   adminSetStatus(id: string, status: string): Promise<boolean>
+  /** 預約備註的錯誤訊息標成已讀 */
+  adminDismissNote(id: string): Promise<boolean>
   adminCreateStudent(name: string, email: string, display?: string): Promise<boolean>
   adminDeleteStudent(name: string): Promise<boolean>
   adminRenewLink(name: string): Promise<boolean>
@@ -75,6 +77,7 @@ const real: Api = {
   }),
   adminSaveRules: r => call('adminSaveRules', [r]),
   adminSetStatus: (id, st) => call('adminSetStatus', [id, st]),
+  adminDismissNote: id => call('adminDismissNote', [id]),
   adminCreateStudent: (n, e, d) => call('adminCreateStudent', [n, e, d ?? '']),
   adminDeleteStudent: n => call('adminDeleteStudent', [n]),
   adminRenewLink: n => call('adminRenewLink', [n]),
@@ -119,6 +122,7 @@ const db: AdminState = {
     { id: 'B0021', source: 'AmazingTalker', name: 'Jenny', start: `${day(2)} 21:00`, length: 50, status: '已過期' },
   ],
   pending: [{ id: 'B0020', name: 'Amy', start: `${day(1)} 19:00`, length: 50, note: 'Email: amy@example.com' }],
+  issues: [{ id: 'B0019', source: 'AmazingTalker', name: 'Jenny', start: `${day(3)} 20:00`, status: '已確認', items: ['Zoom 建立失敗：Zoom API 429：Too many requests', '記錄表：課程包已用完，沒有空白的堂數可以填'] }],
   students: [{ name: 'Jenny', email: 'jenny@example.com', token: 'abc123', record: 'https://docs.google.com/spreadsheets/d/xxx', courses: ['reading:1', 'video'], recording: day(-10) }, { name: '王小明', display: 'Ming W.', email: '', token: 'at', courses: ['reading:1'], recording: day(-3) }],
 }
 const week = (d: string): Week => {
@@ -184,6 +188,7 @@ const mock: Api = {
   adminGetWeek: d => delay(week(d)),
   adminGetMonth: d => monthByWeeks(d, x => Promise.resolve(week(x))),
   adminSaveRules: r => { db.rules = r; return delay(true) },
+  adminDismissNote: id => { db.issues = db.issues?.filter(x => x.id !== id); return delay(true) },
   adminSetStatus: (id, st) => { db.pending = db.pending.filter(p => p.id !== id); db.bookings.forEach(b => { if (b.id === id) b.status = st }); return delay(true) },
   adminCreateStudent: (n, e, d) => { if (!n) return Promise.reject(new Error('請填姓名')); db.students.push({ name: n, display: d?.trim() ?? '', email: e, token: 'mock' + db.students.length, courses: [] }); return delay(true) },
   adminDeleteStudent: n => { db.students = db.students.filter(s => s.name !== n); return delay(true) },
