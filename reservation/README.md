@@ -50,3 +50,15 @@ AmazingTalker 通知信 → Gmail 標籤 → Apps Script → 試算表 + 行事�
 - 部署：貼入新的 `src/Courses.gs`、`Config.gs`、`Web.gs` → 執行一次 `setup`（補上第 7 欄標題）→「管理部署作業 → 新版本」。**既有學生的這欄是空的＝沒有開放任何課程**，要到管理頁逐一勾選。
 - 注意：這只控制「學生頁顯示哪些入口」。課程頁本身是公開的靜態網頁，沒有登入保護。
 - 測試：`node tests/courses.test.js`
+
+## 課後錄影（2026-10）
+- 「學生」分頁多一欄 **課後錄影**（第 8 欄），值是開始錄影的日期（`yyyy-MM-dd`）；空白＝不需要。在管理頁學生卡片勾「🎥 需要課後錄影」會自動寫入今天的日期（`adminSetRecording`）。
+- 影片連結存在學生記錄表「上課記錄」分頁的 **影片連結** 欄（一堂一格；連續的課只填第一堂）。記錄表沒有這一欄要自己加上欄名。
+- 學生頁「我的課程與作業」多一張「課後錄影」卡片：有連結的課可以點「觀看錄影」；需要錄影的學生，從開始日期起還沒上傳的課顯示「影片整理中」。
+- 管理頁左側「待補錄影」：需要錄影的學生已上完、但還沒有連結的課（`adminGetPendingVideos`），可以直接貼連結儲存（`adminSetVideoLink`，寫回記錄表）。
+- 測試：`node tests/record.test.js`
+
+## 每天的課程 LINE 推播（2026-10）
+- 每天午夜（`CONFIG.DAILY_REMINDER_HOUR`，觸發時間 ±15 分鐘）推播當天的課：預約表的待確認／已確認＋記錄表裡手寫的課，連續的課合成一個時段（`src/Reminder.gs`）。當天沒課不推；同一天只推一次。
+- 部署：貼入新的 `src/Reminder.gs`，以及更新過的 `Config.gs`、`Record.gs`、`Web.gs`、`Sync.gs` → 執行一次 `setup`（補第 8 欄標題、建立每日觸發器）→「管理部署作業 → 新版本」。執行 `testDailyLessons` 可立刻收到明天的課。
+- 測試：`node tests/reminder.test.js`

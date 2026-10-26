@@ -5,7 +5,7 @@ import { setSession } from './session'
 import { getApi } from './api'
 import { REVIEW_UNITS, reviewKey, reviewTitle } from '../reviews'
 import { dictClipsOf, videoKey } from '../dictationClips'
-import type { HomeworkRecord, OpenDays, StudentInfo } from './types'
+import type { HomeworkRecord, OpenDays, StudentInfo, VideoItem } from './types'
 import './booking.css'
 
 // 時間皆為台北時間
@@ -34,6 +34,35 @@ function VideoChallenge({ to, rec }: { to?: string; rec?: HomeworkRecord }) {
   return to
     ? <Link to={to} className="bk-video">🎬 延伸影片挑戰{rec ? <> <b>✅ 已完成 {rec.typing}</b> <u>再做一次</u></> : ' →'}<small>（題目持續更新）</small></Link>
     : <span className="bk-video off">🎬 延伸影片挑戰（即將開放）</span>
+}
+
+// 「課後錄影」：記錄表有影片連結的課可以點進去看；需要錄影的學生（since 有值）從那天起還沒上傳的課顯示「影片整理中」
+const VIDEO_SHOW = 10
+function VideoCard({ videos, since }: { videos: VideoItem[]; since: string }) {
+  const [all, setAll] = useState(false)
+  const list = videos.filter(v => v.video || (since && v.start.slice(0, 10) >= since))
+  if (!list.length) return null
+  const shown = all ? list : list.slice(0, VIDEO_SHOW)
+  return (
+    <div className="bk-card">
+      <h2>課後錄影</h2>
+      {shown.map(v => {
+        const lb = dayLabel(v.start.slice(0, 10))
+        return (
+          <div className="bk-item" key={v.start}>
+            <div>
+              {lb.md}（{lb.wd.slice(1)}）{v.dateOnly ? '' : ` ${hm(v.start)}–${hm(v.end)}`}・第 {v.no} 堂
+              {v.progress && <div className="bk-muted">{v.progress}</div>}
+            </div>
+            {v.video
+              ? <a className="bk-watch" href={v.video} target="_blank" rel="noopener noreferrer">▶ 觀看錄影</a>
+              : <span className="bk-muted">影片整理中，上傳後會出現在這裡</span>}
+          </div>
+        )
+      })}
+      {list.length > shown.length && <button onClick={() => setAll(true)}>顯示更早的 {list.length - shown.length} 堂</button>}
+    </div>
+  )
 }
 
 // 上次載入的結果先顯示，背景再更新：從課程頁回到預約頁時不用重新等後端（過期資料只會短暫出現）
@@ -133,6 +162,9 @@ export default function BookingPage() {
         </div>
       )}
 
+      {/* 課後錄影放在課程清單上面：認字課清單很長，放下面學生不容易看到 */}
+      {view.mode === 'known' && (tab === 'courses' || platform) && <VideoCard videos={view.videos ?? []} since={view.recording ?? ''} />}
+
       {view.mode === 'known' && (tab === 'courses' || platform) && (
         <div className="bk-card" onClickCapture={e => { if ((e.target as HTMLElement).closest('a')) { try { sessionStorage.setItem(TAB_KEY, 'courses') } catch { /* 存不了就算了 */ } } }}>
           {!platform && <h2>我的課程與作業</h2>}
@@ -167,6 +199,7 @@ export default function BookingPage() {
           ) : <p className="bk-muted" style={{ margin: 0 }}>目前還沒有開放的課程，請聯絡老師。</p>}
         </div>
       )}
+
 
       {!platform && (view.mode !== 'known' || tab === 'book') && (
         <>

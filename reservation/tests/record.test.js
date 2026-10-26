@@ -71,3 +71,23 @@ assert.deepStrictEqual(JSON.parse(JSON.stringify(ctx.pickLatestLesson_(LL, '2026
 assert.strictEqual(ctx.pickLatestLesson_(LL, '2026-08-01 10:00'), null); // 還沒上過任何課
 assert.strictEqual(ctx.pickLatestLesson_(LL, '2026-10-21 00:00').next, '預先寫的'); // 上完且有內容的最新一堂
 console.log('record tests passed');
+
+// ---- 課後錄影清單：已上完的課（新→舊），連續的課合成一支影片 ----
+{
+  const rows = [
+    { no: '1', when: '2026/10/20 19:00-19:25', progress: 'L1', video: 'https://youtu.be/a' },
+    { no: '2', when: '2026/10/24 10:00-10:25', progress: '', video: '' },
+    { no: '3', when: '2026/10/24 10:30-10:55', progress: 'L2 第3頁', video: 'https://youtu.be/b' },
+    { no: '4', when: '2026/10/26 20:00-20:25', progress: '', video: '' }, // 正在上
+    { no: '5', when: '2026/10/30 20:00-20:25', progress: '', video: '' }, // 還沒上
+  ];
+  const v = ctx.buildVideoList_(rows, '2026-10-26 20:10');
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(v.map(x => [x.no, x.start, x.end, x.progress, x.video]))), [
+    ['2–3', '2026-10-24 10:00', '2026-10-24 10:55', 'L2 第3頁', 'https://youtu.be/b'],
+    ['1', '2026-10-20 19:00', '2026-10-20 19:25', 'L1', 'https://youtu.be/a'],
+  ]);
+  // 兩堂各有不同影片：不合併
+  assert.strictEqual(ctx.buildVideoList_([
+    { no: '1', when: '2026/10/24 10:00-10:25', video: 'x' }, { no: '2', when: '2026/10/24 10:30-10:55', video: 'y' },
+  ], '2026-10-27 00:00').length, 2);
+}

@@ -1,4 +1,4 @@
-import type { AdminState, HomeworkRecord, HomeworkRow, Month, OpenDays, RecSession, Rule, StudentInfo, StudentView, Week } from './types'
+import type { AdminState, HomeworkRecord, HomeworkRow, Month, OpenDays, PendingVideos, RecSession, Rule, StudentInfo, StudentView, Week } from './types'
 
 // Apps Script「網頁應用程式」網址（結尾 /exec）。這個網址本來就會公開，不是密碼。
 // 留空或網址帶 mock=1 時使用假資料，不會碰到真實試算表。
@@ -28,6 +28,9 @@ interface Api {
   adminSetCourses(name: string, courses: string[]): Promise<boolean>
   adminGetRecordSessions(): Promise<RecSession[]>
   adminCancelRecordLesson(name: string, start: string): Promise<boolean>
+  adminSetRecording(name: string, on: boolean): Promise<boolean>
+  adminGetPendingVideos(): Promise<PendingVideos>
+  adminSetVideoLink(name: string, start: string, url: string): Promise<string>
 }
 
 // 管理密鑰只存在這個瀏覽器（Apps Script 的 createAdminKey 產生）
@@ -82,6 +85,9 @@ const real: Api = {
   adminGetRecordSessions: () => call('adminGetRecordSessions', []),
   adminGetHomework: () => call('adminGetHomework', []),
   adminCancelRecordLesson: (n, s) => call('adminCancelRecordLesson', [n, s]),
+  adminSetRecording: (n, on) => call('adminSetRecording', [n, on]),
+  adminGetPendingVideos: () => call('adminGetPendingVideos', []),
+  adminSetVideoLink: (n, s, u) => call('adminSetVideoLink', [n, s, u]),
 }
 
 async function monthByWeeks(date: string, getWeek: (d: string) => Promise<Week>): Promise<Month> {
@@ -113,7 +119,7 @@ const db: AdminState = {
     { id: 'B0021', source: 'AmazingTalker', name: 'Jenny', start: `${day(2)} 21:00`, length: 50, status: '已過期' },
   ],
   pending: [{ id: 'B0020', name: 'Amy', start: `${day(1)} 19:00`, length: 50, note: 'Email: amy@example.com' }],
-  students: [{ name: 'Jenny', email: 'jenny@example.com', token: 'abc123', record: 'https://docs.google.com/spreadsheets/d/xxx', courses: ['reading:1', 'video'] }, { name: '王小明', display: 'Ming W.', email: '', token: 'at', courses: ['reading:1'] }],
+  students: [{ name: 'Jenny', email: 'jenny@example.com', token: 'abc123', record: 'https://docs.google.com/spreadsheets/d/xxx', courses: ['reading:1', 'video'], recording: day(-10) }, { name: '王小明', display: 'Ming W.', email: '', token: 'at', courses: ['reading:1'], recording: day(-3) }],
 }
 const week = (d: string): Week => {
   const base = d || day(0)
@@ -131,6 +137,14 @@ const week = (d: string): Week => {
   return { monday: days[0].date, today: day(0), days }
 }
 
+const mockVideos: PendingVideos = {
+  items: [
+    { name: 'Jenny', record: 'https://docs.google.com/spreadsheets/d/xxx', no: '5–6', start: `${day(-1)} 19:00`, end: `${day(-1)} 19:55`, dateOnly: false, progress: '會話 L2 第 3 頁' },
+    { name: 'Jenny', record: 'https://docs.google.com/spreadsheets/d/xxx', no: '7', start: `${day(0)} 09:00`, end: `${day(0)} 09:25`, dateOnly: false, progress: '' },
+  ],
+  problems: [{ name: '王小明', reason: '尚未綁定課程記錄表' }],
+}
+
 const mockHw: Record<string, HomeworkRecord> = { '1': { time: `${day(-1)} 20:15`, listen: '8/9', typing: '5/6', count: 2 } }
 
 const mock: Api = {
@@ -141,6 +155,12 @@ const mock: Api = {
     lastLesson: t ? { date: '2026-09-25', progress: '會話Level2L3第一頁', next: '會話Level2L3第2頁開始' } : null,
     lessons: t ? { bought: 10, used: 3, booked: 3, left: 7, len: 25, leftMinutes: 175 } : null,
     courses: t ? ['reading:1', 'video'] : [],
+    recording: t ? day(-10) : '',
+    videos: t ? [
+      { no: '5–6', start: `${day(-1)} 19:00`, end: `${day(-1)} 19:55`, dateOnly: false, progress: '會話 L2 第 3 頁', video: '' },
+      { no: '4', start: `${day(-4)} 20:00`, end: `${day(-4)} 20:25`, dateOnly: false, progress: '會話 L2 第 2 頁', video: 'https://youtu.be/dQw4w9WgXcQ' },
+      { no: '3', start: `${day(-8)} 20:00`, end: `${day(-8)} 20:25`, dateOnly: false, progress: '會話 L2 第 1 頁', video: 'https://youtu.be/dQw4w9WgXcQ' },
+    ] : [],
     upcoming: t ? [
       { start: `${day(0)} ${hhmm(5)}`, end: `${day(0)} ${hhmm(35)}`, length: 25, count: 1, status: '已確認', zoom: 'https://zoom.us/j/123' },
       { start: `${day(2)} 09:00`, end: `${day(2)} 10:00`, length: 25, count: 2, status: '已確認', zoom: 'https://zoom.us/j/456' },
@@ -174,6 +194,9 @@ const mock: Api = {
   adminSetCourses: (n, c) => { db.students.forEach(s => { if (s.name === n) s.courses = c }); return delay(true) },
   adminGetRecordSessions: () => delay([{ name: 'Ariel', start: `${day(3)} 09:00`, end: `${day(3)} 09:30` }, { name: 'Ariel', start: `${day(3)} 09:30`, end: `${day(3)} 10:00` }]),
   adminCancelRecordLesson: () => delay(true),
+  adminSetRecording: (n, on) => { db.students.forEach(s => { if (s.name === n) s.recording = on ? (s.recording || day(0)) : '' }); return delay(true) },
+  adminGetPendingVideos: () => delay(structuredClone(mockVideos)),
+  adminSetVideoLink: (n, s, u) => { if (u && !/^https?:\/\//.test(u)) return Promise.reject(new Error('請貼上完整的影片網址（https:// 開頭）')); mockVideos.items = mockVideos.items.filter(x => !(x.name === n && x.start === s)); return delay('已填入影片連結') },
 }
 
 export const getApi = (useMock: boolean): Api => (useMock || !ENDPOINT ? mock : real)

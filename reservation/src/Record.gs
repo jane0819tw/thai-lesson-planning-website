@@ -72,6 +72,35 @@ function pickLatestLesson_(rows, nowStr) {
   return best;
 }
 
+/**
+ * 已經上完的課與課後錄影連結（新→舊），給學生頁「課後錄影」與老師頁「待補錄影」用。
+ * rows 為 [{no:'第幾堂', when:'上課日期文字', progress:'上課進度', video:'影片連結'}]。
+ * 連續的課（相隔≤5分、同一個 Zoom 錄成一支影片）合併成一筆：no 寫成「5–6」，影片取第一個有填的。
+ * @return [{no, start, end, dateOnly, progress, video}]
+ */
+function buildVideoList_(rows, nowStr) {
+  const list = [];
+  rows.forEach(function (r) {
+    const t = parseRecordRange_(r.when);
+    if (!t || t.end > nowStr) return;
+    list.push({ no: String(r.no), first: String(r.no), start: t.start, end: t.end, dateOnly: t.dateOnly,
+      progress: String(r.progress || '').trim(), video: String(r.video || '').trim() });
+  });
+  list.sort(function (a, b) { return strToMin_(a.start) - strToMin_(b.start); });
+  const out = [];
+  list.forEach(function (x) {
+    const last = out[out.length - 1];
+    if (last && !last.dateOnly && !x.dateOnly && strToMin_(x.start) - strToMin_(last.end) <= 5 && strToMin_(x.start) >= strToMin_(last.end) - 1 &&
+        (!last.video || !x.video || last.video === x.video)) {
+      if (x.end > last.end) last.end = x.end;
+      last.no = last.first + '–' + x.no;
+      if (x.progress) last.progress = x.progress;
+      if (!last.video) last.video = x.video;
+    } else out.push(x);
+  });
+  return out.reverse().map(function (x) { return { no: x.no, start: x.start, end: x.end, dateOnly: x.dateOnly, progress: x.progress, video: x.video }; });
+}
+
 function strToMin_(s) {
   const m = String(s).match(/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})/);
   return m ? Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]) / 60000 : NaN;
@@ -180,11 +209,15 @@ function readRecordBundle_(recordUrl) {
       if (!t || t.dateOnly) return;
       sessions.push({ start: t.start, end: t.end, link: cLink >= 0 ? String(r[cLink] || '').trim() : '' });
     });
-    const cProg = head.indexOf('上課進度'), cNext = head.indexOf('下次上課');
-    const last = pickLatestLesson_(lrows.filter(function (r) { return Number(r[0]) >= 1; }).map(function (r) {
+    const cProg = head.indexOf('上課進度'), cNext = head.indexOf('下次上課'), cVideo = head.indexOf('影片連結');
+    const done = lrows.filter(function (r) { return Number(r[0]) >= 1; });
+    const last = pickLatestLesson_(done.map(function (r) {
       return { when: r[cDate], progress: cProg >= 0 ? r[cProg] : '', next: cNext >= 0 ? r[cNext] : '' };
     }), nowStr);
-    return { summary: summary, sessions: sessions, last: last };
+    const videos = buildVideoList_(done.map(function (r) {
+      return { no: r[0], when: r[cDate], progress: cProg >= 0 ? r[cProg] : '', video: cVideo >= 0 ? r[cVideo] : '' };
+    }), nowStr);
+    return { summary: summary, sessions: sessions, last: last, videos: videos, hasVideoCol: cVideo >= 0 };
   } catch (e) { return null; }
 }
 
@@ -247,4 +280,25 @@ function clearBookingFromRecord_(recordUrl, startStr, minutes, joinUrl) {
   sh.getRange(i + 2, colDate).clearContent();
   sh.getRange(i + 2, colLink).clearContent();
   return '已從記錄表清除第 ' + rows[i][0] + ' 堂';
+}
+
+/**
+ * 把課後錄影連結填進「影片連結」欄：找開始時間相同的那一堂（連續的課只填第一堂，和會議連結的習慣一致）。
+ * url 空白＝清除。@return {string} 結果說明
+ */
+function writeVideoToRecord_(recordUrl, startStr, url) {
+  const ss = openRecord_(recordUrl);
+  const sh = tabOf_(ss, RECORD_TABS_.lessons);
+  if (!sh) throw new Error('記錄表找不到「上課記錄」分頁');
+  const head = sh.getRange(1, 1, 1, sh.getLastColumn()).getDisplayValues()[0];
+  const colDate = head.indexOf('上課日期') + 1, colVideo = head.indexOf('影片連結') + 1;
+  if (!colDate || !colVideo) throw new Error('記錄表「上課記錄」分頁缺少「上課日期」或「影片連結」欄');
+  const rows = displayRows_(sh);
+  for (let i = 0; i < rows.length; i++) {
+    const t = parseRecordRange_(rows[i][colDate - 1]);
+    if (!t || t.start !== startStr) continue;
+    sh.getRange(i + 2, colVideo).setValue(url);
+    return (url ? '已填入' : '已清除') + '第 ' + rows[i][0] + ' 堂的影片連結';
+  }
+  throw new Error('記錄表找不到 ' + startStr + ' 這一堂');
 }

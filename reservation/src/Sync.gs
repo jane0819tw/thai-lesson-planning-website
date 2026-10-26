@@ -13,6 +13,7 @@ function setup() {
   ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('syncNow').timeBased().everyMinutes(CONFIG.SYNC_EVERY_MINUTES).create();
   ScriptApp.newTrigger('onStatusEdit').forSpreadsheet(getSs_()).onEdit().create();
+  ScriptApp.newTrigger('sendDailyLessons').timeBased().everyDays(1).atHour(CONFIG.DAILY_REMINDER_HOUR).nearMinute(0).create(); // Reminder.gs：每天推播當天的課
   syncNow();
 }
 

@@ -9,6 +9,7 @@ const ADMIN_API_ = {
   adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminGetMonth: adminGetMonth, adminSaveRules: adminSaveRules,
   adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetDisplay: adminSetDisplay, adminImportPlatformStudents: adminImportPlatformStudents, adminDeleteStudent: adminDeleteStudent, adminSetCourses: adminSetCourses,
   adminGetRecordSessions: adminGetRecordSessions, adminCancelRecordLesson: adminCancelRecordLesson, adminGetHomework: adminGetHomework,
+  adminSetRecording: adminSetRecording, adminGetPendingVideos: adminGetPendingVideos, adminSetVideoLink: adminSetVideoLink,
 };
 
 function doGet() { return json_({ ok: true, service: 'thaiskr-reservation' }); }
@@ -69,7 +70,16 @@ function readStudents_() {
   const sh = getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS);
   if (sh.getLastRow() < 2) return [];
   return sh.getRange(2, 1, sh.getLastRow() - 1, STUDENT_HEADERS.length).getValues()
-    .map(function (r, i) { return { row: i + 2, name: r[0], display: r[1], email: r[2], note: r[3], token: r[4], '課程記錄表': r[5], courses: parseCourses_(r[6]) }; });
+    .map(function (r, i) { return { row: i + 2, name: r[0], display: r[1], email: r[2], note: r[3], token: r[4], '課程記錄表': r[5], courses: parseCourses_(r[6]), recording: recordingSince_(r[7]) }; });
+}
+
+/** 「課後錄影」欄 → 開始日期 'yyyy-MM-dd'；空白＝不需要錄影。手動打「是」或日期格式不對時，當成從很久以前就開始（全部的課都算） */
+function recordingSince_(v) {
+  if (v instanceof Date) return Utilities.formatDate(v, CONFIG.TZ, 'yyyy-MM-dd');
+  const t = String(v || '').trim();
+  if (!t) return '';
+  const m = t.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  return m ? m[1] + '-' + pad2_(+m[2]) + '-' + pad2_(+m[3]) : '2000-01-01';
 }
 
 function newToken_() { return (Utilities.getUuid() + Utilities.getUuid()).replace(/-/g, ''); }
@@ -206,6 +216,8 @@ function getStudentInfo(token) {
     v.homework = homeworkOf_(s.name);
     v.lessons = rec ? rec.summary : null;
     v.lastLesson = rec ? rec.last : null;
+    v.videos = rec && rec.videos ? rec.videos : [];
+    v.recording = s.recording; // 有值＝這位學生需要課後錄影，從這天起還沒上傳的課顯示「影片整理中」
     const bks = readBookings_().filter(function (b) {
       return b['學生'] === s.name && (b['狀態'] === STATUS.PENDING || b['狀態'] === STATUS.CONFIRMED) && b['開始'];
     }).map(function (b) {
@@ -331,7 +343,7 @@ function adminGetState() {
   const pending = readBookings_().filter(function (b) { return b['來源'] === '私下' && b['狀態'] === STATUS.PENDING; })
     .map(function (b) { return { id: b['編號'], name: b['學生'], start: toLocalStr_(b['開始']), length: b['課長'], note: b['備註'] }; });
   const students = readStudents_().map(function (s) {
-    return { name: s.name, display: String(s.display || ''), email: s.email, token: s.token || '', record: s['課程記錄表'] || '', courses: s.courses };
+    return { name: s.name, display: String(s.display || ''), email: s.email, token: s.token || '', record: s['課程記錄表'] || '', courses: s.courses, recording: s.recording };
   });
   // 所有來源、尚未結束（或一天內剛結束）的預約，供老師頁直接調整狀態
   const since = Date.now() - 86400000;
@@ -506,6 +518,50 @@ function adminSetCourses(name, courses) {
   return true;
 }
 
+// ---------- 課後錄影 ----------
+
+/** 設定學生需不需要課後錄影：on＝寫入今天的日期（從今天起的課才列入「待補錄影」），off＝清空 */
+function adminSetRecording(name, on) {
+  const s = readStudents_().filter(function (x) { return x.name === name; })[0];
+  if (!s) throw new Error('找不到學生');
+  const cell = getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS).getRange(s.row, STUDENT_HEADERS.indexOf('課後錄影') + 1);
+  if (!on) cell.setValue('');
+  else if (!s.recording) cell.setNumberFormat('@').setValue(Utilities.formatDate(new Date(), CONFIG.TZ, 'yyyy-MM-dd'));
+  bustCaches_();
+  return true;
+}
+
+/**
+ * 待補錄影：需要錄影的學生裡，開始錄影那天以後、已經上完但「影片連結」還空白的課（舊→新）。
+ * 只打開需要錄影的學生的記錄表。沒綁記錄表、或記錄表沒有「影片連結」欄的學生放在 problems，讓老師知道要處理。
+ */
+function adminGetPendingVideos() {
+  const items = [], problems = [];
+  readStudents_().forEach(function (s) {
+    if (!s.recording) return;
+    if (!s['課程記錄表']) { problems.push({ name: s.name, reason: '尚未綁定課程記錄表' }); return; }
+    const rec = readRecordBundle_(s['課程記錄表']);
+    if (!rec) { problems.push({ name: s.name, reason: '記錄表打不開' }); return; }
+    if (!rec.hasVideoCol) { problems.push({ name: s.name, reason: '記錄表「上課記錄」分頁沒有「影片連結」欄' }); return; }
+    rec.videos.forEach(function (v) {
+      if (!v.video && v.start.slice(0, 10) >= s.recording) items.push({ name: s.name, record: s['課程記錄表'], no: v.no, start: v.start, end: v.end, dateOnly: v.dateOnly, progress: v.progress });
+    });
+  });
+  items.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : 0; });
+  return { items: items, problems: problems };
+}
+
+/** 把影片連結填進學生記錄表那一堂（start＝那一堂的開始時間 'yyyy-MM-dd HH:mm'） */
+function adminSetVideoLink(name, start, url) {
+  url = String(url || '').trim();
+  if (url && !/^https?:\/\/\S+$/.test(url)) throw new Error('請貼上完整的影片網址（https:// 開頭）');
+  const s = readStudents_().filter(function (x) { return x.name === name; })[0];
+  if (!s || !s['課程記錄表']) throw new Error('找不到學生或尚未綁定課程記錄表');
+  const msg = writeVideoToRecord_(s['課程記錄表'], String(start), url);
+  bustCaches_();
+  return msg;
+}
+
 // ---------- 記錄表裡已排、但不在預約表的課 ----------
 
 /**
@@ -514,7 +570,11 @@ function adminSetCourses(name, courses) {
  * 每位學生要開一次記錄表，所以只在老師頁進入「所有預約」時才讀取。
  */
 function adminGetRecordSessions() {
-  const nowStr = toLocalStr_(new Date());
+  return recordOnlySessions_(toLocalStr_(new Date()));
+}
+
+/** 各學生記錄表中結束時間在 fromStr 之後、而且不在預約表（待確認／已確認）的課（老師頁與每日 LINE 推播共用） */
+function recordOnlySessions_(nowStr) {
   const bookings = readBookings_();
   const out = [];
   readStudents_().forEach(function (s) {

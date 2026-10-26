@@ -9,10 +9,10 @@ import { REVIEW_UNITS, reviewRange, reviewTitle, homeworkLessonLabel } from '../
 import type { Unit } from './access'
 import { buildDraft, paintCells, serialize, setNote } from './schedule'
 import type { Draft } from './schedule'
-import type { AdminState, HomeworkRow, Month, RecSession, StudentRow, Week } from './types'
+import type { AdminState, HomeworkRow, Month, PendingVideo, PendingVideos, RecSession, StudentRow, Week } from './types'
 import './booking.css'
 
-const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
+const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['videos', '待補錄影'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
 type Sec = (typeof SECS)[number][0]
 const SEC_KEY = 'thaiskr_admin_sec'
 const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'sched' } catch { return 'sched' } }
@@ -56,7 +56,9 @@ export default function AdminPage() {
   const [rec, setRec] = useState<RecSession[] | null>(null)
   const [hw, setHw] = useState<HomeworkRow[] | null>(null)
   const [onlyActive, setOnlyActive] = useState(false)
-  const [who, setWho] = useState<'all' | 'private' | 'at'>('all')
+  const [who, setWho] = useState<'all' | 'private' | 'at' | 'rec'>('all')
+  const [pv, setPv] = useState<PendingVideos | null>(null)
+  const pvLoading = useRef(false)
   const [newBar, setNewBar] = useState('')
   const [busy, setBusy] = useState({ n: 0, text: '' })
   const seen = useRef<Set<string> | null>(null)
@@ -122,6 +124,13 @@ export default function AdminPage() {
     run('讀取作業中…', () => api.adminGetHomework()).then(setHw).catch(e => flash(false, e.message))
   }, [sec, hw, st, api, run])
 
+  // 待補錄影：課表讀完後在背景讀（要開需錄影學生的記錄表，比較慢，不蓋遮罩），左側顯示數量；setPv(null) 就會重讀
+  useEffect(() => {
+    if (!st || !wk || pv || pvLoading.current) return
+    pvLoading.current = true
+    api.adminGetPendingVideos().then(setPv).catch(e => { if (sec === 'videos') flash(false, (e as Error).message) }).finally(() => { pvLoading.current = false })
+  }, [st, wk, pv, api]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // 進入「所有預約」時才讀各學生的記錄表（每位要開一次檔，比較慢）
   useEffect(() => {
     if (sec !== 'bookings' || rec || !st) return
@@ -173,6 +182,14 @@ export default function AdminPage() {
     } catch (e) { flash(false, (e as Error).message) }
   }
 
+  const saveVideo = async (it: PendingVideo, url: string) => {
+    try {
+      const m = await run('填入影片連結中…', () => api.adminSetVideoLink(it.name, it.start, url))
+      setPv(p => p && { ...p, items: p.items.filter(x => !(x.name === it.name && x.start === it.start)) })
+      flash(true, `${it.name}：${m}`)
+    } catch (e) { flash(false, (e as Error).message) }
+  }
+
   const save = async () => {
     if (!draft) return
     try {
@@ -205,7 +222,7 @@ export default function AdminPage() {
       <div className="mgr-shell">
         <nav className="mgr-side">
           {SECS.map(([k, n]) => (
-            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}</button>
+            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}{k === 'videos' && !!pv?.items.length && <span className="mgr-badge">{pv.items.length}</span>}</button>
           ))}
           {/* 其他工具：另開分頁，不影響這頁尚未儲存的開放時段 */}
           {(backend.sheet || st.sheetUrl) && <a className="mgr-tool" href={backend.sheet || st.sheetUrl} target="_blank" rel="noopener noreferrer">📊 後台試算表</a>}
@@ -274,6 +291,25 @@ export default function AdminPage() {
                 </div>
               )) : <p className="bk-muted">目前沒有待確認的預約。</p>}
               <p className="bk-muted">確認後，記得到 AmazingTalker 手動關閉同一時段。</p>
+            </div>
+          )}
+
+          {sec === 'videos' && (
+            <div className="bk-card">
+              <div className="bk-row between">
+                <h2 style={{ margin: 0 }}>待補錄影</h2>
+                <button onClick={() => setPv(null)}>重新整理</button>
+              </div>
+              <p className="bk-muted">有勾「需要課後錄影」的學生，上完課但記錄表「影片連結」還空白的課（從勾選那天起算）。連續的課算一支影片。貼上連結按儲存，會寫進學生記錄表那一堂，學生在「我的課程與作業」就看得到。</p>
+              {!pv ? <p className="bk-muted">載入中…（要打開需錄影學生的記錄表，約需數秒）</p>
+                : pv.items.length ? pv.items.map(it => <PendingVideoItem key={it.name + it.start} it={it} onSave={url => saveVideo(it, url)} />)
+                : <p className="bk-muted">影片連結都補齊了。</p>}
+              {pv && pv.problems.length > 0 && (
+                <div className="bk-msg err">
+                  以下學生需要錄影，但沒辦法檢查：
+                  {pv.problems.map(p => <div key={p.name}>・{p.name}：{p.reason}</div>)}
+                </div>
+              )}
             </div>
           )}
 
@@ -384,18 +420,19 @@ export default function AdminPage() {
           {sec === 'students' && (
             <div className="bk-card">
               <h2>學生預約連結</h2>
-              {(() => { const n = st.students.filter(s => s.display).length; return (
+              {(() => { const n = st.students.filter(s => s.display).length, r = st.students.filter(s => s.recording).length; return (
                 <div className="tabs" role="tablist" style={{ marginBottom: 8 }}>
-                  {([['all', `全部 ${st.students.length}`], ['private', `私下 ${st.students.length - n}`], ['at', `AmazingTalker ${n}`]] as const).map(([k, label]) => (
+                  {([['all', `全部 ${st.students.length}`], ['private', `私下 ${st.students.length - n}`], ['at', `AmazingTalker ${n}`], ['rec', `需錄影 ${r}`]] as const).map(([k, label]) => (
                     <button key={k} role="tab" aria-selected={who === k} className={who === k ? 'on' : ''} onClick={() => setWho(k)}>{label}</button>
                   ))}
                 </div>
               ) })()}
-              {st.students.length ? st.students.filter(s => who === 'all' || (who === 'at') === !!s.display).map(s => (
+              {st.students.length ? st.students.filter(s => who === 'rec' ? !!s.recording : who === 'all' || (who === 'at') === !!s.display).map(s => (
                 <StudentItem key={s.name} s={s} units={units}
                   onDelete={() => { if (confirm(`確定刪除學生「${s.name}」？他們的連結會立刻失效（預約與作業紀錄會保留）。`)) act('刪除學生中…', () => api.adminDeleteStudent(s.name), `已刪除 ${s.name}`, true) }}
                   onSaveDisplay={d => act('儲存平台名稱中…', () => api.adminSetDisplay(s.name, d), `已儲存 ${s.name} 的平台名稱`, true)}
                   onSaveCourses={list => act('儲存開放課程中…', () => api.adminSetCourses(s.name, list), `已儲存 ${s.name} 的開放課程`, true)}
+                  onSaveRecording={on => act('儲存中…', () => api.adminSetRecording(s.name, on), on ? `${s.name} 之後的課會提醒補錄影連結` : `${s.name} 不需要課後錄影`, true).then(() => setPv(null))}
                   onRenew={() => { if (confirm('舊連結會立刻失效，確定嗎？')) act('產生新連結中…', () => api.adminRenewLink(s.name), '已產生新連結') }}
                   onSaveRec={url => act('儲存課程記錄表中…', () => api.adminSetRecord(s.name, url), '已儲存課程記錄表', true)} />
               )) : <p className="bk-muted">還沒有學生。</p>}
@@ -437,14 +474,14 @@ const Diag = ({ lines, fatal, always }: { lines: string[]; fatal: string; always
 
 const Busy = ({ text }: { text: string }) => <div className="mgr-busy"><div><i /><span>{text}</span></div></div>
 
-function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDisplay, onDelete }: { s: StudentRow; units: Unit[]; onRenew: () => void; onDelete: () => void; onSaveRec: (url: string) => void; onSaveCourses: (list: string[]) => void; onSaveDisplay: (display: string) => void }) {
+function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDisplay, onSaveRecording, onDelete }: { s: StudentRow; units: Unit[]; onRenew: () => void; onDelete: () => void; onSaveRec: (url: string) => void; onSaveCourses: (list: string[]) => void; onSaveDisplay: (display: string) => void; onSaveRecording: (on: boolean) => void }) {
   const [url, setUrl] = useState(s.record ?? '')
   const [display, setDisplay] = useState(s.display ?? '')
   const [courses, setCourses] = useState<string[]>(s.courses)
   const [copied, setCopied] = useState(false)
   return (
     <div className="bk-item">
-      <div>{s.name}{s.display && <span className="mgr-at">AT・{s.display}</span>}<div className="bk-muted">{s.email}</div>{s.token && <div className="mgr-link">{linkOf(s)}</div>}</div>
+      <div>{s.name}{s.display && <span className="mgr-at">AT・{s.display}</span>}{s.recording && <span className="mgr-rec">🎥 錄影</span>}<div className="bk-muted">{s.email}</div>{s.token && <div className="mgr-link">{linkOf(s)}</div>}</div>
       <div className="bk-row">
         {s.token && <button onClick={() => navigator.clipboard.writeText(linkOf(s)).then(() => setCopied(true))}>{copied ? '已複製' : '複製連結'}</button>}
         <button onClick={onRenew}>{s.token ? '換新連結' : '產生連結'}</button>
@@ -465,6 +502,27 @@ function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDispla
       <div className="bk-row" style={{ flexBasis: '100%' }}>
         <input style={{ flex: 1, minWidth: 200 }} placeholder="AmazingTalker 名稱（平台學生才填）" value={display} onChange={e => setDisplay(e.target.value)} />
         <button disabled={display.trim() === (s.display ?? '')} onClick={() => onSaveDisplay(display)}>儲存</button>
+      </div>
+      <div className="mgr-courses">
+        <label><input type="checkbox" checked={!!s.recording} onChange={e => onSaveRecording(e.target.checked)} />🎥 需要課後錄影</label>
+        {s.recording && <span className="bk-muted">{s.recording > '2000-01-01' ? `${s.recording.slice(5).replace('-', '/')} 起的課會列入「待補錄影」` : '所有上過的課都會列入「待補錄影」'}{!s.record && '（要先綁定課程記錄表，才能存影片連結）'}</span>}
+      </div>
+    </div>
+  )
+}
+
+function PendingVideoItem({ it, onSave }: { it: PendingVideo; onSave: (url: string) => void }) {
+  const [url, setUrl] = useState('')
+  return (
+    <div className="bk-item">
+      <div>
+        {it.name}　{it.start.slice(5, 10).replace('-', '/')}{it.dateOnly ? '' : ` ${it.start.slice(11)}–${it.end.slice(11)}`}・第 {it.no} 堂
+        {it.progress && <div className="bk-muted">{it.progress}</div>}
+      </div>
+      <div className="bk-row" style={{ flexBasis: '100%' }}>
+        <input style={{ flex: 1, minWidth: 200 }} placeholder="貼上影片連結（https://…）" value={url} onChange={e => setUrl(e.target.value)} />
+        <button className="primary" disabled={!url.trim()} onClick={() => onSave(url.trim())}>儲存</button>
+        {/^https?:/.test(it.record) && <a className="mgr-link" href={it.record} target="_blank" rel="noopener noreferrer">開啟記錄表</a>}
       </div>
     </div>
   )

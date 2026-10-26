@@ -140,3 +140,5 @@ a.bk-course:hover { border-color: var(--accent); }
 /* 預約頁分頁：預約／我的課程 */
 .bk-tabs { margin: 12px 0 14px; }
 .bk-tabs button { font-size: 1rem; }
+.bk-watch { padding: 6px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); text-decoration: none; font-weight: 600; white-space: nowrap; }
+.mgr-rec { margin-left: 8px; padding: 1px 8px; border-radius: 99px; font-size: .8rem; background: var(--accent-soft); color: var(--accent); }
