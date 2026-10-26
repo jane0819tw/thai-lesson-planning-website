@@ -216,8 +216,8 @@ export default function AdminPage() {
                 </div>
                 {tab === 'cal' && (
                   <div className="bk-row" style={{ marginBottom: 8 }}>
-                    <button className={calView === 'week' ? 'sel' : ''} onClick={() => goCal('week')}>週</button>
                     <button className={calView === 'month' ? 'sel' : ''} onClick={() => goCal('month')}>月</button>
+                    <button className={calView === 'week' ? 'sel' : ''} onClick={() => goCal('week')}>週</button>
                   </div>
                 )}
                 <p className="bk-muted" style={{ marginTop: 0 }}>{tab === 'reg' ? '每週固定開放的時段，套用到每一個星期。' : calView === 'month' ? '整個月的課（待確認／已確認）。點某一天切到那一週，在週檢視調整開放時段。' : '某一週的實際日期。改動只影響那一天（單日設定），不會改到固定時間。'} 時間為台北時間。</p>
