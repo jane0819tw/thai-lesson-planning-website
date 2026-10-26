@@ -38,10 +38,9 @@ function VideoChallenge({ to, rec }: { to?: string; rec?: HomeworkRecord }) {
 
 // 「課後錄影」：記錄表有影片連結的課可以點進去看；需要錄影的學生（since 有值）從那天起還沒上傳的課顯示「影片整理中」
 const VIDEO_SHOW = 10
-function VideoCard({ videos, since }: { videos: VideoItem[]; since: string }) {
+const videoList = (videos: VideoItem[], since: string) => videos.filter(v => v.video || (since && v.start.slice(0, 10) >= since))
+function VideoCard({ list }: { list: VideoItem[] }) {
   const [all, setAll] = useState(false)
-  const list = videos.filter(v => v.video || (since && v.start.slice(0, 10) >= since))
-  if (!list.length) return null
   const shown = all ? list : list.slice(0, VIDEO_SHOW)
   return (
     <div className="bk-card">
@@ -96,7 +95,7 @@ export default function BookingPage() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
   const [now, setNow] = useState(Date.now())
-  const [tab, setTab] = useState<'book' | 'courses'>(() => { try { return sessionStorage.getItem(TAB_KEY) === 'courses' ? 'courses' : 'book' } catch { return 'book' } })
+  const [tab, setTab] = useState<'book' | 'courses' | 'records'>(() => { try { return sessionStorage.getItem(TAB_KEY) === 'courses' ? 'courses' : 'book' } catch { return 'book' } })
   useEffect(() => { try { sessionStorage.removeItem(TAB_KEY) } catch { /* 存不了就算了 */ } }, [])
   const lessons = useLessons()
 
@@ -137,6 +136,11 @@ export default function BookingPage() {
   const myUnits = readingUnits(lessons.map(x => x.number)).filter(u => allowed.includes(u.id))
   const myWhole = WHOLE_COURSES.filter(c => allowed.includes(c.key))
   const hasCourses = myUnits.length > 0 || myWhole.length > 0
+  // 「課程紀錄」分頁：有課後錄影（或影片整理中）才出現。平台學生沒有預約分頁，預設看課程
+  const videos = view.mode === 'known' ? videoList(view.videos ?? [], view.recording ?? '') : []
+  const curTab = tab === 'records' && !videos.length ? 'courses' : platform && tab === 'book' ? 'courses' : tab
+  const tabs: [typeof tab, string][] = [['book', '預約'], ['courses', '我的課程與作業'], ['records', '課程紀錄']]
+  const myTabs = tabs.filter(([k]) => (k !== 'book' || !platform) && (k !== 'records' || videos.length > 0))
 
   const refresh = async () => { try { await Promise.all([loadInfo(), loadDays(true)]); setMsg(null) } catch (e) { setMsg({ ok: false, text: (e as Error).message }) } }
   const submit = async () => {
@@ -155,17 +159,15 @@ export default function BookingPage() {
       <h1>{platform ? '我的課程與作業' : '預約泰語課'}</h1>
       <p className="bk-sub">{view.name ? `${view.name}，你好！` : ''}{platform ? '這裡可以進入課程、寫作業。' : '選擇課長與時段，送出後等老師確認，確認後可在這個頁面看到 Zoom 連結。時間皆為台北時間。'}</p>
 
-      {view.mode === 'known' && !platform && (
+      {view.mode === 'known' && myTabs.length > 1 && (
         <div className="tabs bk-tabs" role="tablist">
-          <button role="tab" aria-selected={tab === 'book'} className={tab === 'book' ? 'on' : ''} onClick={() => setTab('book')}>預約</button>
-          <button role="tab" aria-selected={tab === 'courses'} className={tab === 'courses' ? 'on' : ''} onClick={() => setTab('courses')}>我的課程與作業</button>
+          {myTabs.map(([k, label]) => <button key={k} role="tab" aria-selected={curTab === k} className={curTab === k ? 'on' : ''} onClick={() => setTab(k)}>{label}</button>)}
         </div>
       )}
 
-      {/* 課後錄影放在課程清單上面：認字課清單很長，放下面學生不容易看到 */}
-      {view.mode === 'known' && (tab === 'courses' || platform) && <VideoCard videos={view.videos ?? []} since={view.recording ?? ''} />}
+      {view.mode === 'known' && curTab === 'records' && <VideoCard list={videos} />}
 
-      {view.mode === 'known' && (tab === 'courses' || platform) && (
+      {view.mode === 'known' && curTab === 'courses' && (
         <div className="bk-card" onClickCapture={e => { if ((e.target as HTMLElement).closest('a')) { try { sessionStorage.setItem(TAB_KEY, 'courses') } catch { /* 存不了就算了 */ } } }}>
           {!platform && <h2>我的課程與作業</h2>}
           {hasCourses ? (
@@ -201,7 +203,7 @@ export default function BookingPage() {
       )}
 
 
-      {!platform && (view.mode !== 'known' || tab === 'book') && (
+      {!platform && (view.mode !== 'known' || curTab === 'book') && (
         <>
         {l && (
           <div className="bk-card">
