@@ -71,6 +71,20 @@
 .mgr-gb.at { background: color-mix(in srgb, #2563eb 24%, var(--card)); border-color: #2563eb; }
 .mgr-gb.pend { border-style: dashed; opacity: .85; }
 .mgr-gb.ev { background: var(--accent-soft); border-color: var(--line); color: var(--muted); pointer-events: none; }
+/* 月曆：一格一天，列出當天的課 */
+.mgr-m { display: grid; grid-template-columns: repeat(7, minmax(72px, 1fr)); min-width: 540px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); font-size: .76rem; }
+.mgr-mh { text-align: center; padding: 4px 2px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--card); color: var(--muted); }
+.bk button.mgr-md { display: flex; flex-direction: column; align-items: stretch; gap: 2px; min-height: 92px; min-width: 0; padding: 4px; border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); border-radius: 0; background: var(--card); text-align: left; line-height: 1.25; }
+.bk button.mgr-md:hover { background: var(--accent-soft); }
+.mgr-md.other { opacity: .45; }
+.mgr-md.past .mgr-mn { color: var(--muted); }
+.mgr-md.closed { background: repeating-linear-gradient(45deg, var(--accent-soft), var(--accent-soft) 6px, var(--card) 6px, var(--card) 12px) !important; }
+.mgr-mn { font-weight: 600; }
+.mgr-md.today .mgr-mn { align-self: flex-start; padding: 0 6px; border-radius: 99px; background: var(--accent); color: var(--bg); }
+.mgr-ml { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 1px 4px; border-radius: 4px; border: 1px solid transparent; }
+.mgr-ml.priv { background: color-mix(in srgb, var(--accent) 28%, var(--card)); border-color: var(--accent); }
+.mgr-ml.at { background: color-mix(in srgb, #2563eb 24%, var(--card)); border-color: #2563eb; }
+.mgr-ml.pend { border-style: dashed; opacity: .85; }
 .mgr-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; font-size: .8rem; color: var(--muted); }
 .mgr-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 4px; border: 1px solid var(--line); }
 .mgr-savebar { position: sticky; bottom: 0; margin: 12px -16px -16px; padding: 10px 16px; background: var(--card); border-top: 1px solid var(--line); border-radius: 0 0 12px 12px; display: flex; gap: 8px; align-items: center; justify-content: space-between; }

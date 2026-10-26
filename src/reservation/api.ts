@@ -1,4 +1,4 @@
-import type { AdminState, HomeworkRecord, HomeworkRow, OpenDays, RecSession, Rule, StudentInfo, StudentView, Week } from './types'
+import type { AdminState, HomeworkRecord, HomeworkRow, Month, OpenDays, RecSession, Rule, StudentInfo, StudentView, Week } from './types'
 
 // Apps Script「網頁應用程式」網址（結尾 /exec）。這個網址本來就會公開，不是密碼。
 // 留空或網址帶 mock=1 時使用假資料，不會碰到真實試算表。
@@ -16,6 +16,7 @@ interface Api {
   adminGetHomework(): Promise<HomeworkRow[]>
   adminGetState(): Promise<AdminState>
   adminGetWeek(date: string): Promise<Week>
+  adminGetMonth(date: string): Promise<Month>
   adminSaveRules(rules: Rule[]): Promise<boolean>
   adminSetStatus(id: string, status: string): Promise<boolean>
   adminCreateStudent(name: string, email: string, display?: string): Promise<boolean>
@@ -64,6 +65,11 @@ const real: Api = {
   // 舊版後端的學生資料沒有 courses 欄位：補成空陣列（＝尚未開放任何課程）
   adminGetState: () => call<AdminState>('adminGetState', []).then(st => ({ ...st, students: st.students.map(x => ({ ...x, courses: x.courses ?? [] })) })),
   adminGetWeek: d => call('adminGetWeek', [d]),
+  // 後端還沒部署 adminGetMonth 時，改成一週一週讀（一個一個讀，同時送容易遇到 Google 的 404 錯誤頁）
+  adminGetMonth: d => call<Month>('adminGetMonth', [d]).catch(async e => {
+    if (!/未知的操作/.test((e as Error).message)) throw e
+    return monthByWeeks(d, real.adminGetWeek)
+  }),
   adminSaveRules: r => call('adminSaveRules', [r]),
   adminSetStatus: (id, st) => call('adminSetStatus', [id, st]),
   adminCreateStudent: (n, e, d) => call('adminCreateStudent', [n, e, d ?? '']),
@@ -76,6 +82,15 @@ const real: Api = {
   adminGetRecordSessions: () => call('adminGetRecordSessions', []),
   adminGetHomework: () => call('adminGetHomework', []),
   adminCancelRecordLesson: (n, s) => call('adminCancelRecordLesson', [n, s]),
+}
+
+async function monthByWeeks(date: string, getWeek: (d: string) => Promise<Week>): Promise<Month> {
+  const month = (date || new Date(Date.now() + 8 * 3600000).toISOString()).slice(0, 7) // 沒給日期＝台北的這個月
+  const next = (d: string) => { const [y, m, dd] = d.split('-').map(Number); return new Date(Date.UTC(y, m - 1, dd + 1)).toISOString().slice(0, 10) }
+  let w = await getWeek(month + '-01')
+  const days = [...w.days]
+  while (next(w.days[6].date).startsWith(month)) { w = await getWeek(next(w.days[6].date)); days.push(...w.days) }
+  return { month, today: w.today, days }
 }
 
 // ───────── 假資料（資料只在記憶體裡）─────────
@@ -146,6 +161,7 @@ const mock: Api = {
   submitHomework: (t, n, r) => (t ? (mockHw[String(n)] = { time: `${day(0)} ${hhmm(0)}`, listen: r.listen ? r.listen.join('/') : '未做', typing: r.typing ? r.typing.join('/') : '未做', count: (mockHw[String(n)]?.count ?? 0) + 1 }, delay({ ok: true, name: 'Jenny' })) : Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))),
   adminGetState: () => delay(structuredClone(db)),
   adminGetWeek: d => delay(week(d)),
+  adminGetMonth: d => monthByWeeks(d, x => Promise.resolve(week(x))),
   adminSaveRules: r => { db.rules = r; return delay(true) },
   adminSetStatus: (id, st) => { db.pending = db.pending.filter(p => p.id !== id); db.bookings.forEach(b => { if (b.id === id) b.status = st }); return delay(true) },
   adminCreateStudent: (n, e, d) => { if (!n) return Promise.reject(new Error('請填姓名')); db.students.push({ name: n, display: d?.trim() ?? '', email: e, token: 'mock' + db.students.length, courses: [] }); return delay(true) },

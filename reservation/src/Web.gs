@@ -6,7 +6,7 @@
 
 const PUBLIC_API_ = { getStudentView: getStudentView, getStudentInfo: getStudentInfo, getOpenDays: getOpenDays, submitBooking: submitBooking, getHomeworkInfo: getHomeworkInfo, submitHomework: submitHomework };
 const ADMIN_API_ = {
-  adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminSaveRules: adminSaveRules,
+  adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminGetMonth: adminGetMonth, adminSaveRules: adminSaveRules,
   adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetDisplay: adminSetDisplay, adminImportPlatformStudents: adminImportPlatformStudents, adminDeleteStudent: adminDeleteStudent, adminSetCourses: adminSetCourses,
   adminGetRecordSessions: adminGetRecordSessions, adminCancelRecordLesson: adminCancelRecordLesson, adminGetHomework: adminGetHomework,
 };
@@ -408,18 +408,36 @@ function adminGetWeek(anyDate) {
   const base = /^\d{4}-\d{2}-\d{2}$/.test(anyDate || '') ? anyDate : today;
   const monday = addDaysStr_(base, -(weekdayOf_(base) - 1));
   const dates = [0, 1, 2, 3, 4, 5, 6].map(function (i) { return addDaysStr_(monday, i); });
+  return { monday: monday, today: today, days: scheduleDays_(dates) };
+}
 
+/** 老師頁月曆：這個月所在的完整週（第一週的週一～最後一週的週日），每天的資料格式同 adminGetWeek */
+function adminGetMonth(anyDate) {
+  const today = Utilities.formatDate(new Date(), CONFIG.TZ, 'yyyy-MM-dd');
+  const base = /^\d{4}-\d{2}-\d{2}$/.test(anyDate || '') ? anyDate : today;
+  const first = base.slice(0, 8) + '01';
+  const y = +base.slice(0, 4), m = +base.slice(5, 7);
+  const last = addDaysStr_(m === 12 ? (y + 1) + '-01-01' : y + '-' + pad2_(m + 1) + '-01', -1);
+  const start = addDaysStr_(first, -(weekdayOf_(first) - 1));
+  const end = addDaysStr_(last, 7 - weekdayOf_(last));
+  const dates = [];
+  for (let d = start; d <= end; d = addDaysStr_(d, 1)) dates.push(d);
+  return { month: first.slice(0, 7), today: today, days: scheduleDays_(dates) };
+}
+
+/** 連續幾天的課（待確認／已確認）、行事曆其他行程與開放時段 */
+function scheduleDays_(dates) {
   const bookings = readBookings_().filter(function (b) {
     return b['狀態'] === STATUS.PENDING || b['狀態'] === STATUS.CONFIRMED;
   });
   const own = {};
   bookings.forEach(function (b) { if (b['行事曆事件編號']) own[b['行事曆事件編號']] = true; });
 
-  const events = getCal_().getEvents(parseLocal_(dates[0] + ' 00:00'), parseLocal_(addDaysStr_(dates[6], 1) + ' 00:00'))
+  const events = getCal_().getEvents(parseLocal_(dates[0] + ' 00:00'), parseLocal_(addDaysStr_(dates[dates.length - 1], 1) + ' 00:00'))
     .filter(function (ev) { return !own[ev.getId()]; });
   const open = computeOpenSlots_(dates, readRules_(), [], '2000-01-01 00:00');
 
-  const days = dates.map(function (date, i) {
+  return dates.map(function (date) {
     const day0 = wallMinutes_(date + ' 00:00');
     const o = open.filter(function (d) { return d.date === date; })[0];
     const day = { date: date, closed: o && o.closed ? o.label : '', open: [], allDay: [], lessons: [], events: [] };
@@ -446,7 +464,6 @@ function adminGetWeek(anyDate) {
     });
     return day;
   });
-  return { monday: monday, today: today, days: days };
 }
 
 /** 綁定學生的課程記錄表（貼網址；留空＝解除綁定）。會先試著打開確認有權限。 */

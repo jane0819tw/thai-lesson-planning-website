@@ -34,4 +34,6 @@ export interface WeekLesson { id: string; name: string; source: string; status: 
 export interface WeekEvent { title: string; start: number; end: number }
 export interface WeekDay { date: string; closed: string; open: number[]; allDay: string[]; lessons: WeekLesson[]; events: WeekEvent[] }
 export interface Week { monday: string; today: string; days: WeekDay[] }
+/** 月曆：這個月所在的完整週（週一開始），month 是 yyyy-MM */
+export interface Month { month: string; today: string; days: WeekDay[] }
 export interface RecSession { name: string; start: string; end: string }

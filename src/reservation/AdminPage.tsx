@@ -3,18 +3,22 @@ import { useSearchParams } from 'react-router-dom'
 import { getAdminKey, getApi, setAdminKey } from './api'
 import { CATEGORIES } from '../categories'
 import ScheduleGrid from './ScheduleGrid'
+import MonthGrid from './MonthGrid'
 import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import { REVIEW_UNITS, reviewRange, reviewTitle, homeworkLessonLabel } from '../reviews'
 import type { Unit } from './access'
 import { buildDraft, paintCells, serialize, setHoliday } from './schedule'
 import type { Draft } from './schedule'
-import type { AdminState, HomeworkRow, RecSession, StudentRow, Week } from './types'
+import type { AdminState, HomeworkRow, Month, RecSession, StudentRow, Week } from './types'
 import './booking.css'
 
 const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口']] as const
 type Sec = (typeof SECS)[number][0]
 const SEC_KEY = 'thaiskr_admin_sec'
 const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'sched' } catch { return 'sched' } }
+// 行事曆用週檢視或月檢視（記在這個瀏覽器）
+const CAL_KEY = 'thaiskr_admin_calview'
+const calGet = (): 'week' | 'month' => { try { return localStorage.getItem(CAL_KEY) === 'month' ? 'month' : 'week' } catch { return 'week' } }
 const STATUSES = ['待確認', '已確認', '已拒絕', '已過期', '已取消']
 const BASE_TITLE = typeof document === 'undefined' ? '' : document.title
 const todayStr = () => new Date().toISOString().slice(0, 10)
@@ -35,6 +39,9 @@ export default function AdminPage() {
   const [wk, setWk] = useState<Week | null>(null)
   const [weekErr, setWeekErr] = useState('')
   const [tab, setTab] = useState<'cal' | 'reg'>('cal')
+  const [calView, setCalView] = useState(calGet)
+  const [mo, setMo] = useState<Month | null>(null)
+  const [moErr, setMoErr] = useState('')
   const [sec, setSec] = useState<Sec>(secGet)
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [rec, setRec] = useState<RecSession[] | null>(null)
@@ -69,6 +76,16 @@ export default function AdminPage() {
     try { const w = await run('載入課表中…', () => api.adminGetWeek(date)); step(`4 課表已收到：${w.days?.length} 天`); setWk(w) } catch (e) { step('✗ 課表失敗：' + (e as Error).message); setWeekErr((e as Error).message) }
   }, [api, run, step])
 
+  const loadMonth = useCallback(async (date: string) => {
+    setMo(null); setMoErr('')
+    try { setMo(await run('載入月曆中…', () => api.adminGetMonth(date))) } catch (e) { setMoErr((e as Error).message) }
+  }, [api, run])
+  const goCal = (v: 'week' | 'month', date?: string) => {
+    setCalView(v); try { localStorage.setItem(CAL_KEY, v) } catch { /* 存不了就算了 */ }
+    // 從週切到月：看週四所在的月份（＝這一週主要屬於的月份）
+    if (v === 'month') loadMonth(date ?? wk?.days[3].date ?? ''); else if (date) loadWeek(date)
+  }
+
   const init = useCallback(async () => {
     try {
       step('1 讀取管理資料…')
@@ -78,13 +95,14 @@ export default function AdminPage() {
       setSt(s); setDraft(d); setDirty(false)
       seen.current = new Set(s.pending.map(p => p.id))
       step('3 草稿建立完成，讀取本週課表…')
-      loadWeek('')
+      await loadWeek('')
+      if (calGet() === 'month') loadMonth('') // 等週課表讀完再讀：同時送好幾個請求比較容易遇到 Google 的 404 錯誤頁
     } catch (e) {
       const m = (e as Error).message || String(e)
       step('✗ 失敗：' + m)
       if (/密鑰/.test(m)) { setAdminKey(''); setKeyMsg(m); setNeedKey(true) } else setKeyMsg(m || '（沒有錯誤訊息）')
     }
-  }, [api, run, loadWeek, step])
+  }, [api, run, loadWeek, loadMonth, step])
   useEffect(() => { if (!needKey) init() }, [needKey, init])
 
   // 進入「學生作業」時才讀「作業」分頁
@@ -134,8 +152,9 @@ export default function AdminPage() {
           // 一個一個讀：同時送好幾個請求比較容易遇到 Google 的 404 錯誤頁
           const s = await api.adminGetState()
           const w = keepWeek ? wk : await api.adminGetWeek(wk?.monday ?? '')
+          const m = mo && !keepWeek ? await api.adminGetMonth(mo.month + '-01') : null
           const r = rec ? await api.adminGetRecordSessions() : null
-          setSt(s); setWk(w); if (r) setRec(r)
+          setSt(s); setWk(w); if (m) setMo(m); if (r) setRec(r)
         })
         flash(true, ok)
       } catch (e) { flash(false, `${ok}，但重新載入畫面失敗，請重新整理頁面。（${(e as Error).message}）`) }
@@ -188,8 +207,15 @@ export default function AdminPage() {
                   <button className={tab === 'cal' ? 'sel' : ''} onClick={() => { setTab('cal'); setMsg(null) }}>行事曆</button>
                   <button className={tab === 'reg' ? 'sel' : ''} onClick={() => { setTab('reg'); setMsg(null) }}>固定時間</button>
                 </div>
-                <p className="bk-muted" style={{ marginTop: 0 }}>{tab === 'cal' ? '某一週的實際日期。改動只影響那一天（單日設定），不會改到固定時間。' : '每週固定開放的時段，套用到每一個星期。'} 時間為台北時間。</p>
-                {tab === 'cal' && weekErr ? <div className="bk-msg err">{weekErr}</div> : (
+                {tab === 'cal' && (
+                  <div className="bk-row" style={{ marginBottom: 8 }}>
+                    <button className={calView === 'week' ? 'sel' : ''} onClick={() => goCal('week')}>週</button>
+                    <button className={calView === 'month' ? 'sel' : ''} onClick={() => goCal('month')}>月</button>
+                  </div>
+                )}
+                <p className="bk-muted" style={{ marginTop: 0 }}>{tab === 'reg' ? '每週固定開放的時段，套用到每一個星期。' : calView === 'month' ? '整個月的課（待確認／已確認）。點某一天切到那一週，在週檢視調整開放時段。' : '某一週的實際日期。改動只影響那一天（單日設定），不會改到固定時間。'} 時間為台北時間。</p>
+                {tab === 'cal' && calView === 'month' ? (moErr ? <div className="bk-msg err">{moErr}</div> : <MonthGrid mo={mo} draft={draft} onMonth={loadMonth} onDay={date => goCal('week', date)} />)
+                : tab === 'cal' && weekErr ? <div className="bk-msg err">{weekErr}</div> : (
                   <ScheduleGrid
                     tab={tab} draft={draft} wk={wk}
                     onPaint={(key, mins, on) => { setDraft(d => paintCells(d!, tab, key, mins, on)); setDirty(true) }}
@@ -202,12 +228,12 @@ export default function AdminPage() {
                   />
                 )}
                 <div className="mgr-legend">
-                  <span><i style={{ background: 'color-mix(in srgb, var(--bk-ok) 38%, var(--card))' }} />開放預約</span>
+                  {!(tab === 'cal' && calView === 'month') && <span><i style={{ background: 'color-mix(in srgb, var(--bk-ok) 38%, var(--card))' }} />開放預約</span>}
                   {tab === 'cal' && <>
                     <span><i style={{ background: 'color-mix(in srgb, var(--accent) 28%, var(--card))', borderColor: 'var(--accent)' }} />私下學生</span>
                     <span><i style={{ background: 'color-mix(in srgb, #2563eb 24%, var(--card))', borderColor: '#2563eb' }} />AmazingTalker</span>
                     <span><i style={{ borderStyle: 'dashed' }} />虛線＝待確認</span>
-                    <span><i style={{ background: 'var(--accent-soft)' }} />其他行程</span>
+                    {calView === 'week' && <span><i style={{ background: 'var(--accent-soft)' }} />其他行程</span>}
                   </>}
                 </div>
                 {dirty && (
