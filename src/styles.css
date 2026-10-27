@@ -324,7 +324,7 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .list.compact .row { padding: 8px 10px; gap: 6px; }
 .list.compact .row .big2 { font-size: 1.5rem; }
 
-/* 「這是什麼意思」：預設一張卡一列；標 half 的卡兩張並排、圖片縮小 */
+/* 補充（memes）：預設一張卡一列；標 half 的卡兩張並排、圖片縮小 */
 .memegrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
 .memegrid > .card { grid-column: 1 / -1; }
 .memegrid > .card.half { grid-column: auto; }

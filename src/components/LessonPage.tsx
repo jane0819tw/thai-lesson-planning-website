@@ -47,7 +47,7 @@ export default function LessonPage() {
     if (lesson.toneTables.length) t.push(['tones', '聲調表'])
     if (lesson.vocab.length && !lesson.vocabAfterVowel) t.push(['vocab', '單字'])
     if (lesson.practice.length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
-    if (lesson.memes.length) t.push(['memes', '這是什麼意思'])
+    if (lesson.memes.length) t.push(['memes', '補充'])
     if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6) t.push(['games', '互動練習'])
     if (lesson.extras.length) t.push(['extras', '補充'])
     return t

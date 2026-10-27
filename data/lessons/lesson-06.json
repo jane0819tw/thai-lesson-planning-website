@@ -272,7 +272,14 @@
     "ภาษา"
   ],
   "links": [],
-  "memes": [],
+  "memes": [
+    {
+      "title": "เพ้อเจ้อ 是什麼意思？",
+      "desc": "",
+      "imageUrl": "extras/lesson-06/phoe-joe.png",
+      "half": true
+    }
+  ],
   "extras": [],
   "id": "lesson-06",
   "number": 6,
