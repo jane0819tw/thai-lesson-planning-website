@@ -19,9 +19,11 @@ import ToneIntro from './ToneIntro'
 import VowelIntro from './VowelIntro'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'tones' | 'vocab' | 'practice' | 'memes'
+type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes'
 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
+// 說明文字有換行時，每行列成一點
+const RuleBody = ({ body }: { body: string }) => body.includes('\n') ? <ul>{body.split('\n').map((l, i) => <li key={i}>{l}</li>)}</ul> : <p>{body}</p>
 const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && l.practice.length === 1 ? l.practice[0].title : '練習・句型')
 
 export default function LessonPage() {
@@ -42,9 +44,8 @@ export default function LessonPage() {
     const t: [Tab, string][] = []
     if (lesson.diagram) t.push(['diagram', lesson.diagram.title])
     if (lesson.vowels.length) t.push(['vowels', '母音'])
-    if (lesson.rules.length) t.push(['rules', '說明'])
+    if (lesson.rules.length || lesson.toneTables.length) t.push(['rules', '說明'])
     if (lesson.consonants.length) t.push(['consonants', '子音'])
-    if (lesson.toneTables.length) t.push(['tones', '聲調表'])
     if (lesson.vocab.length && !lesson.vocabAfterVowel) t.push(['vocab', '單字'])
     if (lesson.practice.length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
     if (lesson.memes.length) t.push(['memes', '補充'])
@@ -120,11 +121,16 @@ export default function LessonPage() {
       {cur === 'diagram' && lesson.diagram && <DiagramView d={lesson.diagram} />}
 
       {cur === 'rules' && (
-        <section className="stack">
-          {lesson.rules.map(r => (
-            <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p>{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
-          ))}
-        </section>
+        <>
+          <section className="stack">
+            {lesson.rules.map(r => (
+              <article className="card" key={r.id}><h3>{r.title}</h3><RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
+            ))}
+          </section>
+          {/* 聲調表放在說明的最下面 */}
+          {lesson.toneIntro && <ToneIntro />}
+          {lesson.toneTables.length > 0 && <section className="stack">{lesson.toneTables.map(t => <ToneTableView key={t.title} table={t} />)}</section>}
+        </>
       )}
 
       {cur === 'games' && <Games consonants={lesson.consonants} vowels={lesson.vowels} />}
@@ -170,12 +176,12 @@ export default function LessonPage() {
       {cur === 'vowels' && (
         <>
         {lesson.vowelIntro && <VowelIntro config={typeof lesson.vowelIntro === 'object' ? lesson.vowelIntro : undefined} />}
-        {lesson.vowelNotes?.map(r => <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p>{r.demo && <RuleDemo tiles={r.demo} />}</article>)}
+        {lesson.vowelNotes?.map(r => <article className="card" key={r.id}><h3>{r.title}</h3><RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}</article>)}
         <section className="vstack">
           {vowelGroups.map(g => (
             <Fragment key={g[0].id}>
             {g[0].heading && <h3 className="vgroup-h">{g[0].heading}</h3>}
-            {g[0].preface?.map(r => <article className="card" key={r.id}><h3>{r.title}</h3><p>{r.body}</p>{r.toneTable && <ToneTableView table={r.toneTable} />}</article>)}
+            {g[0].preface?.map(r => <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}{r.body && <RuleBody body={r.body} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>)}
             {g.length > 1 ? <div className="vrow">{g.map(vowelCard)}</div> : vowelCard(g[0])}
             {lesson.vocabAfterVowel && g.some(v => v.id === lesson.vocabAfterVowel) && lesson.vocab.length > 0 && (
               <>
@@ -186,13 +192,6 @@ export default function LessonPage() {
             </Fragment>
           ))}
         </section>
-        </>
-      )}
-
-      {cur === 'tones' && (
-        <>
-          {lesson.toneIntro && <ToneIntro />}
-          <section className="stack">{lesson.toneTables.map(t => <ToneTableView key={t.title} table={t} />)}</section>
         </>
       )}
 
