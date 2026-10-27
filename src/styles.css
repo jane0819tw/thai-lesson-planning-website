@@ -217,6 +217,8 @@ table.tone th.group { white-space: nowrap; }
 .vforms { display: flex; gap: 14px; flex-wrap: wrap; }
 .vform { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 120px; padding: 6px 18px 8px; background: var(--card); border: 2px solid transparent; border-radius: 14px; cursor: pointer; font: inherit; color: inherit; }
 .vform:hover { border-color: var(--accent); }
+.vform.static { cursor: default; }
+.vform.static:hover { border-color: transparent; }
 .vglyph { font-size: 4rem; line-height: 1.35; }
 .vlabel { font-size: .85rem; color: var(--muted); font-family: 'Noto Sans TC', sans-serif; }
 .vnote { margin: 12px 20px 0; font-size: .95rem; }
@@ -228,6 +230,29 @@ table.tone th.group { white-space: nowrap; }
 .vword { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 4px 10px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
 .vword-th { font-size: 2rem; line-height: 1.3; }
 .vword-meta { display: flex; flex-direction: column; font-size: 1rem; line-height: 1.35; }
+/* 尾音卡：左欄尾音＋字母＋口型，右欄單字 */
+.vcard.final { display: grid; grid-template-columns: 260px 1fr; }
+.vcard.final .vhead { flex-direction: column; align-items: flex-start; gap: 10px; }
+.vcard.final .vwords { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); align-content: start; padding: 16px; }
+.vcard.final .fletters { display: flex; align-items: center; gap: 14px; }
+.vcard.final .fletters .vipa { min-width: 0; white-space: nowrap; }
+.vcard.final .vforms.many { display: grid; grid-template-columns: repeat(3, auto); }
+.vcard.final .vforms.many .vform { padding: 4px 10px 6px; }
+.vcard.final .vforms.many .vglyph { font-size: 2.4rem; }
+.fmouth { margin: 0; font-size: .95rem; line-height: 1.5; }
+@media (max-width: 760px) { .vcard.final { grid-template-columns: 1fr; } }
+/* 配圖練習：圖在上、字在下 */
+.picgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.picgrid.half { grid-template-columns: 1fr 1fr; }
+.picgrid.third { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 760px) { .picgrid.third { grid-template-columns: 1fr 1fr; } }
+.picword { margin: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--bg); }
+.picword img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.picword .meme-placeholder { height: auto; aspect-ratio: 4 / 3; margin: 0; border: 0; border-bottom: 2px dashed var(--line); border-radius: 0; }
+.picword figcaption { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 10px 14px; }/* 尾音 /n/ 有 6 個字母：字母格縮小，排得下一列 */
+.vforms.many { gap: 8px; }
+.vforms.many .vform { min-width: 0; padding: 4px 14px 6px; }
+.vforms.many .vglyph { font-size: 2.8rem; }
 @media (max-width: 760px) { .vglyph { font-size: 3.4rem; } .vform { min-width: 100px; } .vwords { grid-template-columns: 1fr 1fr; } }
 
 .speak { display: inline-grid; place-items: center; background: none; border: 1.5px solid var(--line); color: var(--accent); }
@@ -262,6 +287,24 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .vp.vtop { grid-area: top; } .vp.bottom { grid-area: bottom; }
 .vp.left { grid-area: left; } .vp.right { grid-area: right; }
 .vp.left, .vp.right { writing-mode: vertical-rl; letter-spacing: .1em; }
+
+/* 清尾音總表＋音節結構圖（尾音課） */
+.fintro { flex: 1 1 320px; display: flex; align-items: center; gap: 18px; justify-content: center; }
+.fintro-count { font-size: 1.6rem; font-weight: 800; line-height: 1.4; text-align: center; }
+table.ftable { border-collapse: collapse; font-size: 1.6rem; }
+.ftable th, .ftable td { border: 2px solid #222; padding: 6px 18px; text-align: center; }
+.ftable th { font-weight: 800; background: none; }
+.ftable td { font-size: 1.9rem; }
+.fmain { text-decoration: underline; text-decoration-color: #2563eb; text-underline-offset: 6px; }
+.fothers { font-size: 1.5rem; }
+.fintro-side { flex: 1 1 320px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.fintro-rule { margin: 0; font-size: 1.25rem; font-weight: 700; text-align: center; line-height: 1.6; }
+.fintro-rule strong { color: var(--accent); }
+.vpos.syl { grid-template-columns: 40px 40px 110px 40px 40px; grid-template-areas: ". . tone . ." ". . top . ." "left h cons right fin" ". . bottom . ."; }
+.vpos.syl .vp.cons { min-height: 110px; }
+.vpos.syl .vp.left, .vpos.syl .vp.right, .vpos.syl .vp.h, .vpos.syl .vp.fin { height: 100%; box-sizing: border-box; }
+.vp.h { grid-area: h; background: #f7ecc0; }
+.vp.fin { grid-area: fin; background: #e6cfdc; writing-mode: vertical-rl; letter-spacing: .1em; }
 
 /* 作業 */
 .assignbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0; padding: 10px 14px; background: var(--accent-soft); border-radius: 12px; }
@@ -314,6 +357,9 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .pq-zhs button.right { border-color: #3a9a5b; background: #e4f4ea; color: #1f6b3a; }
 .pq-zhs button.wrong { border-color: #d05252; background: #fbe4e4; color: #8a1f1f; }
 .pq-zhs button:disabled { cursor: default; }
+.mq { display: grid; gap: 8px; }
+.mq-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; padding: 8px 0; border-top: 1px dashed var(--line); }
+.mq-th { font-size: 1.6rem; }
 .pq-ok { margin: 0; color: #1f6b3a; } .pq-no { margin: 0; color: #b23a3a; }
 .gbtn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 
@@ -425,6 +471,13 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
   .vtable td { padding: 6px 10px; }
   .vintro { gap: 14px; }
   .vintro-text ul { font-size: 1.05rem; line-height: 1.7; }
+  .fintro { gap: 12px; }
+  .fintro-count { font-size: 1.2rem; }
+  table.ftable { font-size: 1.2rem; }
+  .ftable th, .ftable td { padding: 4px 10px; }
+  .ftable td { font-size: 1.5rem; }
+  .fothers { font-size: 1.15rem; }
+  .vpos.syl { grid-template-columns: 34px 34px 90px 34px 34px; padding: 12px; }
   .vgroup-h { font-size: 1.1rem; margin-top: 16px; }
 
   /* 字母彈窗：改成從下方滑出的面板，筆順圖依螢幕高度縮放，關閉鈕加大好按 */

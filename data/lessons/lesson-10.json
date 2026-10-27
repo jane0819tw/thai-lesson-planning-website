@@ -1,30 +1,68 @@
 {
   "status": "draft",
-  "rules": [
+  "rules": [],
+  "finalsIntro": true,
+  "finals": [
     {
-      "id": "r1",
-      "title": "5 音 10 字",
-      "body": "m：ม；n：น（ณ ล ฬ ร ญ）；y：ย；w：ว；ng：ง。"
+      "id": "f-m",
+      "sound": "/m/",
+      "letters": [
+        "ม"
+      ],
+      "group": "ม /m/",
+      "mouth": "嘴巴閉起。"
     },
     {
-      "id": "r2",
-      "title": "聲調規則",
-      "body": "有清尾音，不論長短音，follow 長音的規則。"
+      "id": "f-y",
+      "sound": "/y/",
+      "letters": [
+        "ย"
+      ],
+      "group": "ย /y/",
+      "mouth": "嘴形往旁邊拉，發「一」。"
     },
     {
-      "id": "r3",
-      "title": "發音口型",
-      "body": "ม /m/：嘴巴閉起。ย /y/：嘴形往旁邊拉，發「一」。ว /w/：發「ㄨ」的嘴形。ง /ng/：發「ㄋㄡㄥ」，注意嘴形不會往旁邊拉。น（ล ร ณ ญ ฬ）/n/：音近「ㄣ」，嘴形要往旁邊成「一」狀。"
+      "id": "f-w",
+      "sound": "/w/",
+      "letters": [
+        "ว"
+      ],
+      "group": "ว /w/",
+      "mouth": "發「ㄨ」的嘴形。"
+    },
+    {
+      "id": "f-ng",
+      "sound": "/ng/",
+      "letters": [
+        "ง"
+      ],
+      "group": "ง /ng/",
+      "mouth": "發「ㄋㄡㄥ」，注意嘴形不會往旁邊拉。"
+    },
+    {
+      "id": "f-n",
+      "sound": "/n/",
+      "letters": [
+        "น",
+        "ณ",
+        "ล",
+        "ฬ",
+        "ร",
+        "ญ"
+      ],
+      "group": "น /n/",
+      "mouth": "音近「ㄣ」，嘴形要往旁邊成「一」狀。"
     }
   ],
   "consonants": [],
   "vowels": [],
   "toneTables": [
     {
-      "title": "有清尾音的聲調（以 กิน / กีน 系列為例）",
+      "title": "有清尾音的聲調",
       "rows": [
         {
-          "label": "中子音＋短母音",
+          "label": "＋短母音",
+          "group": "中子音",
           "cells": [
             "กิน",
             "กิ่น",
@@ -34,7 +72,8 @@
           ]
         },
         {
-          "label": "中子音＋長母音",
+          "label": "＋長母音",
+          "group": "中子音",
           "cells": [
             "กีน",
             "กี่น",
@@ -44,7 +83,8 @@
           ]
         },
         {
-          "label": "高子音＋短母音",
+          "label": "＋短母音",
+          "group": "高子音",
           "cells": [
             "不發音",
             "ขิ่น",
@@ -54,7 +94,8 @@
           ]
         },
         {
-          "label": "高子音＋長母音",
+          "label": "＋長母音",
+          "group": "高子音",
           "cells": [
             "不發音",
             "ขี่น",
@@ -64,7 +105,8 @@
           ]
         },
         {
-          "label": "低子音 LCp＋短母音",
+          "label": "＋短母音",
+          "group": "低子音 LCp",
           "cells": [
             "คิน",
             "不發音",
@@ -74,7 +116,8 @@
           ]
         },
         {
-          "label": "低子音 LCp＋長母音",
+          "label": "＋長母音",
+          "group": "低子音 LCp",
           "cells": [
             "คีน",
             "不發音",
@@ -84,7 +127,8 @@
           ]
         },
         {
-          "label": "ห LCs＋短母音",
+          "label": "＋短母音",
+          "group": "ห LCs",
           "cells": [
             "不發音",
             "หมิ่น",
@@ -94,7 +138,8 @@
           ]
         },
         {
-          "label": "ห LCs＋長母音",
+          "label": "＋長母音",
+          "group": "ห LCs",
           "cells": [
             "不發音",
             "หมี่น",
@@ -103,7 +148,8 @@
             "หมีน"
           ]
         }
-      ]
+      ],
+      "tint": "long"
     }
   ],
   "vocab": [
@@ -193,13 +239,13 @@
       "group": "น /n/"
     },
     {
-      "thai": "กาล",
-      "zh": "時辰",
+      "thai": "จาน",
+      "zh": "盤子",
       "group": "น /n/"
     },
     {
-      "thai": "อาหาร",
-      "zh": "食物",
+      "thai": "เพื่อน",
+      "zh": "朋友",
       "group": "น /n/"
     },
     {
@@ -208,8 +254,8 @@
       "group": "น /n/"
     },
     {
-      "thai": "กัญชา",
-      "zh": "大麻",
+      "thai": "กาล",
+      "zh": "時辰",
       "group": "น /n/"
     },
     {
@@ -218,13 +264,13 @@
       "group": "น /n/"
     },
     {
-      "thai": "จาน",
-      "zh": "盤子",
+      "thai": "อาหาร",
+      "zh": "食物",
       "group": "น /n/"
     },
     {
-      "thai": "เพื่อน",
-      "zh": "朋友",
+      "thai": "กัญชา",
+      "zh": "大麻",
       "group": "น /n/"
     }
   ],
@@ -268,74 +314,88 @@
           "thai": "ไปเที่ยว",
           "zh": "去玩"
         }
-      ]
+      ],
+      "third": true
     },
     {
       "title": "อาหารไทย 泰式料理",
       "items": [
         {
-          "thai": "ข้าวซอย"
+          "thai": "ข้าวซอย",
+          "image": {
+            "src": "extras/lesson-10/khao-soi.jpg",
+            "alt": "ข้าวซอย",
+            "credit": "照片：Douglas Perkins / CC BY 4.0（Wikimedia Commons）"
+          }
         },
         {
-          "thai": "ข้าวไข่เจียว"
+          "thai": "ข้าวไข่เจียว",
+          "image": {
+            "src": "extras/lesson-10/khao-khai-jiao.jpg",
+            "alt": "ข้าวไข่เจียว",
+            "credit": "照片：Bitterschoko / CC0（Wikimedia Commons）"
+          }
         },
         {
-          "thai": "ข้าวเหนียวหมูปิ้ง"
+          "thai": "ข้าวเหนียวหมูปิ้ง",
+          "image": {
+            "src": "extras/lesson-10/khao-niao-mu-ping.jpg",
+            "alt": "ข้าวเหนียวหมูปิ้ง",
+            "credit": "照片：Phoebus 28 / CC BY-SA 4.0（Wikimedia Commons）"
+          }
         },
         {
-          "thai": "แกงเขียวหวาน"
+          "thai": "แกงเขียวหวาน",
+          "image": {
+            "src": "extras/lesson-10/kaeng-khiao-wan.jpg",
+            "alt": "แกงเขียวหวาน",
+            "credit": "照片：Guilhem Vellut / CC BY 2.0（Wikimedia Commons）"
+          }
         },
         {
-          "thai": "กุ้งเผา"
+          "thai": "กุ้งเผา",
+          "image": {
+            "src": "extras/lesson-10/kung-phao.jpg",
+            "alt": "กุ้งเผา",
+            "credit": "照片：PattayaPatrol / CC BY-SA 4.0（Wikimedia Commons）"
+          }
         },
         {
-          "thai": "โรตีสายไหม"
+          "thai": "โรตีสายไหม",
+          "image": {
+            "src": "extras/lesson-10/roti-sai-mai.jpg",
+            "alt": "โรตีสายไหม",
+            "credit": "照片：Takeaway / CC BY-SA 3.0（Wikimedia Commons）"
+          }
         }
-      ]
+      ],
+      "images": true,
+      "third": true
     },
     {
       "title": "延伸練習：讀看看菜單",
       "items": [
         {
-          "thai": "022 ยำคอหมูย่าง"
+          "thai": "ยำคอหมูย่าง",
+          "zh": "涼拌烤豬頸肉"
         },
         {
-          "thai": "023 คอหมูย่าง"
+          "thai": "ไข่ตุ๋นหม้อไฟ",
+          "zh": "砂鍋蒸蛋"
         },
         {
-          "thai": "025 ไข่ตุ๋นหม้อไฟ"
+          "thai": "ต้มยำกุ้ง",
+          "zh": "酸辣蝦湯"
         },
         {
-          "thai": "026 ต้มยำกุ้ง"
-        },
-        {
-          "thai": "028 ชาเย็น"
+          "thai": "ชาเย็น",
+          "zh": "泰式奶茶"
         }
-      ]
+      ],
+      "homework": true
     }
   ],
-  "patterns": [
-    {
-      "thai": "เอาอะไร",
-      "zh": "要什麼"
-    },
-    {
-      "thai": "เอา［食物］［數字］［單位］",
-      "zh": "要［食物］［數字］［單位］；例：เอากุ้งเผาสองที่ 要兩份烤蝦"
-    },
-    {
-      "thai": "ที่",
-      "zh": "份（單位）"
-    },
-    {
-      "thai": "จาน",
-      "zh": "盤（單位）"
-    },
-    {
-      "thai": "ชาม",
-      "zh": "碗（單位）"
-    }
-  ],
+  "patterns": [],
   "homework": [
     "พี่สาว",
     "น้องชาย",
@@ -355,10 +415,23 @@
       "url": "https://tenjo.tw/25boatnoodles/"
     }
   ],
-  "memes": [],
+  "memes": [
+    {
+      "title": "",
+      "desc": "",
+      "imageUrl": "extras/lesson-10/chin-thao.png",
+      "half": true
+    },
+    {
+      "title": "",
+      "desc": "",
+      "imageUrl": "extras/lesson-10/lo-len.png",
+      "half": true
+    }
+  ],
   "extras": [],
   "id": "lesson-10",
   "number": 10,
-  "title": "清尾音（5 音 10 字）",
+  "title": "清尾音",
   "summary": "尾音 m、n、y、w、ng 共 5 個音、10 個字；有清尾音時，不論長短音，都依長音的規則。"
 }

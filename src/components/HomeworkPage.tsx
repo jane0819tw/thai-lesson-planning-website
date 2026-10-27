@@ -3,7 +3,7 @@ import { useThaiFont } from './thaiFont'
 import { SECTIONS, KED, label as keyLabel } from './KeyboardPage'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { getRepository } from '../data/repository'
-import type { Lesson } from '../types'
+import type { Lesson, PracticeItem } from '../types'
 import { ListenQuiz, VowelListenQuiz, vowelSyllables } from './Games'
 import SpeakButton from './SpeakButton'
 import WordList from './WordList'
@@ -142,11 +142,13 @@ export default function HomeworkPage() {
         )}
       </div>
 
-      {/* 課程資料裡標 homework、但沒有答案（parts）的練習：只列出來，不計分 */}
+      {/* 課程資料裡標 homework、但沒有答案（parts）的練習：每個字都有中文就做成聽音選中文，否則只列出來；都不計分 */}
       {lesson.practice.filter(g => g.homework && g !== parseGroup).map(g => (
         <section className="hw-sec hw-extra" key={g.title}>
           <h2>{g.title}</h2>
-          <WordList compact={g.half ? 'half' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh showRoman={false} />
+          {g.items.length >= 2 && g.items.every(i => i.zh)
+            ? <><p className="muted small">按喇叭聽發音，選出中文意思。</p><MeaningQuiz key={round} items={g.items} /></>
+            : <WordList compact={g.half ? 'half' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh showRoman={false} />}
         </section>
       ))}
 
@@ -168,6 +170,32 @@ export default function HomeworkPage() {
     </>
   )
 }
+
+// 選中文意思：每題 4 選 1（其他選項取自同一組的別的字），選了馬上對答案
+function MeaningQuiz({ items }: { items: PracticeItem[] }) {
+  const all = [...new Set(items.map(i => i.zh!))]
+  const [choices] = useState(() => items.map(i => shuffle([i.zh!, ...shuffle(all.filter(x => x !== i.zh)).slice(0, 3)])))
+  const [picks, setPicks] = useState<string[]>(() => items.map(() => ''))
+  return (
+    <div className="mq">
+      {items.map((it, i) => (
+        <div className="mq-row" key={it.thai}>
+          <span className="th mq-th">{it.thai}</span>
+          <SpeakButton text={it.thai} />
+          <div className="pq-zhs">
+            {choices[i].map(x => (
+              <button key={x} disabled={!!picks[i]} onClick={() => setPicks(p => p.map((y, j) => (j === i ? x : y)))}
+                className={picks[i] ? (x === it.zh ? 'right' : picks[i] === x ? 'wrong' : '') : ''}>{x}</button>
+            ))}
+          </div>
+        </div>
+      ))}
+      {picks.every(Boolean) && <p className="muted small">答對 {items.filter((it, i) => picks[i] === it.zh).length} / {items.length}</p>}
+    </div>
+  )
+}
+
+const shuffle = <T,>(a: T[]) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]] } return b }
 
 function Dictation({ words, onDone }: { words: string[]; onDone: (score: number, total: number) => void }) {
   const [ans, setAns] = useState<string[]>(() => words.map(() => ''))

@@ -17,9 +17,10 @@ import Games, { vowelSyllables } from './Games'
 import RuleDemo from './RuleDemo'
 import ToneIntro from './ToneIntro'
 import VowelIntro from './VowelIntro'
+import FinalsIntro from './FinalsIntro'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes'
+type Tab = 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes'
 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
 // 說明文字有換行時，每行列成一點
@@ -48,9 +49,10 @@ export default function LessonPage() {
     const t: [Tab, string][] = []
     if (lesson.diagram) t.push(['diagram', lesson.diagram.title])
     if (lesson.vowels.length) t.push(['vowels', '母音'])
-    if (lesson.rules.length || lesson.toneTables.length) t.push(['rules', '說明'])
+    if (lesson.rules.length || lesson.toneTables.length || lesson.finalsIntro) t.push(['rules', '說明'])
+    if (lesson.finals?.length) t.push(['finals', '尾音'])
     if (lesson.consonants.length) t.push(['consonants', '子音'])
-    if (lesson.vocab.length && !lesson.vocabAfterVowel) t.push(['vocab', '單字'])
+    if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length) t.push(['vocab', '單字'])
     if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
     if (lesson.memes.length) t.push(['memes', '補充'])
     if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6) t.push(['games', '互動練習'])
@@ -69,6 +71,21 @@ export default function LessonPage() {
 
   // 連續標了 inRow 的母音卡排在同一列（例如特殊母音四張）
   const vowelGroups = lesson.vowels.reduce<Lesson['vowels'][]>((acc, v) => { const last = acc[acc.length - 1]; if (v.inRow && last && last[0].inRow) last.push(v); else acc.push([v]); return acc }, [])
+  const vwords = (words: Lesson['vocab']) => words.length > 0 && (
+    <div className="vwords">
+      {words.map((w, i) => (
+        <div className="vword" key={w.thai + i}>
+          <span className="th vword-th">{w.star ? '＊' : ''}{w.thai}</span>
+          <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
+          <span className="vword-meta">
+            {showRoman && w.roman && <span className="muted">{w.roman}</span>}
+            {showZh && w.zh && <span>{w.zh}</span>}
+          </span>
+          {w.image && <ZoomImage className="vword-img" src={`${import.meta.env.BASE_URL}${w.image.src}`} alt={w.image.alt} />}
+        </div>
+      ))}
+    </div>
+  )
   const vowelCard = (v: Lesson['vowels'][number]) => (
     <article className="vcard" key={v.id}>
       <div className="vhead">
@@ -102,21 +119,24 @@ export default function LessonPage() {
           </table>
         </div>
       )}
-      {v.words.length > 0 && (
-        <div className="vwords">
-          {v.words.map((w, i) => (
-            <div className="vword" key={w.thai + i}>
-              <span className="th vword-th">{w.star ? '＊' : ''}{w.thai}</span>
-              <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
-              <span className="vword-meta">
-                {showRoman && w.roman && <span className="muted">{w.roman}</span>}
-                {showZh && w.zh && <span>{w.zh}</span>}
-              </span>
-              {w.image && <ZoomImage className="vword-img" src={`${import.meta.env.BASE_URL}${w.image.src}`} alt={w.image.alt} />}
-            </div>
-          ))}
+      {vwords(v.words)}
+    </article>
+  )
+  // 尾音卡：左邊是字母（尾音不用看筆順，不能點）、右邊接音標，下面口型，右邊同一列排這個尾音的單字
+  const finalCard = (f: NonNullable<Lesson['finals']>[number]) => (
+    <article className="vcard final" key={f.id}>
+      <div className="vhead">
+        <div className="fletters">
+          <div className={f.letters.length > 3 ? 'vforms many' : 'vforms'}>
+            {f.letters.map(ch => (
+              <span key={ch} className="vform th static"><span className="vglyph">{ch}</span></span>
+            ))}
+          </div>
+          <span className="vipa">{f.sound}</span>
         </div>
-      )}
+        {f.mouth && <p className="fmouth"><strong>口型：</strong>{f.mouth}</p>}
+      </div>
+      {vwords(lesson.vocab.filter(w => w.group === f.group))}
     </article>
   )
 
@@ -126,6 +146,7 @@ export default function LessonPage() {
 
       {cur === 'rules' && (
         <>
+          {lesson.finalsIntro && <FinalsIntro />}
           <section className="stack">
             {lesson.rules.map(r => (
               <article className="card" key={r.id}><h3>{r.title}</h3><RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
@@ -200,6 +221,12 @@ export default function LessonPage() {
         </>
       )}
 
+      {cur === 'finals' && lesson.finals && (
+        <section className="vstack">
+          {lesson.finals.map(finalCard)}
+        </section>
+      )}
+
       {cur === 'vocab' && <WordList compact="wide" words={lesson.vocab} showZh={showZh} showRoman={showRoman} />}
 
       {cur === 'practice' && (
@@ -207,7 +234,16 @@ export default function LessonPage() {
           {lessonPractice(lesson).map(g => (
             <article className="card" key={g.title}>
               {g.title !== practiceLabel(lesson) && <h3>{g.title}</h3>}
-              <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />
+              {g.images ? (
+                <div className={g.half ? 'picgrid half' : g.third ? 'picgrid third' : 'picgrid'}>
+                  {g.items.map(i => (
+                    <figure className="picword" key={i.thai}>
+                      {i.image ? <ZoomImage src={`${import.meta.env.BASE_URL}${i.image.src}`} alt={i.image.alt} /> : <div className="meme-placeholder">圖片待補</div>}
+                      <figcaption><span className="th big2">{i.thai}</span><SpeakButton text={i.thai} />{showZh && i.zh && <span>{i.zh}</span>}</figcaption>
+                    </figure>
+                  ))}
+                </div>
+              ) : <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />}
             </article>
           ))}
           {lesson.patterns.length > 0 && (
@@ -222,11 +258,11 @@ export default function LessonPage() {
       {cur === 'memes' && (
         <section className="memegrid">
           {lesson.memes.map(m => (
-            <article className={m.half ? 'card half' : 'card'} key={m.title}>
-              <h3>{m.title}</h3>
+            <article className={m.half ? 'card half' : 'card'} key={m.title || m.imageUrl}>
+              {m.title && <h3>{m.title}</h3>}
               {m.big && <div className="th meme-big">{m.big}</div>}
               {m.desc && <p className="muted small">{m.desc}</p>}
-              {m.imageUrl ? <ZoomImage src={/^(https?:|data:|\/)/.test(m.imageUrl) ? m.imageUrl : `${import.meta.env.BASE_URL}${m.imageUrl}`} alt={m.title} style={{ maxWidth: '100%' }} /> : m.imageUrl === undefined && <div className="meme-placeholder">圖片待補</div>}
+              {m.imageUrl ? <ZoomImage src={/^(https?:|data:|\/)/.test(m.imageUrl) ? m.imageUrl : `${import.meta.env.BASE_URL}${m.imageUrl}`} alt={m.title || m.big || ''} style={{ maxWidth: '100%' }} /> : m.imageUrl === undefined && <div className="meme-placeholder">圖片待補</div>}
             </article>
           ))}
         </section>

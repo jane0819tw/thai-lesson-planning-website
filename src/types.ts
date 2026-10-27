@@ -19,18 +19,20 @@ export interface Vowel {
   /** 連續幾張標 inRow 的母音卡會排在同一列（特殊母音只有短音，卡片很小） */
   inRow?: boolean
 }
+/** 尾音卡：一個尾音一張卡；group 對應 vocab 的 group，那幾個單字就排在這張卡裡 */
+export interface Final { id: string; sound: string; letters: string[]; group: string; mouth: string }
 export interface ToneRow { label: string; cells: string[]; fill?: boolean; group?: string }  // fill：ห 補齊的那一列（黃底、藍字），空字串＝空白格；group：最左側多一欄子音類型，相鄰同 group 的列合併成一格
-export interface ToneTable { title: string; note?: string; rows: ToneRow[]; corner?: boolean; tint?: boolean }  // corner：標題放在表格左上角那一格（同講義排版）；tint：短母音列淺藍底、長母音列淺黃底
+export interface ToneTable { title: string; note?: string; rows: ToneRow[]; corner?: boolean; tint?: boolean | 'long' }  // corner：標題放在表格左上角那一格（同講義排版）；tint：短母音列淺藍底、長母音列淺黃底；'long'＝全部淺黃底（例如有清尾音時一律依長母音的規則）
 /** 短句斷句作業的一個音節：c 子音、v 母音（用 - 標子音位置，例如 เ-า）、m 聲調符號（沒有就省略）、t 念第幾聲（1–5） */
 export interface Syllable { syl: string; c: string; v: string; m?: string; t: number }
 /** parts：有填就變成作業頁的斷句題；demo：示範題（答案直接顯示、不計分） */
-export interface PracticeItem { thai: string; zh?: string; note?: string; parts?: Syllable[]; demo?: boolean }
-export interface PracticeGroup { title: string; items: PracticeItem[]; homework?: boolean; half?: boolean; third?: boolean }  // homework：改放在作業頁、不顯示在課程頁；half：每格佔半列（一列兩個）；third：一列三個
+export interface PracticeItem { thai: string; zh?: string; note?: string; parts?: Syllable[]; demo?: boolean; image?: ExtraImage }
+export interface PracticeGroup { title: string; items: PracticeItem[]; homework?: boolean; half?: boolean; third?: boolean; images?: boolean }  // homework：改放在作業頁、不顯示在課程頁；half：每格佔半列（一列兩個）；third：一列三個；images：每個字配一張示意圖（沒圖顯示「圖片待補」）
 export interface Pattern { thai: string; zh: string }
 export interface LinkItem { title: string; url: string }
 /** imageUrl：沒填＝顯示「圖片待補」；明確填 null＝這張卡本來就不需要圖（只有文字） */
 export interface Meme { title: string; desc: string; imageUrl?: string | null; big?: string; half?: boolean }  // big：標題下方用大字顯示的泰文；half：只佔半列（兩張 half 卡並排，圖片縮小）
-export interface ExtraImage { src: string; alt: string }
+export interface ExtraImage { src: string; alt: string; credit?: string }  // credit：網路公開圖片的作者／授權標示（目前只記錄、不顯示在頁面上）
 export interface Extra { title: string; lines: string[]; images?: ExtraImage[]; toneTables?: ToneTable[] }  // toneTables：補充卡內直接顯示聲調表（例如複習總表）
 
 export interface DiagramTile { label: string; count?: string; color: 'pink' | 'yellow' | 'green' | 'blue'; dashed?: boolean; wide?: boolean; sub: { t?: string; b?: string; th?: string; i?: boolean }[] }
@@ -47,7 +49,9 @@ export interface Lesson {
   vowelNotes?: Rule[]
   /** 設了母音卡的 id：「單字」清單改放在「母音」區塊裡、這張卡所屬的那一組之後（不再單獨一個區塊） */
   vocabAfterVowel?: string
+  /** 有設：「單字」清單改成依尾音分卡（vocab 依 group 排進對應的尾音卡），不再單獨一個區塊 */
+  finals?: Final[]
   /** 作業頁「延伸影片挑戰」按鈕的連結（站內路徑，例如 /video/xxx）；沒設就顯示「即將開放」 */
   videoChallenge?: string
-  homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean | VowelIntroConfig
+  homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean | VowelIntroConfig; finalsIntro?: boolean
 }
