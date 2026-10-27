@@ -4,7 +4,7 @@ import type { AdminState, HomeworkRecord, HomeworkRow, Month, OpenDays, PendingV
 // 留空或網址帶 mock=1 時使用假資料，不會碰到真實試算表。
 export const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxfMPqPLR0wlaV4RfW40stOthBs_pikwfAG97W9X7tVhoyHOk6budX-N75V4fuHKGgb/exec'
 
-export interface HomeworkResult { listen?: [number, number]; typing?: [number, number] }
+export interface HomeworkResult { listen?: [number, number]; typing?: [number, number]; parse?: [number, number] }
 
 interface Api {
   getStudentInfo(token: string): Promise<StudentInfo>
@@ -182,8 +182,8 @@ const mock: Api = {
   }),
   submitBooking: (t, n) => (!t && !n ? Promise.reject(new Error('請填姓名')) : delay({ ok: true })),
   getHomeworkInfo: (t, n) => delay({ name: t ? 'Jenny' : '', last: t ? mockHw[String(n)] ?? null : null }),
-  adminGetHomework: () => delay(Object.entries(mockHw).map(([n, r]) => ({ time: r.time, name: 'Jenny', lesson: /^R/.test(n) ? n : 'L' + n, listen: r.listen, typing: r.typing }))),
-  submitHomework: (t, n, r) => (t ? (mockHw[String(n)] = { time: `${day(0)} ${hhmm(0)}`, listen: r.listen ? r.listen.join('/') : '未做', typing: r.typing ? r.typing.join('/') : '未做', count: (mockHw[String(n)]?.count ?? 0) + 1 }, delay({ ok: true, name: 'Jenny' })) : Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))),
+  adminGetHomework: () => delay(Object.entries(mockHw).map(([n, r]) => ({ time: r.time, name: 'Jenny', lesson: /^R/.test(n) ? n : 'L' + n, listen: r.listen, typing: r.typing, parse: r.parse }))),
+  submitHomework: (t, n, r) => (t ? (mockHw[String(n)] = { time: `${day(0)} ${hhmm(0)}`, listen: r.listen ? r.listen.join('/') : '未做', typing: r.typing ? r.typing.join('/') : '未做', ...(r.parse ? { parse: r.parse.join('/') } : {}), count: (mockHw[String(n)]?.count ?? 0) + 1 }, delay({ ok: true, name: 'Jenny' })) : Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))),
   adminGetState: () => delay(structuredClone(db)),
   adminGetWeek: d => delay(week(d)),
   adminGetMonth: d => monthByWeeks(d, x => Promise.resolve(week(x))),

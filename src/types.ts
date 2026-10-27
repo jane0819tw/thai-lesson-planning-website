@@ -21,8 +21,11 @@ export interface Vowel {
 }
 export interface ToneRow { label: string; cells: string[] }
 export interface ToneTable { title: string; note?: string; rows: ToneRow[] }
-export interface PracticeItem { thai: string; zh?: string; note?: string }
-export interface PracticeGroup { title: string; items: PracticeItem[] }
+/** 短句斷句作業的一個音節：c 子音、v 母音（用 - 標子音位置，例如 เ-า）、m 聲調符號（沒有就省略）、t 念第幾聲（1–5） */
+export interface Syllable { syl: string; c: string; v: string; m?: string; t: number }
+/** parts：有填就變成作業頁的斷句題；demo：示範題（答案直接顯示、不計分） */
+export interface PracticeItem { thai: string; zh?: string; note?: string; parts?: Syllable[]; demo?: boolean }
+export interface PracticeGroup { title: string; items: PracticeItem[]; homework?: boolean; half?: boolean }  // homework：改放在作業頁、不顯示在課程頁；half：每格佔半列（一列兩個）
 export interface Pattern { thai: string; zh: string }
 export interface LinkItem { title: string; url: string }
 /** imageUrl：沒填＝顯示「圖片待補」；明確填 null＝這張卡本來就不需要圖（只有文字） */

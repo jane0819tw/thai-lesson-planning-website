@@ -381,8 +381,8 @@ export default function AdminPage() {
               {!hw ? <p className="bk-muted">載入中…</p> : hw.length === 0 ? <p className="bk-muted">還沒有學生送出作業。</p> : (
                 <div className="mgr-scroll">
                   <table className="mgr-table">
-                    <thead><tr><th>繳交時間</th><th>學生</th><th>課別</th><th>聽音選字</th><th>聽寫</th></tr></thead>
-                    <tbody>{hw.map((r, i) => <tr key={i}><td>{r.time.slice(5).replace('-', '/')}</td><td>{r.name}</td><td>{homeworkLessonLabel(r.lesson)}</td><td>{r.listen}</td><td>{r.typing}</td></tr>)}</tbody>
+                    <thead><tr><th>繳交時間</th><th>學生</th><th>課別</th><th>聽音選字</th><th>聽寫</th><th>斷句</th></tr></thead>
+                    <tbody>{hw.map((r, i) => <tr key={i}><td>{r.time.slice(5).replace('-', '/')}</td><td>{r.name}</td><td>{homeworkLessonLabel(r.lesson)}</td><td>{r.listen}</td><td>{r.typing}</td><td>{r.parse || ''}</td></tr>)}</tbody>
                   </table>
                 </div>
               )}

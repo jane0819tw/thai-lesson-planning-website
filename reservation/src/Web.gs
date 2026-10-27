@@ -247,17 +247,17 @@ function readHomework_() {
   if (sh.getLastRow() < 2) return [];
   return sh.getRange(2, 1, sh.getLastRow() - 1, HOMEWORK_HEADERS.length).getValues()
     .filter(function (r) { return r[0] && r[1]; })
-    .map(function (r) { return { time: toLocalStr_(r[0]), name: String(r[1]), lesson: String(r[2]), listen: String(r[3]), typing: String(r[4]) }; });
+    .map(function (r) { return { time: toLocalStr_(r[0]), name: String(r[1]), lesson: String(r[2]), listen: String(r[3]), typing: String(r[4]), parse: String(r[6] || '') }; });
 }
 
-/** 某位學生每一課「最近一次」的成績：{ '1': { time, listen, typing, count } } */
+/** 某位學生每一課「最近一次」的成績：{ '1': { time, listen, typing, parse, count } } */
 function homeworkOf_(name, rows) {
   const out = {};
   (rows || readHomework_()).forEach(function (r) {
     if (r.name !== name) return;
     const n = r.lesson.replace(/^L/, '');
     const prev = out[n];
-    out[n] = { time: r.time, listen: r.listen, typing: r.typing, count: (prev ? prev.count : 0) + 1 };
+    out[n] = { time: r.time, listen: r.listen, typing: r.typing, parse: r.parse, count: (prev ? prev.count : 0) + 1 };
   });
   return out;
 }
@@ -277,7 +277,7 @@ function homeworkKey_(lessonNumber) {
   return n > 0 && n === Math.floor(n) ? String(n) : '';
 }
 
-/** 學生在作業頁按「送出作業」：寫進「作業」分頁一列（可重複送出，每次一列；學生頁顯示最近一次）。result = { listen: [對, 總], typing: [對, 總] }（沒做的欄位省略） */
+/** 學生在作業頁按「送出作業」：寫進「作業」分頁一列（可重複送出，每次一列；學生頁顯示最近一次）。result = { listen: [對, 總], typing: [對, 總], parse: [對, 總] }（沒做的欄位省略；parse 只有有短句斷句的課才有） */
 function submitHomework(token, lessonNumber, result) {
   const s = studentByToken_(token);
   if (!s) throw new Error('作業連結已失效，請向老師索取新的連結');
@@ -287,8 +287,9 @@ function submitHomework(token, lessonNumber, result) {
   result = result || {};
   const sh = getSheet_(CONFIG.SHEETS.HOMEWORK, HOMEWORK_HEADERS);
   const row = sh.getLastRow() + 1;
-  sh.getRange(row, 3, 1, 3).setNumberFormat('@'); // 「8/9」要存成文字，不然會被轉成日期
-  sh.getRange(row, 1, 1, HOMEWORK_HEADERS.length).setValues([[new Date(), s.name, (/^[RV]/.test(key) ? key : 'L' + key), fmt(result.listen), fmt(result.typing), '']]);
+  if (!sh.getRange(1, 7).getValue()) sh.getRange(1, 7).setValue('斷句').setFontWeight('bold'); // 舊的「作業」分頁沒有這欄標題
+  sh.getRange(row, 3, 1, 5).setNumberFormat('@'); // 「8/9」要存成文字，不然會被轉成日期
+  sh.getRange(row, 1, 1, HOMEWORK_HEADERS.length).setValues([[new Date(), s.name, (/^[RV]/.test(key) ? key : 'L' + key), fmt(result.listen), fmt(result.typing), '', result.parse ? fmt(result.parse) : '']]);
   return { ok: true, name: s.name };
 }
 

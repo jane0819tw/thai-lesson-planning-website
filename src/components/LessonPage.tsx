@@ -24,7 +24,9 @@ type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
 // 說明文字有換行時，每行列成一點
 const RuleBody = ({ body }: { body: string }) => body.includes('\n') ? <ul>{body.split('\n').map((l, i) => <li key={i}>{l}</li>)}</ul> : <p>{body}</p>
-const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && l.practice.length === 1 ? l.practice[0].title : '練習・句型')
+// 標 homework 的練習改放在作業頁
+const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework)
+const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && lessonPractice(l).length === 1 ? lessonPractice(l)[0].title : '練習・句型')
 
 export default function LessonPage() {
   const { id } = useParams()
@@ -47,7 +49,7 @@ export default function LessonPage() {
     if (lesson.rules.length || lesson.toneTables.length) t.push(['rules', '說明'])
     if (lesson.consonants.length) t.push(['consonants', '子音'])
     if (lesson.vocab.length && !lesson.vocabAfterVowel) t.push(['vocab', '單字'])
-    if (lesson.practice.length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
+    if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
     if (lesson.memes.length) t.push(['memes', '補充'])
     if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6) t.push(['games', '互動練習'])
     if (lesson.extras.length) t.push(['extras', '補充'])
@@ -199,10 +201,10 @@ export default function LessonPage() {
 
       {cur === 'practice' && (
         <section className="stack">
-          {lesson.practice.map(g => (
+          {lessonPractice(lesson).map(g => (
             <article className="card" key={g.title}>
               {g.title !== practiceLabel(lesson) && <h3>{g.title}</h3>}
-              <WordList compact words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />
+              <WordList compact={g.half ? 'half' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />
             </article>
           ))}
           {lesson.patterns.length > 0 && (

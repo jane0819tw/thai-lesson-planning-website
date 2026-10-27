@@ -275,7 +275,38 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .hw-word { display: inline-flex; align-items: center; gap: 6px; font-size: 2rem; padding: 4px 14px; background: var(--accent-soft); border-radius: 12px; }
 .hw-check { display: block; margin-top: 8px; }
 .hw-sum { background: var(--bg); border: 1px dashed var(--line); border-radius: 12px; padding: 12px; white-space: pre-wrap; font: inherit; margin: 8px 0 12px; }
-.hw-submit { margin-top: 16px; }
+.hw-submit, .hw-extra { margin-top: 16px; }
+/* 短句斷句作業 */
+.pq { display: grid; gap: 12px; margin-top: 10px; }
+.pq-card { border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; display: grid; gap: 8px; }
+.pq-card.demo { background: var(--bg); border-style: dashed; }
+.pq-card.ok { border-color: #3a9a5b; background: #e4f4ea55; } .pq-card.bad { border-color: #d05252; }
+.pq-head { display: flex; align-items: center; gap: 10px; }
+.pq-th { font-size: 1.8rem; }
+.pq-score { margin-left: auto; font-weight: 600; }
+.pq-step { display: grid; gap: 6px; justify-items: start; }
+.pq-split { display: flex; align-items: center; flex-wrap: wrap; font-size: 2rem; line-height: 1.4; }
+.pq-cl { display: inline-flex; align-items: stretch; }
+.pq-gap { width: 18px; margin: 0 2px; padding: 0; border: 0; background: transparent; cursor: pointer; position: relative; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.pq-gap::after { content: ''; position: absolute; left: 50%; top: 15%; bottom: 15%; border-left: 2px dotted var(--line); }
+.pq-gap.on::after { border-left: 3px solid var(--accent); }
+.pq-gap.wrong::after { border-left-color: #d05252; border-left-style: solid; }
+.pq-gap:disabled { cursor: default; }
+.pq-split .gbtn { margin-left: 12px; font-size: .95rem; }
+.pq-row { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; padding: 6px 0; border-top: 1px dashed var(--line); width: 100%; }
+.pq-syl { font-size: 1.5rem; min-width: 3em; }
+.pq-row select { font-size: 1.2rem; padding: 2px 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--fg); min-width: 3.2em; }
+.pq-row select.wrong, .pq-tones.wrong button.on { border-color: #d05252; background: #fbe4e4; color: #8a1f1f; }
+.pq-tones { display: inline-flex; align-items: center; gap: 4px; }
+.pq-tones button { width: 30px; height: 30px; border: 1px solid var(--line); border-radius: 50%; background: var(--card); color: var(--fg); cursor: pointer; }
+.pq-tones button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pq-zhs { display: flex; flex-wrap: wrap; gap: 6px; }
+.pq-zhs button { font: inherit; padding: 4px 14px; border: 1px solid var(--line); border-radius: 99px; background: var(--card); color: var(--fg); cursor: pointer; }
+.pq-zhs button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.pq-zhs button.right { border-color: #3a9a5b; background: #e4f4ea; color: #1f6b3a; }
+.pq-zhs button.wrong { border-color: #d05252; background: #fbe4e4; color: #8a1f1f; }
+.pq-zhs button:disabled { cursor: default; }
+.pq-ok { margin: 0; color: #1f6b3a; } .pq-no { margin: 0; color: #b23a3a; }
 .gbtn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -334,6 +365,8 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 /* 單字清單：一列排 2～3 個（格子至少 240px，放得下泰文、拼音、中文與圖片） */
 .list.compact.wide { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 .list.compact.wide .row { flex-wrap: wrap; }
+.list.compact.half { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.list.compact.half .row { flex-wrap: wrap; }
 
 /* 補充：兩張卡並排 */
 .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 16px; align-items: start; }

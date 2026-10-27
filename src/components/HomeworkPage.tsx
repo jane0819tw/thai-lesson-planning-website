@@ -6,6 +6,8 @@ import { getRepository } from '../data/repository'
 import type { Lesson } from '../types'
 import { ListenQuiz, VowelListenQuiz, vowelSyllables } from './Games'
 import SpeakButton from './SpeakButton'
+import WordList from './WordList'
+import ParseQuiz from './ParseQuiz'
 import { getSession } from '../reservation/session'
 import { getApi, type HomeworkResult } from '../reservation/api'
 import type { HomeworkRecord } from '../reservation/types'
@@ -66,6 +68,8 @@ export default function HomeworkPage() {
   const nV = vowelSyllables(lesson.vowels).length
   const hasV = nV >= 6
   const listenCount = Math.min(10, hasV && !hasC ? nV : lesson.consonants.length)
+  // 有答案（parts）的作業練習＝短句斷句題，計分並跟著作業送出
+  const parseGroup = lesson.practice.find(g => g.homework && g.items.some(i => i.parts?.length))
 
   // 複習的聽音選字分兩段（字母、母音），成績加總成一個「聽音選字」送出
   const onPart = (k: 'c' | 'v', score: number, total: number) => {
@@ -80,7 +84,7 @@ export default function HomeworkPage() {
     try {
       await api.submitHomework(token, lessonNo!, res)
       const f = (r?: [number, number]) => (r ? `${r[0]}/${r[1]}` : '未做')
-      setLast(l => ({ time: '', listen: f(res.listen), typing: f(res.typing), count: (l?.count ?? 0) + 1 }))
+      setLast(l => ({ time: '', listen: f(res.listen), typing: f(res.typing), ...(res.parse ? { parse: f(res.parse) } : {}), count: (l?.count ?? 0) + 1 }))
       setState('sent')
     }
     catch (e) { setErr(e instanceof Error ? e.message : '送出失敗'); setState('idle') }
@@ -93,7 +97,7 @@ export default function HomeworkPage() {
       {!reviewUnit && <p className="muted">{lesson.title}</p>}
       {name && <p className="hw-name">👤 {name}</p>}
       {last && state !== 'sent' && (
-        <p className="hw-last">✅ 已完成過：聽音 {last.listen}・聽寫 {last.typing}{last.time && `（${last.time.slice(0, 10).replace(/-/g, '/')}）`}。可以再做一次，老師會看到最近一次的成績。</p>
+        <p className="hw-last">✅ 已完成過：聽音 {last.listen}・聽寫 {last.typing}{last.parse && `・斷句 ${last.parse}`}{last.time && `（${last.time.slice(0, 10).replace(/-/g, '/')}）`}。可以再做一次，老師會看到最近一次的成績。</p>
       )}
 
       <div className="hw-steps" key={round}>
@@ -128,7 +132,23 @@ export default function HomeworkPage() {
             <Dictation words={words} onDone={(s, t) => setRes(r => ({ ...r, typing: [s, t] }))} />
           </section>
         )}
+
+        {parseGroup && (
+          <section className="hw-sec">
+            <h2><span className="hw-n">{(reviewUnit ? 2 : hasC || hasV ? 1 : 0) + (words.length ? 1 : 0) + 1}</span> {parseGroup.title}{res.parse && <em className="hw-done">已完成 {res.parse[0]}/{res.parse[1]}</em>}</h2>
+            <p className="muted small">每句先斷句，再拆出子音＋母音＋聲調符號、選念第幾聲，最後選中文意思。第一句是示範。</p>
+            <ParseQuiz items={parseGroup.items} onDone={(s, t) => setRes(r => ({ ...r, parse: [s, t] }))} />
+          </section>
+        )}
       </div>
+
+      {/* 課程資料裡標 homework、但沒有答案（parts）的練習：只列出來，不計分 */}
+      {lesson.practice.filter(g => g.homework && g !== parseGroup).map(g => (
+        <section className="hw-sec hw-extra" key={g.title}>
+          <h2>{g.title}</h2>
+          <WordList compact={g.half ? 'half' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh showRoman={false} />
+        </section>
+      ))}
 
       <section className="hw-sec hw-submit">
         <h2>繳交</h2>
@@ -136,12 +156,12 @@ export default function HomeworkPage() {
           ? <p className="muted small">請從預約頁的「我的課程與作業」進入作業頁，才能送出作業。</p>
           : state === 'sent'
             ? <>
-              <p className="hw-sent">✅ 已完成！聽音選字 {last?.listen}・聽寫 {last?.typing}，老師會收到你的成績。</p>
+              <p className="hw-sent">✅ 已完成！聽音選字 {last?.listen}・聽寫 {last?.typing}{last?.parse && `・斷句 ${last.parse}`}，老師會收到你的成績。</p>
               <button className="gbtn" onClick={() => { setRes({}); setLp({}); setState('idle'); setRound(r => r + 1); window.scrollTo({ top: 0 }) }}>再做一次</button>
             </>
             : <>
               <p className="muted small">做完以上題目後，按「送出作業」，成績會直接傳給老師。</p>
-              <button className="gbtn on" disabled={state === 'sending' || (!res.listen && !res.typing)} onClick={submit}>{state === 'sending' ? '送出中…' : '送出作業'}</button>
+              <button className="gbtn on" disabled={state === 'sending' || (!res.listen && !res.typing && !res.parse)} onClick={submit}>{state === 'sending' ? '送出中…' : '送出作業'}</button>
               {err && <p className="bk-msg err">{err}</p>}
             </>}
       </section>

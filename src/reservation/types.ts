@@ -24,8 +24,8 @@ export interface StudentView {
 /** 一支課後錄影（連續的課合成一筆，no 會是「5–6」） */
 export interface VideoItem { no: string; start: string; end: string; dateOnly: boolean; progress: string; video: string }
 
-export interface HomeworkRecord { time: string; listen: string; typing: string; count: number }
-export interface HomeworkRow { time: string; name: string; lesson: string; listen: string; typing: string }
+export interface HomeworkRecord { time: string; listen: string; typing: string; parse?: string; count: number }  // parse：短句斷句（只有部分課有）
+export interface HomeworkRow { time: string; name: string; lesson: string; listen: string; typing: string; parse?: string }
 
 /** 學生頁分兩次載入：getStudentInfo（姓名、課程、堂數、我的預約）與 getOpenDays（可預約時段，慢） */
 export type StudentInfo = Omit<StudentView, 'days' | 'asOf'>

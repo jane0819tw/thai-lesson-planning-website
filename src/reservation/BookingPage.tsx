@@ -23,7 +23,7 @@ function HomeworkButton({ to, rec }: { to: string; rec?: HomeworkRecord }) {
   return (
     <Link to={to} className={`bk-hw${rec ? ' done' : ''}`}>
       {rec
-        ? <>📝 作業 <b>✅ 已完成</b>　聽音 {rec.listen}・聽寫 {rec.typing}　<u>再做一次</u></>
+        ? <>📝 作業 <b>✅ 已完成</b>　聽音 {rec.listen}・聽寫 {rec.typing}{rec.parse && `・斷句 ${rec.parse}`}　<u>再做一次</u></>
         : <>📝 作業 <b>尚未完成</b>　<u>開始</u></>}
     </Link>
   )
