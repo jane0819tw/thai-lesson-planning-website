@@ -23,7 +23,9 @@ type Tab = 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 
 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
 // 說明文字有換行時，每行列成一點
-const RuleBody = ({ body }: { body: string }) => body.includes('\n') ? <ul>{body.split('\n').map((l, i) => <li key={i}>{l}</li>)}</ul> : <p>{body}</p>
+// **文字**：本課重點，粗體＋主色
+const emph = (s: string) => s.split(/\*\*(.+?)\*\*/).map((t, i) => i % 2 ? <strong className="hl" key={i}>{t}</strong> : t)
+const RuleBody = ({ body }: { body: string }) => body.includes('\n') ? <ul>{body.split('\n').map((l, i) => <li key={i}>{emph(l)}</li>)}</ul> : <p>{emph(body)}</p>
 // 標 homework 的練習改放在作業頁
 const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework)
 const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && lessonPractice(l).length === 1 ? lessonPractice(l)[0].title : '練習・句型')
@@ -143,6 +145,7 @@ export default function LessonPage() {
             <article className="card" key={x.title}>
               <h3>{x.title}</h3>
               {x.lines.map((l, i) => <p className="th big2" key={i}>{l}</p>)}
+              {x.toneTables?.map(t => <ToneTableView key={t.title} table={t} />)}
               {x.images?.map(im => <ZoomImage key={im.src} src={`${import.meta.env.BASE_URL}${im.src}`} alt={im.alt} style={{ maxWidth: '100%', borderRadius: 12 }} />)}
             </article>
           ))}
@@ -204,7 +207,7 @@ export default function LessonPage() {
           {lessonPractice(lesson).map(g => (
             <article className="card" key={g.title}>
               {g.title !== practiceLabel(lesson) && <h3>{g.title}</h3>}
-              <WordList compact={g.half ? 'half' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />
+              <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />
             </article>
           ))}
           {lesson.patterns.length > 0 && (

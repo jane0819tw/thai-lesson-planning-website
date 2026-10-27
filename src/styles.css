@@ -61,6 +61,14 @@ table.tone th.th { white-space: nowrap; }
 table.tone .playall { display: block; margin: 6px auto 0; padding: 3px 10px; border: 0; border-radius: 999px; background: var(--accent-soft); font-size: .75rem; font-weight: 400; cursor: pointer; }
 table.tone .playall:hover { filter: brightness(.95); }
 table.tone .speak { width: 28px; height: 28px; font-size: .8rem; margin-left: 4px; }
+/* corner：講義排版（標題在左上角、ห 補齊列黃底藍字、x／用ห補 用紅字） */
+table.tone.corner th.corner-title { background: #dde7e5; }
+table.tone.corner td.na { color: #8b1a10; font-size: 1rem; font-weight: 600; }
+table.tone.corner tr.fill > * { background: #fdf2d6; }
+table.tone.corner .fillword { color: #1d4ea0; font-weight: 600; }
+table.tone tr.short > :not(.group) { background: #e6f1fb; }
+table.tone tr.long > :not(.group) { background: #fdf6dc; }
+table.tone th.group { white-space: nowrap; }
 .mini { display: flex; flex-wrap: wrap; gap: 4px 8px; justify-content: center; margin-top: 6px; }
 .minichip { background: var(--accent-soft); border-radius: 8px; padding: 1px 8px; }
 .syl { display: inline-flex; align-items: center; gap: 2px; margin-right: 10px; font-size: 1.3rem; }
@@ -367,6 +375,8 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
 .list.compact.wide .row { flex-wrap: wrap; }
 .list.compact.half { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .list.compact.half .row { flex-wrap: wrap; }
+.list.compact.third { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.list.compact.third .row { flex-wrap: wrap; }
 
 /* 補充：兩張卡並排 */
 .cardgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 16px; align-items: start; }
@@ -394,6 +404,7 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
   .row { padding: 8px 10px; gap: 8px; }
   .row .wordimg, .vword-img { width: 44px; height: 44px; }
   .list.compact { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .list.compact.third { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
   /* 母音卡 */
   .vstack { gap: 12px; }
@@ -426,3 +437,6 @@ table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0
   .dialog .strokebar { justify-content: center; }
   .dialog .strokebar button { padding: 8px 14px; }
 }
+
+/* 說明卡裡的本課重點（**文字**） */
+strong.hl { color: var(--accent); }
