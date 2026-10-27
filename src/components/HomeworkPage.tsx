@@ -4,7 +4,7 @@ import { SECTIONS, KED, label as keyLabel } from './KeyboardPage'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { getRepository } from '../data/repository'
 import type { Lesson, PracticeItem } from '../types'
-import { ListenQuiz, VowelListenQuiz, vowelSyllables } from './Games'
+import { ListenQuiz, VowelListenQuiz, WordListenQuiz, vowelSyllables } from './Games'
 import SpeakButton from './SpeakButton'
 import WordList from './WordList'
 import ParseQuiz from './ParseQuiz'
@@ -67,7 +67,11 @@ export default function HomeworkPage() {
   const hasC = lesson.consonants.length >= 4
   const nV = vowelSyllables(lesson.vowels).length
   const hasV = nV >= 6
-  const listenCount = Math.min(10, hasV && !hasC ? nV : lesson.consonants.length)
+  // 沒有新子音、母音的課（例如聲調規則、尾音）改用單字出聽音選字
+  const nW = new Set(lesson.vocab.map(w => w.thai)).size
+  const hasW = !hasC && !hasV && nW >= 4
+  const hasL = hasC || hasV || hasW
+  const listenCount = Math.min(10, hasW ? nW : hasV && !hasC ? nV : lesson.consonants.length)
   // 有答案（parts）的作業練習＝短句斷句題，計分並跟著作業送出
   const parseGroup = lesson.practice.find(g => g.homework && g.items.some(i => i.parts?.length))
 
@@ -115,11 +119,13 @@ export default function HomeworkPage() {
             </section>
           </>
         )}
-        {!reviewUnit && (hasC || hasV) && (
+        {!reviewUnit && hasL && (
           <section className="hw-sec">
             <h2><span className="hw-n">1</span> 聽音選字{res.listen && <em className="hw-done">已完成 {res.listen[0]}/{res.listen[1]}</em>}</h2>
-            <p className="muted small">聽發音，選出正確的{hasV && !hasC ? '音節' : '字母'}，共 {listenCount} 題。</p>
-            {hasV && !hasC
+            <p className="muted small">聽發音，選出正確的{hasW ? '單字' : hasV && !hasC ? '音節' : '字母'}，共 {listenCount} 題。</p>
+            {hasW
+              ? <WordListenQuiz words={lesson.vocab} onDone={(s, t) => setRes(r => ({ ...r, listen: [s, t] }))} />
+              : hasV && !hasC
               ? <VowelListenQuiz vowels={lesson.vowels} onDone={(s, t) => setRes(r => ({ ...r, listen: [s, t] }))} />
               : <ListenQuiz items={lesson.consonants} onDone={(s, t) => setRes(r => ({ ...r, listen: [s, t] }))} />}
           </section>
@@ -127,7 +133,7 @@ export default function HomeworkPage() {
 
         {words.length > 0 && (
           <section className="hw-sec">
-            <h2><span className="hw-n">{reviewUnit ? 3 : hasC || hasV ? 2 : 1}</span> 聽寫{res.typing && <em className="hw-done">已完成 {res.typing[0]}/{res.typing[1]}</em>}</h2>
+            <h2><span className="hw-n">{reviewUnit ? 3 : hasL ? 2 : 1}</span> 聽寫{res.typing && <em className="hw-done">已完成 {res.typing[0]}/{res.typing[1]}</em>}</h2>
             <p className="muted small">按喇叭聽發音，用下方的泰文鍵盤打出來。</p>
             <Dictation words={words} onDone={(s, t) => setRes(r => ({ ...r, typing: [s, t] }))} />
           </section>
@@ -135,7 +141,7 @@ export default function HomeworkPage() {
 
         {parseGroup && (
           <section className="hw-sec">
-            <h2><span className="hw-n">{(reviewUnit ? 2 : hasC || hasV ? 1 : 0) + (words.length ? 1 : 0) + 1}</span> {parseGroup.title}{res.parse && <em className="hw-done">已完成 {res.parse[0]}/{res.parse[1]}</em>}</h2>
+            <h2><span className="hw-n">{(reviewUnit ? 2 : hasL ? 1 : 0) + (words.length ? 1 : 0) + 1}</span> {parseGroup.title}{res.parse && <em className="hw-done">已完成 {res.parse[0]}/{res.parse[1]}</em>}</h2>
             <p className="muted small">每句先斷句，再拆出子音＋母音＋聲調符號、選念第幾聲，最後選中文意思。第一句是示範。</p>
             <ParseQuiz items={parseGroup.items} onDone={(s, t) => setRes(r => ({ ...r, parse: [s, t] }))} />
           </section>

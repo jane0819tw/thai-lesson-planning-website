@@ -55,7 +55,7 @@ export default function LessonPage() {
     if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length) t.push(['vocab', '單字'])
     if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
     if (lesson.memes.length) t.push(['memes', '補充'])
-    if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6) t.push(['games', '互動練習'])
+    if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
     if (lesson.extras.length) t.push(['extras', '補充'])
     return t
   }, [lesson])
@@ -158,7 +158,7 @@ export default function LessonPage() {
         </>
       )}
 
-      {cur === 'games' && <Games consonants={lesson.consonants} vowels={lesson.vowels} />}
+      {cur === 'games' && <Games consonants={lesson.consonants} vowels={lesson.vowels} words={lesson.vocab} />}
 
       {cur === 'extras' && (
         <section className="cardgrid">

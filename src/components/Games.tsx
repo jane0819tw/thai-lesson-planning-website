@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Consonant, Vowel } from '../types'
+import type { Consonant, Vowel, WordItem } from '../types'
 import { SpeakIcon } from './SpeakButton'
 import { nameText, speak } from '../audio/speak'
 import WordIcon from './WordIcon'
@@ -105,6 +105,51 @@ function Memory({ items }: { items: Consonant[] }) {
 }
 
 
+// ───────── 單字聽音選字（沒有新子音、母音的課，例如聲調規則、尾音）─────────
+export function WordListenQuiz({ words, onDone }: { words: WordItem[]; onDone?: (score: number, total: number) => void }) {
+  const all = useMemo(() => words.filter((w, k) => words.findIndex(x => x.thai === w.thai) === k), [words])
+  const rounds = Math.min(10, all.length)
+  const [seed, setSeed] = useState(0)
+  const qs = useMemo(() => shuffle(all).slice(0, rounds).map(ans => {
+    const wrong = shuffle(all.filter(x => x.thai !== ans.thai)).slice(0, 3)
+    return { ans, options: shuffle([ans, ...wrong]) }
+  }), [all, rounds, seed]) // eslint-disable-line react-hooks/exhaustive-deps
+  const [i, setI] = useState(0)
+  const [picked, setPicked] = useState<string | null>(null)
+  const [score, setScore] = useState(0)
+  const q = qs[i]
+  useEffect(() => { if (q && i > 0) speak(q.ans.thai, q.ans.audioUrl) }, [q]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (!q && qs.length) onDone?.(score, qs.length) }, [q]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!q) return (
+    <div className="gcard">
+      <h3>完成！</h3>
+      <p className="big2">{score} / {qs.length}</p>
+      <button className="gbtn" onClick={() => { setSeed(s => s + 1); setI(0); setScore(0); setPicked(null) }}>再玩一次</button>
+    </div>
+  )
+  const answer = (t: string) => { if (picked) return; setPicked(t); if (t === q.ans.thai) setScore(s => s + 1) }
+  return (
+    <div className="gcard">
+      <p className="muted small">第 {i + 1} / {qs.length} 題　答對 {score}</p>
+      <button className="gbtn big-speak" onClick={() => speak(q.ans.thai, q.ans.audioUrl)}><SpeakIcon /> 再聽一次</button>
+      <p>聽到的是哪個單字？</p>
+      <div className="gopts">
+        {q.options.map(o => (
+          <button key={o.thai} onClick={() => answer(o.thai)}
+            className={`gopt word th${picked ? (o.thai === q.ans.thai ? ' right' : o.thai === picked ? ' wrong' : '') : ''}`}>{o.thai}</button>
+        ))}
+      </div>
+      {picked && (
+        <div>
+          <p>{picked === q.ans.thai ? '✅ 答對了！' : '❌ 答錯了'}　正確：<span className="th big2">{q.ans.thai}</span>　{q.ans.roman}　{q.ans.zh}</p>
+          <button className="gbtn" onClick={() => { setI(i + 1); setPicked(null) }}>{i + 1 >= qs.length ? '看成績' : '下一題'}</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ───────── 母音聽音選字（短／長對照）─────────
 interface Syl { text: string; len: '短' | '長'; ipa: string; mate?: string }
 export const vowelSyllables = (vowels: Vowel[]): Syl[] => vowels.flatMap(v => {
@@ -161,21 +206,24 @@ export function VowelListenQuiz({ vowels, onDone }: { vowels: Vowel[]; onDone?: 
   )
 }
 
-export default function Games({ consonants, vowels }: { consonants: Consonant[]; vowels: Vowel[] }) {
+export default function Games({ consonants, vowels, words = [] }: { consonants: Consonant[]; vowels: Vowel[]; words?: WordItem[] }) {
   const hasC = consonants.length >= 4
   const hasV = vowelSyllables(vowels).length >= 6
-  const [g, setG] = useState<'listen' | 'memory' | 'vowel' | null>(null)
+  const hasW = !hasC && !hasV && words.length >= 4
+  const [g, setG] = useState<'listen' | 'memory' | 'vowel' | 'word' | null>(null)
   return (
     <section className="stack">
       <article className="card">
-        <p className="muted">用這一課學到的{hasC ? '子音' : '母音'}來練習。</p>
+        <p className="muted">用這一課學到的{hasC ? '子音' : hasV ? '母音' : '單字'}來練習。</p>
         <div className="gmodes">
+          {hasW && <button className={`gbtn${g === 'word' ? ' on' : ''}`} onClick={() => setG('word')}>🎧 單字聽音選字</button>}
           {hasV && <button className={`gbtn${g === 'vowel' ? ' on' : ''}`} onClick={() => setG('vowel')}>🎧 母音聽音選字</button>}
           {hasC && <button className={`gbtn${g === 'listen' ? ' on' : ''}`} onClick={() => setG('listen')}>🎧 聽音選字</button>}
           {hasC && <button className={`gbtn${g === 'memory' ? ' on' : ''}`} onClick={() => setG('memory')}>🃏 翻牌配對</button>}
         </div>
       </article>
       {g === 'vowel' && <VowelListenQuiz vowels={vowels} />}
+      {g === 'word' && <WordListenQuiz words={words} />}
       {g === 'listen' && <ListenQuiz items={consonants} />}
       {g === 'memory' && <Memory items={consonants} />}
     </section>
