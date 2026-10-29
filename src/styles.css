@@ -44,6 +44,9 @@ h1 { font-size: 1.5rem; margin: .4em 0; } h2 { font-size: 1.15rem; margin-top: 1
 .speak { background: var(--accent-soft); border: 0; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1rem; flex: none; }
 .speak:hover { filter: brightness(.95); }
 .meme-big { font-size: 2.8rem; line-height: 1.3; margin: 4px 0 8px; }
+/* 只有大字、沒有圖的半張卡（例如和圖卡並排的 มปร）：字放大置中 */
+.memegrid > .card.half:not(:has(img)) { display: grid; place-items: center; }
+.memegrid > .card.half:not(:has(img)) .meme-big { font-size: 4.5rem; margin: 0; }
 .meme-placeholder { display: grid; place-items: center; height: 200px; border: 2px dashed var(--line); border-radius: 12px; color: var(--muted); margin-bottom: 12px; }
 .cats { list-style: none; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
 .cat { display: grid; gap: 4px; padding: 20px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; text-decoration: none; color: var(--fg); position: relative; min-height: 96px; }
@@ -494,3 +497,16 @@ table.ftable { border-collapse: collapse; font-size: 1.6rem; }
 
 /* 說明卡裡的本課重點（**文字**） */
 strong.hl { color: var(--accent); }
+
+/* 母音加尾音的變形表（L11） */
+table.vshift td.vs-v, table.vshift td.vs-f { font-size: 1.6rem; }
+table.vshift td.vs-f.changed { background: #f6d2b5; }
+table.vshift .vx { color: var(--muted); font-family: system-ui, sans-serif; font-size: .9em; }
+table.vshift .vs-or { color: var(--muted); margin: 0 4px; }
+table.vshift td.vs-w { text-align: left; white-space: normal; min-width: 150px; }
+table.vshift .vs-word { display: flex; align-items: center; gap: 2px; padding: 4px 0; font-size: 1.3rem; }
+table.vshift .vs-word + .vs-word { border-top: 1px solid var(--line); }
+table.vshift .vs-word small { font-size: .8rem; margin-left: 2px; }
+table.vshift .vs-note { margin: 4px 0 0; }
+table.vshift .vs-split { border-left: 3px solid var(--line); }
+@media (prefers-color-scheme: dark) { table.vshift td.vs-f.changed { background: #5a3418; } }

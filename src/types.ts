@@ -21,6 +21,10 @@ export interface Vowel {
 }
 /** 尾音卡：一個尾音一張卡；group 對應 vocab 的 group，那幾個單字就排在這張卡裡 */
 export interface Final { id: string; sound: string; letters: string[]; group: string; mouth: string }
+/** 母音加尾音後的寫法（L11 母音變形）：finals＝加尾音的寫法（x＝尾音位置，可有兩種，例：เ-ย、เ-ิx），沒填＝講義的「/」；words 的字要在 vocab 裡才有中文；changed＝寫法會變（講義橘底） */
+export interface VowelShift { vowel: string; finals?: string[]; words: string[]; changed?: boolean; note?: string }
+/** heads：左右兩組的標題（例如短母音、長母音）；rows：同一列左右對照。一種母音有兩種變形時分兩列：下一列那一邊填 null＝和上一列合併；vowel 填空字串＝只合併母音那一格 */
+export interface VowelShiftTable { title?: string; heads: [string, string]; rows: [VowelShift | null, VowelShift | null][] }
 export interface ToneRow { label: string; cells: string[]; fill?: boolean; group?: string }  // fill：ห 補齊的那一列（黃底、藍字），空字串＝空白格；group：最左側多一欄子音類型，相鄰同 group 的列合併成一格
 export interface ToneTable { title: string; note?: string; rows: ToneRow[]; corner?: boolean; tint?: boolean | 'long' }  // corner：標題放在表格左上角那一格（同講義排版）；tint：短母音列淺藍底、長母音列淺黃底；'long'＝全部淺黃底（例如有清尾音時一律依長母音的規則）
 /** 短句斷句作業的一個音節：c 子音、v 母音（用 - 標子音位置，例如 เ-า）、m 聲調符號（沒有就省略）、t 念第幾聲（1–5） */
@@ -51,6 +55,10 @@ export interface Lesson {
   vocabAfterVowel?: string
   /** 有設：「單字」清單改成依尾音分卡（vocab 依 group 排進對應的尾音卡），不再單獨一個區塊 */
   finals?: Final[]
+  /** 複習上一課：放在最前面的「複習」分頁（上課一開始先做），格式同補充卡 */
+  review?: Extra[]
+  /** 母音加尾音的變形表（放在「說明」最上面）；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
+  vowelShifts?: VowelShiftTable[]
   /** 作業頁「延伸影片挑戰」按鈕的連結（站內路徑，例如 /video/xxx）；沒設就顯示「即將開放」 */
   videoChallenge?: string
   homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean | VowelIntroConfig; finalsIntro?: boolean

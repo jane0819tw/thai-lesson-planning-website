@@ -18,9 +18,10 @@ import RuleDemo from './RuleDemo'
 import ToneIntro from './ToneIntro'
 import VowelIntro from './VowelIntro'
 import FinalsIntro from './FinalsIntro'
+import VowelShiftView from './VowelShiftView'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-type Tab = 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes'
+type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes'
 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
 // 說明文字有換行時，每行列成一點
@@ -47,12 +48,13 @@ export default function LessonPage() {
   const tabs = useMemo(() => {
     if (!lesson) return [] as [Tab, string][]
     const t: [Tab, string][] = []
+    if (lesson.review?.length) t.push(['review', '複習'])
     if (lesson.diagram) t.push(['diagram', lesson.diagram.title])
     if (lesson.vowels.length) t.push(['vowels', '母音'])
-    if (lesson.rules.length || lesson.toneTables.length || lesson.finalsIntro) t.push(['rules', '說明'])
+    if (lesson.rules.length || lesson.toneTables.length || lesson.finalsIntro || lesson.vowelShifts?.length) t.push(['rules', '說明'])
     if (lesson.finals?.length) t.push(['finals', '尾音'])
     if (lesson.consonants.length) t.push(['consonants', '子音'])
-    if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length) t.push(['vocab', '單字'])
+    if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length) t.push(['vocab', '單字'])
     if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
     if (lesson.memes.length) t.push(['memes', '補充'])
     if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
@@ -152,6 +154,7 @@ export default function LessonPage() {
               <article className="card" key={r.id}><h3>{r.title}</h3><RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
             ))}
           </section>
+          {lesson.vowelShifts && <section className="stack">{lesson.vowelShifts.map((t, i) => <VowelShiftView key={i} table={t} vocab={lesson.vocab} showZh={showZh} />)}</section>}
           {/* 聲調表放在說明的最下面 */}
           {lesson.toneIntro && <ToneIntro />}
           {lesson.toneTables.length > 0 && <section className="stack">{lesson.toneTables.map(t => <ToneTableView key={t.title} table={t} />)}</section>}
@@ -160,9 +163,9 @@ export default function LessonPage() {
 
       {cur === 'games' && <Games consonants={lesson.consonants} vowels={lesson.vowels} words={lesson.vocab} />}
 
-      {cur === 'extras' && (
+      {(cur === 'extras' || cur === 'review') && (
         <section className="cardgrid">
-          {lesson.extras.map(x => (
+          {(cur === 'review' ? lesson.review ?? [] : lesson.extras).map(x => (
             <article className="card" key={x.title}>
               <h3>{x.title}</h3>
               {x.lines.map((l, i) => <p className="th big2" key={i}>{l}</p>)}
