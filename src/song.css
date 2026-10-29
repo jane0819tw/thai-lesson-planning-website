@@ -1,0 +1,42 @@
+/* 歌詞跟讀頁。版面沿用 video.css 的 .v* 樣式，這裡只放歌詞頁自己的部分。 */
+.spage .vleft { margin-bottom: 12px; }
+.spage .sfull { cursor: pointer; }
+.sadmin { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
+.srep { font-size: .75rem; color: var(--tn-fall); border: 1px solid currentColor; border-radius: 99px; padding: 0 8px; }
+.sx { color: var(--muted); }
+.vline.shidden { opacity: .55; padding: 6px 14px; background: transparent; border-style: dashed; }
+.sedit { display: grid; gap: 8px; border-top: 1px dashed var(--line); padding-top: 8px; cursor: default; }
+.sedit label { display: grid; gap: 4px; }
+.sedit input { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--fg); min-width: 0; }
+.sgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; }
+.scell { display: grid; gap: 3px; }
+.serr { color: var(--tn-fall); }
+/* styles.css 的認字課也有 .vwords（網格兩欄），歌詞頁照斷詞自然排開 */
+.spage .vwords { display: flex; flex-wrap: wrap; gap: 6px 4px; padding: 0; }
+/* 補充區塊：寬螢幕每列兩張圖，窄螢幕一張 */
+.sextra { margin-top: 24px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 16px; }
+.sextra h2 { margin: 0 0 12px; font-size: 1.1rem; }
+.sextra-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 600px) { .sextra-grid { grid-template-columns: 1fr; } }
+.simg { margin: 0; text-align: center; }
+.simg img { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; }
+/* 斷詞輔助關閉：整句原文照一般泰文連寫 */
+.sfull { margin: 0; font-size: 1.35rem; line-height: 1.6; }
+/* 補充：單字、句型卡片 */
+.sextra h3 { margin: 4px 0 8px; font-size: 1rem; }
+.snotes-wrap { margin-bottom: 16px; }
+/* 一列一張卡 */
+.snotes { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.snote { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }
+.snote-h { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.snote-th { font-size: 1.4rem; }
+.snote-eg { display: grid; gap: 2px; background: var(--accent-soft); border-radius: 8px; padding: 6px 10px; }
+/* 小測驗 */
+.squiz { margin: 0; padding-left: 1.4em; display: grid; gap: 16px; }
+.sq-q { margin: 0; font-size: 1.15rem; }
+.sq p { margin: 2px 0; }
+.sq-opts { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0; }
+.vtog.sq-ok { background: #1f8a4c; border-color: #1f8a4c; color: #fff; }
+.vtog.sq-no { background: var(--tn-fall); border-color: var(--tn-fall); color: #fff; }
+/* 歌詞頁音標不分聲調上色，一律藍色 */
+.spage .rom span { color: var(--tn-low); }

@@ -234,6 +234,7 @@ export default function AdminPage() {
           {/* 其他工具：另開分頁，不影響這頁尚未儲存的開放時段 */}
           <a className="mgr-tool" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
           <a className="mgr-tool" href="#/reading/dictation-review" target="_blank" rel="noopener noreferrer">🎧 聽寫片段審查</a>
+          <a className="mgr-tool" href="#/song" target="_blank" rel="noopener noreferrer">🎵 歌詞跟讀</a>
         </nav>
         <div className="mgr-content">
           {sec === 'sched' && (
