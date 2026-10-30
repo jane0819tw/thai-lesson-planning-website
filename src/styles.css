@@ -605,3 +605,32 @@ table.finals-mini { border-collapse: collapse; margin: 0 0 12px; font-size: 1.15
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .finals-toggle { font: inherit; font-size: .9rem; border: 1px solid var(--line); background: var(--card); color: var(--accent); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
 .finals-toggle:hover { background: var(--accent-soft); }
+
+/* Grouping（L15）：音節結構圖（C1｜C2 V (F)）＋第 1／第 2 個音節對照表＋例字表；講義的紅字用 gp-red */
+.gp-syl { margin: 0 auto; flex: 0 1 auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.gp-box { display: flex; background: #dde7f0; color: #1d2a44; border-radius: 16px; padding: 10px 18px; text-align: center; }
+.gp-box, .gp-box > div { display: flex; flex-direction: column; align-items: center; }
+.gp-box.gp-wide { flex-direction: row; align-items: flex-start; gap: 22px; }
+.gp-box small { font-size: .85rem; min-height: 1.2em; }
+.gp-box b { font-size: 2.6rem; line-height: 1.1; font-weight: 800; }
+.gp-syl figcaption { flex-basis: 100%; text-align: center; color: var(--muted); }
+.gp-wrap { flex: 1 1 340px; }
+table.gp-table th { background: var(--bg); }
+table.gp-table td { white-space: normal; }
+table.gp-table .th { font-size: 1.4rem; }
+table.gp-table tr.gp-pron > * { background: #fdf2d6; font-weight: 700; }
+.gp-red { color: #d64545; }
+table.gp-words th { background: var(--bg); }
+@media (prefers-color-scheme: dark) {
+  .gp-box { background: #26303c; color: var(--fg); }
+  table.gp-table tr.gp-pron > * { background: #4a3f1c; }
+  .gp-red { color: #f87171; }
+}
+/* 補充卡的說明文字可以分行（L15 文化卡） */
+.memegrid p { white-space: pre-line; }
+
+/* 課程標題下方的說明：列點時不要太大的縮排（L15） */
+.lsummary ul { margin: 0 0 1em; padding-left: 1.2em; }
+
+/* Grouping 小單元的副標：直接講規則（L15） */
+.gp-sub { margin: 0 0 10px; font-size: 1.1rem; font-weight: 700; color: var(--accent); }

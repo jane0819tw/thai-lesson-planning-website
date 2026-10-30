@@ -4,7 +4,7 @@ const files = readdirSync('data/lessons').filter(f => f.endsWith('.json')).sort(
 const out = ['# 泰文認字課程內容清單', '']
 for (const f of files) {
   const L = JSON.parse(readFileSync(`data/lessons/${f}`, 'utf8'))
-  out.push(`## L${L.number} ${L.title}`, '', L.summary, '')
+  out.push(`## L${L.number} ${L.title}`, '', ...(L.summary.includes('\n') ? L.summary.split('\n').map(l => `- ${l}`) : [L.summary]), '')
   if (L.consonants.length) {
     out.push('| 字 | 名稱 | 拼音 | 意思 | 發音 | 同音高子音 |', '|---|---|---|---|---|---|')
     for (const c of L.consonants) out.push(`| ${c.char} | ${c.name} | ${c.roman} | ${c.zh} | ${c.sound} | ${c.sameHigh} |`)

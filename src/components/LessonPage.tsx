@@ -21,6 +21,7 @@ import VowelIntro from './VowelIntro'
 import FinalsIntro from './FinalsIntro'
 import ClusterIntro from './ClusterIntro'
 import VowelShiftView from './VowelShiftView'
+import GroupingView from './GroupingView'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
 type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | `unit-${number}`
@@ -32,8 +33,8 @@ const emph = (s: string) => s.split(/\*\*(.+?)\*\*/).map((t, i) => i % 2 ? <stro
 const RuleBody = ({ body }: { body: string }) => body.includes('\n') ? <ul>{body.split('\n').map((l, i) => <li key={i}>{emph(l)}</li>)}</ul> : <p>{emph(body)}</p>
 // 標 homework 的練習改放在作業頁；標 unit 的練習放進那個小單元的區塊
 const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework && !g.unit)
-// 小單元（例 L13-1 複合子音、L13-2 อ นำ ย）：依組合表、說明卡、練習出現的順序，各自一個區塊
-const unitsOf = (l: Lesson) => [...new Set([l.clusters?.unit, ...l.rules.map(r => r.unit), ...l.practice.filter(g => !g.homework).map(g => g.unit)].filter((u): u is string => !!u))]
+// 小單元（例 L13-1 複合子音、L13-2 อ นำ ย、L15 的四種 Grouping）：依組合表、說明卡、練習出現的順序，各自一個區塊
+const unitsOf = (l: Lesson) => [...new Set([l.clusters?.unit, ...(l.grouping ?? []).map(g => g.unit), ...l.rules.map(r => r.unit), ...l.practice.filter(g => !g.homework).map(g => g.unit)].filter((u): u is string => !!u))]
 const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && lessonPractice(l).length === 1 ? lessonPractice(l)[0].title : '練習・句型')
 
 export default function LessonPage() {
@@ -62,7 +63,7 @@ export default function LessonPage() {
     unitsOf(lesson).forEach((u, i) => t.push([`unit-${i}`, u]))
     if (lesson.finals?.length) t.push(['finals', '尾音'])
     if (lesson.consonants.length) t.push(['consonants', '子音'])
-    if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters) t.push(['vocab', '單字'])
+    if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length) t.push(['vocab', '單字'])
     if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
     if (lesson.memes.length) t.push(['memes', '補充'])
     if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
@@ -246,6 +247,7 @@ export default function LessonPage() {
         return (
           <>
             {lesson.clusters?.unit === u && <ClusterIntro config={lesson.clusters} vocab={lesson.vocab} showZh={showZh} />}
+            {lesson.grouping?.filter(g => g.unit === u).map(g => <GroupingView key={g.unit} g={g} vocab={lesson.vocab} showZh={showZh} />)}
             <section className="stack">
               {lesson.rules.filter(r => r.unit === u).map(ruleCard)}
               {lesson.practice.filter(g => !g.homework && g.unit === u).map(g => practiceCard(g, true))}
@@ -358,7 +360,8 @@ export default function LessonPage() {
     <>
       {(() => { const st = getSession(); return <p>{st ? <Link to={`/book?t=${encodeURIComponent(st.token)}`}>← 回到課程與作業</Link> : <Link to="/reading">← 認字課程</Link>}</p> })()}
       <h1>L{lesson.number}　{lesson.title}</h1>
-      <p className="muted">{lesson.summary}</p>
+      {/* 說明有換行時列點（L15） */}
+      <div className="muted lsummary"><RuleBody body={lesson.summary} /></div>
 
       <div className="toolbar">
         <label><input type="checkbox" checked={showZh} onChange={e => setShowZh(e.target.checked)} /> 顯示中文翻譯</label>

@@ -59,7 +59,7 @@ export default function HomeworkPage() {
   const words = useMemo(() => {
     if (!lesson) return [] as string[]
     const src = lesson.homework.length ? lesson.homework : lesson.vocab.map(w => w.thai)
-    return [...new Set(src)].slice(0, reviewUnit ? 10 : 8)
+    return [...new Set(src)].slice(0, reviewUnit ? 10 : lesson.homeworkCount ?? 8)
   }, [lesson, reviewUnit])
 
   if (lesson === undefined) return <p>載入中…</p>

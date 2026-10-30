@@ -54,11 +54,18 @@ export interface ClusterRow { c1: string; group: string; tint: 'yellow' | 'gray'
 export interface ClusterWord { thai: string; parts: string; tint: ClusterRow['tint'] }
 export interface ClusterIntroConfig { c2: string[]; rows: ClusterRow[]; rules: string[]; words: ClusterWord[]; unit?: string }  // unit：小單元名稱（例「L13-1 複合子音」），有填就自成一個區塊，同 unit 的說明卡、練習也排進來
 
+/** Grouping（L15）：一個小單元一組「結構圖＋音節表＋例字表」。unit＝小單元名稱（自成一個區塊，同 unit 的說明卡、練習也排進來）；
+ *  subtitle＝區塊標題下方的副標，直接講規則（例「MC/HC＋LCs：加 ห」），講義的小單元名稱容易混淆時用；c1／c2＝結構圖 C1、C2 下面的小字（例 MC/HC、LCs），空字串＝不寫；caption＝結構圖下方的補充；
+ *  consonants＝音節表「子音」列：兩格＝第 1、第 2 個音節各一格，一格＝兩個音節合併；pron＝「音節發音」列，**文字**＝紅字（例 **ห**C2V(F)），\n 後面另起一行；
+ *  note＝音節表最下面跨兩欄的紅字（例「＊不以複合子音發音」）；words＝例字，split＝講義「第1個音節-第2個音節」的念法，mark＝講義標紅的念法，中文從 vocab 帶 */
+export interface GroupingWord { thai: string; split: string; mark?: boolean }
+export interface GroupingUnit { unit: string; subtitle?: string; c1: string; c2: string; caption?: string; consonants: string[]; pron: [string, string]; note?: string; words: GroupingWord[] }
+
 /** 母音種類說明卡：focus＝這課要學（紅）、done＝學過（灰）、notes:false＝不顯示下方補充說明 */
 export interface VowelIntroConfig { focus: ('single' | 'compound' | 'special' | 'sanskrit')[]; done?: ('single' | 'compound' | 'special' | 'sanskrit')[]; notes?: boolean }
 
 export interface Lesson {
-  id: string; number: number; title: string; summary: string; status: 'draft' | 'ready'
+  id: string; number: number; title: string; summary: string; status: 'draft' | 'ready'  // summary：標題下方的說明，用 \n 分行會列點
   rules: Rule[]; consonants: Consonant[]; vowels: Vowel[]; toneTables: ToneTable[]
   vocab: WordItem[]; practice: PracticeGroup[]; patterns: Pattern[]
   /** 顯示在「母音」區塊最上面（種類說明卡之後）的說明卡 */
@@ -75,6 +82,10 @@ export interface Lesson {
   vowelShifts?: VowelShiftTable[]
   /** 複合子音組合表＋例字拆解（放在「說明」最上面）；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
   clusters?: ClusterIntroConfig
+  /** Grouping 小單元（L15）：每個小單元自成一個區塊；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
+  grouping?: GroupingUnit[]
+  /** 作業頁聽寫取前幾個作業字，沒設＝8（L14 講義作業頁 10 個字都要放） */
+  homeworkCount?: number
   /** 作業頁「延伸影片挑戰」按鈕的連結（站內路徑，例如 /video/xxx）；沒設就顯示「即將開放」 */
   videoChallenge?: string
   homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean | VowelIntroConfig; finalsIntro?: boolean | FinalsIntroConfig  // true＝清尾音總表（L10 的 5 音 10 字）

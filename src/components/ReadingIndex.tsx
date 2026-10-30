@@ -19,7 +19,7 @@ export default function ReadingIndex() {
               <Link to={`/reading/lesson/${l.id}`}>
                 <span className="num">L{l.number}</span>
                 <strong>{l.title}</strong>
-                <small>{l.summary}</small>
+                <small>{l.summary.replace(/\n/g, ' ')}</small>
                 {l.status === 'draft' && <em className="badge">草稿</em>}
               </Link>
             </li>
