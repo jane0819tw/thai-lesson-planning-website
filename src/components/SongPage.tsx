@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useParams } from 'react-router-dom'
 import { getSong, listSongs } from '../data/songRepository'
 import type { Song, SongLine, SongNote, SongQuiz, SongWord } from '../song/types'
@@ -9,6 +10,8 @@ import ZoomImage from './ZoomImage'
 import '../video.css'
 import '../song.css'
 
+/** 語速按鈕每點一次換下一個 */
+const RATES = [1, 0.75, 0.5]
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 
 export function SongIndex() {
@@ -243,11 +246,23 @@ function SongView({ initial }: { initial: Song }) {
 
   const hiddenCount = song.lines.filter(L => L.hidden).length
 
+  /** 列印講義：瀏覽器列印視窗可選「另存為 PDF」，檔名預設取 document.title */
+  const printSheet = () => {
+    const old = document.title
+    document.title = `${song.title} 歌詞講義`
+    window.addEventListener('afterprint', () => { document.title = old }, { once: true })
+    window.print()
+  }
+
   return (
     <div className={`vpage spage tf-${art ? 'loopless' : 'std'}${showRom ? '' : ' hide-rom'}${showZh ? '' : ' hide-zh'}`}>
       <p><Link to="/song">← 歌詞跟讀</Link></p>
       <h1>{song.title}</h1>
       <p className="muted small">{[song.titleZh, song.artist, mmss(song.duration)].filter(Boolean).join('・')}</p>
+      <p className="sprint-btn">
+        <button type="button" className="vtog" onClick={printSheet}>🖨 列印講義／存成 PDF</button>
+        <span className="small muted">照下面「音標」「中文」「藝術字」開關決定講義樣式</span>
+      </p>
 
       {isAdmin && (
         <div className="sadmin">
@@ -276,10 +291,7 @@ function SongView({ initial }: { initial: Song }) {
         <div className="vctl">
           <button type="button" className="vtog" aria-pressed={playing} onClick={togglePlay} disabled={status !== 'ready'}>{playing ? '⏸ 暫停' : '▶ 播放'}</button>
           <button type="button" className="vtog" aria-pressed={follow} onClick={() => setFollow(f => !f)}>自動跟隨</button>
-          <span className="small muted">語速</span>
-          {[1, 0.75, 0.5].map(r => (
-            <button key={r} type="button" className="vtog" aria-pressed={rate === r} onClick={() => setRate(r)} disabled={status !== 'ready'}>{r}×</button>
-          ))}
+          <button type="button" className="vtog" aria-pressed={rate !== 1} title="點一下換速度" onClick={() => setRate(r => RATES[(RATES.indexOf(r) + 1) % RATES.length])} disabled={status !== 'ready'}>語速 {rate}×</button>
         </div>
       </div>
 
@@ -354,30 +366,16 @@ function SongView({ initial }: { initial: Song }) {
       </div>
       </div>
 
-      {(!!song.notes?.length || !!song.images?.length) && (
-        <section className="sextra">
-          <h2>補充</h2>
-          {(['word', 'pattern'] as const).map(k => {
-            const list = song.notes?.filter(n => n.kind === k) ?? []
-            return list.length > 0 && (
-              <div key={k} className="snotes-wrap">
-                <h3>{k === 'word' ? '單字' : '句型'}</h3>
-                <div className="snotes">{list.map(n => <NoteCard key={n.th} note={n} />)}</div>
-              </div>
-            )
-          })}
-          {!!song.images?.length && (
-            <div className="sextra-grid">
-              {song.images.map(im => (
-                <figure key={im.src} className="simg">
-                  <ZoomImage src={im.src} alt={im.alt} />
-                  {im.caption && <figcaption className="small muted">{im.caption}</figcaption>}
-                </figure>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
+      {/* 順序：單字 → 句型 → 小測驗 → 補充（圖片） */}
+      {(['word', 'pattern'] as const).map(k => {
+        const list = song.notes?.filter(n => n.kind === k) ?? []
+        return list.length > 0 && (
+          <section key={k} className="sextra">
+            <h2>{k === 'word' ? '單字' : '句型'}</h2>
+            <div className="snotes">{list.map(n => <NoteCard key={n.th} note={n} />)}</div>
+          </section>
+        )
+      })}
 
       {!!song.quiz?.length && (
         <section className="sextra">
@@ -386,7 +384,113 @@ function SongView({ initial }: { initial: Song }) {
         </section>
       )}
 
+      {!!song.images?.length && (
+        <section className="sextra">
+          <h2>補充</h2>
+          <div className="sextra-grid">
+            {song.images.map(im => (
+              <figure key={im.src} className="simg">
+                <ZoomImage src={im.src} alt={im.alt} />
+                {im.caption && <figcaption className="small muted">{im.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
+
       <p className="vnote">{song.note}</p>
+      {createPortal(<PrintSheet song={song} firstOf={firstOf} repeatsOf={repeatsOf} showRom={showRom} showZh={showZh} art={art} />, document.body)}
+    </div>
+  )
+}
+
+/** 列印用講義：平常隱藏，只在列印時取代整個網站畫面。歌詞右邊留筆記線，後面接單字、句型、練習、補充圖片（不印詳細解釋和解答） */
+function PrintSheet({ song, firstOf, repeatsOf, showRom, showZh, art }: {
+  song: Song; firstOf: number[]; repeatsOf: number[][]; showRom: boolean; showZh: boolean; art: boolean
+}) {
+  const ABCD = 'ABCD'
+  const visible = song.lines.map((L, i) => ({ L, i })).filter(({ L }) => !L.hidden)
+  const notes = (k: SongNote['kind']) => song.notes?.filter(n => n.kind === k) ?? []
+  let sec = 0
+  const head = (t: string) => <h2>{'一二三四五'[sec++]}、{t}</h2>
+  return (
+    <div className={`sprint tf-${art ? 'loopless' : 'std'}`} aria-hidden="true">
+      <header className="pr-head">
+        <div>
+          <h1>{song.title}</h1>
+          <p>{[song.titleZh, song.artist].filter(Boolean).join('・')}</p>
+        </div>
+        <div className="pr-name">姓名＿＿＿＿＿＿　日期＿＿＿＿＿</div>
+      </header>
+
+      {head('歌詞')}
+      <ol className="pr-lines">
+        {visible.map(({ L, i }, n) => {
+          const rep = firstOf[i] !== i
+          const again = repeatsOf[i].length
+          return (
+            <li key={i} className="pr-line">
+              <span className="pr-no">{n + 1}</span>
+              <div>
+                <p className="th pr-th">{L.th}</p>
+                {rep ? <p className="pr-meta">（同第 {visible.findIndex(v => v.i === firstOf[i]) + 1} 句）</p> : <>
+                  {showRom && <p className="pr-rom"><Rom text={L.words.map(w => w.rom).filter(Boolean).join(' ')} /></p>}
+                  {showZh && L.zh && <p className="pr-zh">{L.zh}</p>}
+                </>}
+                {again > 0 && <p className="pr-meta">副歌・之後再唱 {again} 次</p>}
+              </div>
+              <div className="pr-rule" />
+            </li>
+          )
+        })}
+      </ol>
+
+      {(['word', 'pattern'] as const).map(k => notes(k).length > 0 && (
+        <section key={k}>
+          {head(k === 'word' ? '單字' : '句型')}
+          {notes(k).map(n => (
+            <div key={n.th} className="pr-note">
+              <p className="pr-note-h"><span className="th">{n.th}</span>{showRom && <Rom text={n.rom} />}<b>{n.zh}</b></p>
+              <div className="pr-eg">
+                <p className="th">例：{n.example.th}</p>
+                {showRom && <p className="pr-rom"><Rom text={n.example.rom} /></p>}
+                {showZh && <p className="pr-zh">{n.example.zh}</p>}
+              </div>
+              <p className="pr-mine">我的例句：</p>
+            </div>
+          ))}
+        </section>
+      ))}
+
+      {!!song.quiz?.length && (
+        <section>
+          {head('練習')}
+          <ol className="pr-quiz">
+            {song.quiz.map((q, i) => (
+              <li key={i}>
+                <p><span className="pr-blank">（　　）</span><span className="th">{q.q}</span></p>
+                {showZh && <p className="pr-zh">{q.qZh}</p>}
+                <p className="pr-opts">{q.options.map((o, j) => <span key={j}>({ABCD[j]}) <span className="th">{o}</span></span>)}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {!!song.images?.length && (
+        <section>
+          {head('補充')}
+          {/* 不用 lazy：講義平常是 display:none，lazy 的圖不會載入，印出來會空白 */}
+          <div className="pr-imgs">
+            {song.images.map(im => (
+              <figure key={im.src} className="pr-img">
+                <img src={im.src} alt={im.alt} />
+                {im.caption && <figcaption>{im.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   )
 }

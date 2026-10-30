@@ -23,8 +23,6 @@
 /* 斷詞輔助關閉：整句原文照一般泰文連寫 */
 .sfull { margin: 0; font-size: 1.35rem; line-height: 1.6; }
 /* 補充：單字、句型卡片 */
-.sextra h3 { margin: 4px 0 8px; font-size: 1rem; }
-.snotes-wrap { margin-bottom: 16px; }
 /* 一列一張卡 */
 .snotes { display: grid; grid-template-columns: 1fr; gap: 12px; }
 .snote { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }
@@ -42,3 +40,48 @@
 .spage .rom span { color: var(--tn-low); }
 /* 秒數旁的「副歌」：這句後面還會重唱（重唱的句子被老師隱藏） */
 .schorus { font-size: .75rem; color: #fff; background: var(--accent); border-radius: 99px; padding: 0 8px; }
+/* 列印講義（SongPage 的 PrintSheet）：畫面上不顯示；列印時藏起整個網站，只印講義，固定淺色 A4 */
+.sprint-btn { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 8px; }
+.sprint { display: none; }
+@media print {
+  @page { size: A4; margin: 14mm 14mm 16mm; @bottom-center { content: counter(page) " / " counter(pages); font-size: 9pt; color: #888; } }
+  #root { display: none !important; }
+  html, body { background: #fff !important; }
+  .sprint { display: block; color: #222; font-size: 10.5pt; line-height: 1.45; }
+  .sprint p { margin: 0; }
+  .sprint h1 { font-size: 17pt; margin: 0; }
+  .sprint h2 { font-size: 12.5pt; margin: 14pt 0 6pt; padding-bottom: 2pt; border-bottom: 1.5pt solid #c2410c; color: #c2410c; break-after: avoid; }
+  /* 藝術字開關也套用到講義 */
+  .sprint .th { font-family: 'Noto Sans Thai Looped', 'Noto Sans TC', sans-serif; }
+  .sprint.tf-loopless .th { font-family: 'Noto Sans Thai', 'Noto Sans TC', sans-serif; }
+  .sprint .rom span { color: #1d4f91; }
+  .pr-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12pt; border-bottom: 1pt solid #999; padding-bottom: 4pt; }
+  .pr-head p { color: #666; font-size: 9.5pt; }
+  .pr-name { font-size: 10pt; white-space: nowrap; }
+  /* 歌詞：編號｜泰文＋音標＋中文｜右側筆記線 */
+  .pr-lines { list-style: none; margin: 0; padding: 0; }
+  .pr-line { display: grid; grid-template-columns: 18pt 1fr 32%; gap: 8pt; padding: 5pt 0; border-bottom: .5pt solid #ddd; break-inside: avoid; }
+  .pr-no { color: #999; font-size: 9pt; padding-top: 3pt; text-align: right; }
+  .pr-th { font-size: 14pt; line-height: 1.6; }
+  .pr-rom { font-size: 9.5pt; }
+  .pr-zh { font-size: 9.5pt; color: #444; }
+  .pr-meta { font-size: 8.5pt; color: #c2410c; }
+  .pr-rule { background: repeating-linear-gradient(to bottom, transparent 0 15pt, #ccc 15pt 15.6pt); min-height: 32pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* 單字、句型：每則一塊，例句底下留一行自己造句 */
+  .pr-note { padding: 6pt 0 10pt; break-inside: avoid; display: grid; gap: 3pt; }
+  .pr-note-h { display: flex; flex-wrap: wrap; gap: 4pt 10pt; align-items: baseline; }
+  .pr-note-h .th { font-size: 14pt; }
+  .pr-eg { border-left: 2pt solid #f0c9ad; padding-left: 8pt; }
+  .pr-mine { font-size: 9pt; color: #888; padding-top: 10pt; border-bottom: .6pt solid #bbb; }
+  /* 練習 */
+  .pr-quiz { margin: 0; padding-left: 1.4em; display: grid; gap: 10pt; }
+  .pr-quiz li { break-inside: avoid; }
+  .pr-quiz .th { font-size: 12pt; }
+  .pr-blank { margin-right: 4pt; }
+  .pr-opts { display: flex; flex-wrap: wrap; gap: 4pt 22pt; padding: 3pt 0 0 2em; }
+  /* 補充圖片：接在練習後面不換頁，每張佔半頁寬、兩張並排，整張不跨頁 */
+  .pr-imgs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12pt; align-items: start; }
+  .pr-img { margin: 0; text-align: center; break-inside: avoid; }
+  .pr-img img { width: 100%; height: auto; border: .5pt solid #ccc; }
+  .pr-img figcaption { font-size: 8.5pt; color: #666; margin-top: 3pt; }
+}
