@@ -40,3 +40,5 @@
 .vtog.sq-no { background: var(--tn-fall); border-color: var(--tn-fall); color: #fff; }
 /* 歌詞頁音標不分聲調上色，一律藍色 */
 .spage .rom span { color: var(--tn-low); }
+/* 秒數旁的「副歌」：這句後面還會重唱（重唱的句子被老師隱藏） */
+.schorus { font-size: .75rem; color: #fff; background: var(--accent); border-radius: 99px; padding: 0 8px; }

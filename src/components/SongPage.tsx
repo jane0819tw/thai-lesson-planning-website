@@ -6,7 +6,6 @@ import { loadYouTubeApi, PLAYER_ERRORS, type YTPlayer } from '../video/youtube'
 import { Rom } from '../video/Rom'
 import { getAdminKey } from '../reservation/api'
 import ZoomImage from './ZoomImage'
-import { useThaiFont } from './thaiFont'
 import '../video.css'
 import '../song.css'
 
@@ -54,12 +53,14 @@ function SongView({ initial }: { initial: Song }) {
   const [errorMsg, setErrorMsg] = useState('')
   const [active, setActive] = useState(-1)
   const [loopIdx, setLoopIdx] = useState<number | null>(null)
+  const [playing, setPlaying] = useState(false)
   const [follow, setFollow] = useState(true)
   const [rate, setRate] = useState(1)
   const [showRom, setShowRom] = useState(true)
   const [showZh, setShowZh] = useState(true)
   const [showSeg, setShowSeg] = useState(false)
-  const [font, nextFont] = useThaiFont()
+  // 藝術字只在這頁切換、預設關閉，不跟作業頁、鍵盤頁共用的字體設定連動
+  const [art, setArt] = useState(false)
 
   /** 每句第一次出現的句號；同樣的句子（如副歌）指回第一次 */
   const firstOf = useMemo(() => {
@@ -70,6 +71,34 @@ function SongView({ initial }: { initial: Song }) {
       return seen.get(key) as number
     })
   }, [song.lines])
+
+  /** 隱藏的句子（重複的副歌）播放時改標在哪一句：找字最像的顯示句；顯示的句子就是自己 */
+  const shownAs = useMemo(() => {
+    const grams = (t: string) => {
+      const k = t.replace(/\s/g, '')
+      const g = new Set<string>()
+      for (let j = 0; j + 1 < k.length; j++) g.add(k.slice(j, j + 2))
+      return g
+    }
+    const all = song.lines.map(L => grams(L.th))
+    return song.lines.map((L, i) => {
+      if (!L.hidden) return i
+      let best = -1, score = 0.5
+      song.lines.forEach((M, k) => {
+        if (M.hidden) return
+        const common = [...all[i]].filter(g => all[k].has(g)).length
+        const dice = (2 * common) / (all[i].size + all[k].size || 1)
+        if (dice > score) { best = k; score = dice }
+      })
+      return best
+    })
+  }, [song.lines])
+  /** 每句被哪些隱藏句重唱（依時間順序），有的話就是副歌 */
+  const repeatsOf = useMemo(() => {
+    const m = song.lines.map(() => [] as number[])
+    shownAs.forEach((v, i) => { if (v >= 0 && v !== i) m[v].push(i) })
+    return m
+  }, [shownAs, song.lines])
 
   const live = useRef({ lines: song.lines, loopIdx })
   live.current = { lines: song.lines, loopIdx }
@@ -126,19 +155,24 @@ function SongView({ initial }: { initial: Song }) {
         for (let i = 0; i < lines.length; i++) if (lines[i].start <= t + 0.05) idx = i
       }
       setActive(a => (a === idx ? a : idx))
+      const on = [1, 3].includes(p.getPlayerState())
+      setPlaying(v => (v === on ? v : on))
     }, 120)
     return () => window.clearInterval(timer)
   }, [status])
 
+  // 學生看不到隱藏句：播到那裡時改標在對應的顯示句上（老師看得到，就標原句）
+  const shown = active < 0 || isAdmin ? active : shownAs[active]
+
   // 3) 自動跟隨：寬版捲動右欄，窄版捲動整頁
   useEffect(() => {
-    if (!follow || active < 0) return
-    const el = lineEls.current[active]
+    if (!follow || shown < 0) return
+    const el = lineEls.current[shown]
     const c = scrollRef.current
     if (!el) return
     if (c && c.scrollHeight > c.clientHeight) c.scrollTo({ top: Math.max(0, el.offsetTop - 64), behavior: 'smooth' })
     else el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [active, follow])
+  }, [shown, follow])
 
   // 4) 播放速度
   useEffect(() => { if (status === 'ready') playerRef.current?.setPlaybackRate(rate) }, [rate, status])
@@ -152,11 +186,20 @@ function SongView({ initial }: { initial: Song }) {
   }
   /** 點單字或整句泰文：暫停，讓學生看清楚；按該句的 ▶ 才繼續 */
   const pause = (e: React.MouseEvent) => { e.stopPropagation(); playerRef.current?.pauseVideo() }
-  /** ▶：停在這句時從暫停處繼續，否則跳到這句開頭 */
+  /** ▶：停在這句時從暫停處繼續，正在播這句就暫停（手機點影片要點兩下才停得了），否則跳到這句開頭 */
   const playLine = (i: number) => {
     const p = playerRef.current
-    if (p && i === active && p.getPlayerState() === 2) { p.playVideo(); return }
+    if (p && i === shown) {
+      const st = p.getPlayerState()
+      if (st === 1 || st === 3) { p.pauseVideo(); setPlaying(false); return }
+      if (st === 2) { p.playVideo(); return }
+    }
     seekTo(i)
+  }
+  const togglePlay = () => {
+    const p = playerRef.current
+    if (!p) return
+    if (playing) { p.pauseVideo(); setPlaying(false) } else p.playVideo()
   }
   const toggleLoop = (i: number) => {
     if (loopIdx === i) { setLoopIdx(null); return }
@@ -201,7 +244,7 @@ function SongView({ initial }: { initial: Song }) {
   const hiddenCount = song.lines.filter(L => L.hidden).length
 
   return (
-    <div className={`vpage spage tf-${font.id}${showRom ? '' : ' hide-rom'}${showZh ? '' : ' hide-zh'}`}>
+    <div className={`vpage spage tf-${art ? 'loopless' : 'std'}${showRom ? '' : ' hide-rom'}${showZh ? '' : ' hide-zh'}`}>
       <p><Link to="/song">← 歌詞跟讀</Link></p>
       <h1>{song.title}</h1>
       <p className="muted small">{[song.titleZh, song.artist, mmss(song.duration)].filter(Boolean).join('・')}</p>
@@ -231,6 +274,7 @@ function SongView({ initial }: { initial: Song }) {
           )}
         </div>
         <div className="vctl">
+          <button type="button" className="vtog" aria-pressed={playing} onClick={togglePlay} disabled={status !== 'ready'}>{playing ? '⏸ 暫停' : '▶ 播放'}</button>
           <button type="button" className="vtog" aria-pressed={follow} onClick={() => setFollow(f => !f)}>自動跟隨</button>
           <span className="small muted">語速</span>
           {[1, 0.75, 0.5].map(r => (
@@ -245,21 +289,28 @@ function SongView({ initial }: { initial: Song }) {
         <button type="button" className="vtog" aria-pressed={showRom} onClick={() => setShowRom(v => !v)}>音標</button>
         <button type="button" className="vtog" aria-pressed={showZh} onClick={() => setShowZh(v => !v)}>中文</button>
         <button type="button" className="vtog" aria-pressed={showSeg} onClick={() => setShowSeg(v => !v)}>斷詞輔助</button>
-        <button type="button" className="vtog" aria-pressed={font.id === 'loopless'} onClick={nextFont}>藝術字</button>
+        <button type="button" className="vtog" aria-pressed={art} onClick={() => setArt(v => !v)}>藝術字</button>
       </div>
       <ol className="vlines">
         {song.lines.map((L, i) => {
           if (L.hidden && !isAdmin) return null
           const rep = firstOf[i] !== i
+          const again = repeatsOf[i]
+          const round = again.indexOf(active)
           return (
             <li
               key={i}
               ref={el => { lineEls.current[i] = el }}
-              className={`vline${i === active ? ' on' : ''}${loopIdx === i ? ' loop' : ''}${L.hidden ? ' shidden' : ''}`}
+              className={`vline${i === shown ? ' on' : ''}${loopIdx === i ? ' loop' : ''}${L.hidden ? ' shidden' : ''}`}
               onClick={() => seekTo(i)}
             >
               <div className="vlh">
-                <button type="button" className="vtime" onClick={e => { e.stopPropagation(); playLine(i) }}>▶ {mmss(L.start)}</button>
+                <button type="button" className="vtime" onClick={e => { e.stopPropagation(); playLine(i) }}>{i === shown && playing ? '⏸' : '▶'} {mmss(L.start)}</button>
+                {again.length > 0 && (
+                  <span className="schorus" title={`之後再唱：${again.map(k => mmss(song.lines[k].start)).join('、')}`}>
+                    副歌{round >= 0 && `・第 ${round + 2} 次`}
+                  </span>
+                )}
                 <span className="small muted">第 {i + 1} 句</span>
                 {rep && <span className="srep">重複第 {firstOf[i] + 1} 句</span>}
                 {L.hidden && <span className="small muted">（已隱藏）</span>}
