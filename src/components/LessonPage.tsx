@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getSession } from '../reservation/session'
 import { getRepository } from '../data/repository'
-import type { Consonant, Lesson } from '../types'
+import type { Consonant, Lesson, PracticeGroup, Rule } from '../types'
 import SpeakButton from './SpeakButton'
 import { nameText } from '../audio/speak'
 import WordIcon from './WordIcon'
@@ -19,18 +19,21 @@ import RuleDemo from './RuleDemo'
 import ToneIntro from './ToneIntro'
 import VowelIntro from './VowelIntro'
 import FinalsIntro from './FinalsIntro'
+import ClusterIntro from './ClusterIntro'
 import VowelShiftView from './VowelShiftView'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes'
+type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | `unit-${number}`
 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
 // 說明文字有換行時，每行列成一點
 // **文字**：本課重點，粗體＋主色
 const emph = (s: string) => s.split(/\*\*(.+?)\*\*/).map((t, i) => i % 2 ? <strong className="hl" key={i}>{t}</strong> : t)
 const RuleBody = ({ body }: { body: string }) => body.includes('\n') ? <ul>{body.split('\n').map((l, i) => <li key={i}>{emph(l)}</li>)}</ul> : <p>{emph(body)}</p>
-// 標 homework 的練習改放在作業頁
-const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework)
+// 標 homework 的練習改放在作業頁；標 unit 的練習放進那個小單元的區塊
+const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework && !g.unit)
+// 小單元（例 L13-1 複合子音、L13-2 อ นำ ย）：依組合表、說明卡、練習出現的順序，各自一個區塊
+const unitsOf = (l: Lesson) => [...new Set([l.clusters?.unit, ...l.rules.map(r => r.unit), ...l.practice.filter(g => !g.homework).map(g => g.unit)].filter((u): u is string => !!u))]
 const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && lessonPractice(l).length === 1 ? lessonPractice(l)[0].title : '練習・句型')
 
 export default function LessonPage() {
@@ -42,26 +45,46 @@ export default function LessonPage() {
   const [showRoman, setShowRoman] = useState(true)
   const [open, setOpen] = useState<Consonant | null>(null)
   const [openVowel, setOpenVowel] = useState<{ char: string; ipa: string } | null>(null)
+  const [reviewTab, setReviewTab] = useState(0)
+  const [finalsOpen, setFinalsOpen] = useState(false)  // 複習卡的尾音字母表：預設收起，按鈕展開（各分頁共用，切換分頁時高度不變）
+  const [active, setActive] = useState<Tab | null>(null)
 
-  useEffect(() => { getRepository().getLesson(id ?? '').then(l => { setLesson(l ?? null); setCollapsed(new Set()) }) }, [id])
+  useEffect(() => { getRepository().getLesson(id ?? '').then(l => { setLesson(l ?? null); setCollapsed(new Set()); setReviewTab(0); setFinalsOpen(false) }) }, [id])
 
   // 只顯示這一課有資料的分頁
   const tabs = useMemo(() => {
     if (!lesson) return [] as [Tab, string][]
     const t: [Tab, string][] = []
-    if (lesson.review?.length) t.push(['review', '複習'])
+    if (lesson.review?.length) t.push(['review', lesson.reviewLabel ?? '複習'])
     if (lesson.diagram) t.push(['diagram', lesson.diagram.title])
     if (lesson.vowels.length) t.push(['vowels', '母音'])
-    if (lesson.rules.length || lesson.toneTables.length || lesson.finalsIntro || lesson.vowelShifts?.length) t.push(['rules', '說明'])
+    if (lesson.rules.some(r => !r.unit) || lesson.toneTables.length || lesson.finalsIntro || lesson.vowelShifts?.length || (lesson.clusters && !lesson.clusters.unit)) t.push(['rules', '說明'])
+    unitsOf(lesson).forEach((u, i) => t.push([`unit-${i}`, u]))
     if (lesson.finals?.length) t.push(['finals', '尾音'])
     if (lesson.consonants.length) t.push(['consonants', '子音'])
-    if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length) t.push(['vocab', '單字'])
+    if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters) t.push(['vocab', '單字'])
     if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
     if (lesson.memes.length) t.push(['memes', '補充'])
     if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
     if (lesson.extras.length) t.push(['extras', '補充'])
     return t
   }, [lesson])
+
+  // 捲到哪個區塊，左邊目錄的那一項就變色
+  useEffect(() => {
+    const onScroll = () => {
+      let cur: Tab | null = null
+      for (const [k] of tabs) { const el = document.getElementById('sec-' + k); if (el && el.getBoundingClientRect().top <= 120) cur = k }
+      // 捲到底時最後幾個區塊到不了上方，直接算最後一個
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4 && tabs.length) cur = tabs[tabs.length - 1][0]
+      setActive(cur ?? tabs[0]?.[0] ?? null)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    const ro = new ResizeObserver(onScroll)  // 圖片載入、區塊收合後頁面高度會變，重算一次
+    ro.observe(document.body)
+    return () => { window.removeEventListener('scroll', onScroll); ro.disconnect() }
+  }, [tabs])
 
   if (lesson === undefined) return <p>載入中…</p>
   if (lesson === null) return <p>找不到這一課。<Link to="/reading">回課程列表</Link></p>
@@ -153,6 +176,53 @@ export default function LessonPage() {
     </article>
   )
 
+  const ruleCard = (r: Rule) => (
+    <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}<RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
+  )
+  const practiceCard = (g: PracticeGroup, showTitle: boolean) => (
+    <article className="card" key={g.title}>
+      {showTitle && <h3>{g.title}</h3>}
+      {g.images ? (
+        <div className={g.half ? 'picgrid half' : g.third ? 'picgrid third' : 'picgrid'}>
+          {g.items.map(i => (
+            <figure className="picword" key={i.thai}>
+              {i.image ? <ZoomImage src={`${import.meta.env.BASE_URL}${i.image.src}`} alt={i.image.alt} /> : <div className="meme-placeholder">圖片待補</div>}
+              <figcaption><span className="th big2">{i.thai}</span><SpeakButton text={i.thai} />{showZh && i.zh && <span>{i.zh}</span>}</figcaption>
+            </figure>
+          ))}
+        </div>
+      ) : g.qa ? (
+        <div className="qa">
+          <WordList words={g.items.slice(0, 1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={showZh} showRoman={showRoman} />
+          <WordList words={g.items.slice(1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={showZh} showRoman={showRoman} />
+        </div>
+      ) : <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />}
+    </article>
+  )
+
+  // 卡片固定三段：標題（＋尾音字母按鈕）｜字母表等上方內容｜聲調表等主要內容（分頁切換時三段各自對齊）
+  const extraCard = (x: NonNullable<Lesson['review']>[number], off: boolean) => (
+    <article className={off ? 'card off' : 'card'} key={x.title} aria-hidden={off || undefined}>
+      <div className="card-head">
+        <h3>{x.title}</h3>
+        {x.finals && <button className="finals-toggle" aria-expanded={finalsOpen} onClick={() => setFinalsOpen(o => !o)}>{finalsOpen ? '收起尾音字母 ▴' : '尾音字母 ▾'}</button>}
+      </div>
+      <div>
+        {x.lines.map((l, i) => <p className="th big2" key={i}>{l}</p>)}
+        {x.finals && finalsOpen && (
+          <table className="finals-mini"><tbody>
+            {x.finals.map(f => <tr key={f.sound}><th scope="row">{f.sound}</th><td className="th"><span className="fmain">{f.main}</span>{f.others && `（${f.others}）`}</td></tr>)}
+          </tbody></table>
+        )}
+      </div>
+      <div>
+        {x.choices && <ChoiceTable choices={x.choices} />}
+        {x.toneTables?.map(t => <ToneTableView key={t.title} table={t} />)}
+        {x.images?.map(im => <ZoomImage key={im.src} src={`${import.meta.env.BASE_URL}${im.src}`} alt={im.alt} style={{ maxWidth: '100%', borderRadius: 12 }} />)}
+      </div>
+    </article>
+  )
+
   const content = (cur: Tab) => (
     <>
       {cur === 'diagram' && lesson.diagram && <DiagramView d={lesson.diagram} />}
@@ -160,10 +230,9 @@ export default function LessonPage() {
       {cur === 'rules' && (
         <>
           {lesson.finalsIntro && <FinalsIntro config={lesson.finalsIntro === true ? undefined : lesson.finalsIntro} />}
+          {lesson.clusters && !lesson.clusters.unit && <ClusterIntro config={lesson.clusters} vocab={lesson.vocab} showZh={showZh} />}
           <section className="stack">
-            {lesson.rules.map(r => (
-              <article className="card" key={r.id}><h3>{r.title}</h3><RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
-            ))}
+            {lesson.rules.filter(r => !r.unit).map(ruleCard)}
           </section>
           {lesson.vowelShifts && <section className="stack">{lesson.vowelShifts.map((t, i) => <VowelShiftView key={i} table={t} vocab={lesson.vocab} showZh={showZh} />)}</section>}
           {/* 聲調表放在說明的最下面 */}
@@ -172,21 +241,35 @@ export default function LessonPage() {
         </>
       )}
 
+      {cur.startsWith('unit-') && (() => {
+        const u = unitsOf(lesson)[Number(cur.slice(5))]
+        return (
+          <>
+            {lesson.clusters?.unit === u && <ClusterIntro config={lesson.clusters} vocab={lesson.vocab} showZh={showZh} />}
+            <section className="stack">
+              {lesson.rules.filter(r => r.unit === u).map(ruleCard)}
+              {lesson.practice.filter(g => !g.homework && g.unit === u).map(g => practiceCard(g, true))}
+            </section>
+          </>
+        )
+      })()}
+
       {cur === 'games' && <Games consonants={lesson.consonants} vowels={lesson.vowels} words={lesson.vocab} />}
 
-      {(cur === 'extras' || cur === 'review') && (
+      {(cur === 'extras' || cur === 'review') && (() => { const tabbed = cur === 'review' && (lesson.review?.length ?? 0) > 1; return (
         <section className="cardgrid">
-          {(cur === 'review' ? lesson.review ?? [] : lesson.extras).map(x => (
-            <article className="card" key={x.title}>
-              <h3>{x.title}</h3>
-              {x.lines.map((l, i) => <p className="th big2" key={i}>{l}</p>)}
-              {x.choices && <ChoiceTable choices={x.choices} />}
-              {x.toneTables?.map(t => <ToneTableView key={t.title} table={t} />)}
-              {x.images?.map(im => <ZoomImage key={im.src} src={`${import.meta.env.BASE_URL}${im.src}`} alt={im.alt} style={{ maxWidth: '100%', borderRadius: 12 }} />)}
-            </article>
-          ))}
+          {/* 複習有好幾張卡時，用分頁切換、一次看一張 */}
+          {tabbed && (
+            <div className="subtabs" role="tablist">
+              {lesson.review!.map((x, i) => <button key={x.title} role="tab" aria-selected={i === reviewTab} className={i === reviewTab ? 'on' : undefined} onClick={() => setReviewTab(i)}>{x.tab ?? x.title}</button>)}
+            </div>
+          )}
+          {tabbed ? (
+            // 所有卡疊在同一格、只顯示目前那張：分頁高度一樣，切換時下面的內容不會跳
+            <div className="subpanels">{lesson.review!.map((x, i) => extraCard(x, i !== reviewTab))}</div>
+          ) : (cur === 'review' ? lesson.review ?? [] : lesson.extras).map(x => extraCard(x, false))}
         </section>
-      )}
+      ) })()}
 
       {cur === 'consonants' && (
         <section className="grid">
@@ -246,26 +329,7 @@ export default function LessonPage() {
 
       {cur === 'practice' && (
         <section className="stack">
-          {lessonPractice(lesson).map(g => (
-            <article className="card" key={g.title}>
-              {g.title !== practiceLabel(lesson) && <h3>{g.title}</h3>}
-              {g.images ? (
-                <div className={g.half ? 'picgrid half' : g.third ? 'picgrid third' : 'picgrid'}>
-                  {g.items.map(i => (
-                    <figure className="picword" key={i.thai}>
-                      {i.image ? <ZoomImage src={`${import.meta.env.BASE_URL}${i.image.src}`} alt={i.image.alt} /> : <div className="meme-placeholder">圖片待補</div>}
-                      <figcaption><span className="th big2">{i.thai}</span><SpeakButton text={i.thai} />{showZh && i.zh && <span>{i.zh}</span>}</figcaption>
-                    </figure>
-                  ))}
-                </div>
-              ) : g.qa ? (
-                <div className="qa">
-                  <WordList words={g.items.slice(0, 1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={showZh} showRoman={showRoman} />
-                  <WordList words={g.items.slice(1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={showZh} showRoman={showRoman} />
-                </div>
-              ) : <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />}
-            </article>
-          ))}
+          {lessonPractice(lesson).map(g => practiceCard(g, g.title !== practiceLabel(lesson)))}
           {lesson.patterns.length > 0 && (
             <article className="card">
               <h3>句型</h3>
@@ -309,7 +373,7 @@ export default function LessonPage() {
           </div>
           <ul>
             {tabs.map(([k, label]) => (
-              <li key={k}><button onClick={() => goto(k)}>{label}</button></li>
+              <li key={k}><button className={k === active ? 'on' : undefined} onClick={() => goto(k)}>{label}</button></li>
             ))}
           </ul>
           <div className="sidenav-foot">

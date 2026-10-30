@@ -4,7 +4,7 @@ export type ConsonantGroup = 'mid' | 'high' | 'lcp' | 'lcs'
 
 export interface WordItem { thai: string; zh: string; roman?: string; star?: boolean; group?: string; audioUrl?: string | null; image?: ExtraImage }
 export interface DemoTile { th: string; sub?: string; op?: string; icon?: string; speak?: string }
-export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; toneTable?: ToneTable }  // toneTable：說明卡內直接顯示聲調表
+export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; toneTable?: ToneTable; unit?: string }  // toneTable：說明卡內直接顯示聲調表；title 留空＝不顯示標題；unit：放進這個小單元的區塊（見 Lesson.clusters）
 export interface Consonant {
   id: string; char: string; name: string; roman: string; zh: string
   sound: string; group: ConsonantGroup; sameHigh: string; words: WordItem[]; audioUrl?: string | null
@@ -31,7 +31,7 @@ export interface ToneTable { title: string; note?: string; rows: ToneRow[]; corn
 export interface Syllable { syl: string; c: string; v: string; m?: string; t: number }
 /** parts：有填就變成作業頁的斷句題；demo：示範題（答案直接顯示、不計分） */
 export interface PracticeItem { thai: string; zh?: string; note?: string; parts?: Syllable[]; demo?: boolean; image?: ExtraImage }
-export interface PracticeGroup { title: string; items: PracticeItem[]; homework?: boolean; half?: boolean; third?: boolean; images?: boolean; qa?: boolean }  // qa：問答排法，第一個 item 是問句放左邊、其他是回答排在右邊；homework：改放在作業頁、不顯示在課程頁；half：每格佔半列（一列兩個）；third：一列三個；images：每個字配一張示意圖（沒圖顯示「圖片待補」）
+export interface PracticeGroup { title: string; items: PracticeItem[]; homework?: boolean; half?: boolean; third?: boolean; images?: boolean; qa?: boolean; unit?: string }  // unit：放進這個小單元的區塊、不放「練習」；qa：問答排法，第一個 item 是問句放左邊、其他是回答排在右邊；homework：改放在作業頁、不顯示在課程頁；half：每格佔半列（一列兩個）；third：一列三個；images：每個字配一張示意圖（沒圖顯示「圖片待補」）
 export interface Pattern { thai: string; zh: string }
 export interface LinkItem { title: string; url: string }
 /** imageUrl：沒填＝顯示「圖片待補」；明確填 null＝這張卡本來就不需要圖（只有文字） */
@@ -39,7 +39,7 @@ export interface Meme { title: string; desc: string; imageUrl?: string | null; b
 export interface ExtraImage { src: string; alt: string; credit?: string }  // credit：網路公開圖片的作者／授權標示（目前只記錄、不顯示在頁面上）
 /** 二選一題：options 兩個寫法，answer＝正確的是第幾個（0 或 1） */
 export interface Choice { options: [string, string]; answer: 0 | 1 }
-export interface Extra { title: string; lines: string[]; images?: ExtraImage[]; toneTables?: ToneTable[]; choices?: Choice[] }  // toneTables：補充卡內直接顯示聲調表（例如複習總表）；choices：二選一表格（點選後顯示對錯）
+export interface Extra { title: string; tab?: string; lines: string[]; images?: ExtraImage[]; toneTables?: ToneTable[]; choices?: Choice[]; finals?: { sound: string; main: string; others?: string }[] }  // finals：尾音字母小表（一個音一列，main 加底線、others 放括號裡），放在聲調表上面；tab：複習有好幾張卡時用分頁切換，分頁按鈕的短名稱（沒填用 title）；toneTables：補充卡內直接顯示聲調表（例如複習總表）；choices：二選一表格（點選後顯示對錯）
 
 export interface DiagramTile { label: string; count?: string; color: 'pink' | 'yellow' | 'green' | 'blue'; dashed?: boolean; wide?: boolean; sub: { t?: string; b?: string; th?: string; i?: boolean }[] }
 export interface Diagram { title: string; intro: string; tiles: DiagramTile[]; result: string }
@@ -47,6 +47,12 @@ export interface Diagram { title: string; intro: string; tiles: DiagramTile[]; r
 /** 尾音總表（講義「N 音 M 字」）：kind＝清／濁；rule＝有這種尾音時依長音（long）或短音（short）的規則；rows 一個音一列，main＝主要字母、others＝同音的其他字母（空白分隔）；
  *  或用 lines 分組、一組一列顯示（第一列的第一個字母當主要字母，例：["ก", "ค ฆ ข"]）。音數、字數自動計算 */
 export interface FinalsIntroConfig { kind: string; rule: 'long' | 'short'; rows: ({ sound: string; main: string; others?: string } | { sound: string; lines: string[] })[] }
+
+/** 複合子音組合表（L13）：rows 一個 C1 一列，group＝子音類型（中／低／高），tint＝列底色（同講義分色：yellow／gray／pink），combos＝組合，crossed＝講義劃掉、不存在的組合；
+ *  c2＝可以當 C2 的字母（合併成一格）；rules＝右邊的規則句；words＝例字拆解（parts＝拆法，用＋分段，母音用 - 標 อ 的位置，例：คร＋-ู；＝後面寫整個字怎麼分音節；tint 同上），中文從 vocab 帶 */
+export interface ClusterRow { c1: string; group: string; tint: 'yellow' | 'gray' | 'pink'; combos: string[]; crossed?: string[] }
+export interface ClusterWord { thai: string; parts: string; tint: ClusterRow['tint'] }
+export interface ClusterIntroConfig { c2: string[]; rows: ClusterRow[]; rules: string[]; words: ClusterWord[]; unit?: string }  // unit：小單元名稱（例「L13-1 複合子音」），有填就自成一個區塊，同 unit 的說明卡、練習也排進來
 
 /** 母音種類說明卡：focus＝這課要學（紅）、done＝學過（灰）、notes:false＝不顯示下方補充說明 */
 export interface VowelIntroConfig { focus: ('single' | 'compound' | 'special' | 'sanskrit')[]; done?: ('single' | 'compound' | 'special' | 'sanskrit')[]; notes?: boolean }
@@ -63,8 +69,12 @@ export interface Lesson {
   finals?: Final[]
   /** 複習上一課：放在最前面的「複習」分頁（上課一開始先做），格式同補充卡 */
   review?: Extra[]
+  /** 「複習」區塊的名稱（例：複習拼讀規則），沒填就叫「複習」 */
+  reviewLabel?: string
   /** 母音加尾音的變形表（放在「說明」最上面）；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
   vowelShifts?: VowelShiftTable[]
+  /** 複合子音組合表＋例字拆解（放在「說明」最上面）；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
+  clusters?: ClusterIntroConfig
   /** 作業頁「延伸影片挑戰」按鈕的連結（站內路徑，例如 /video/xxx）；沒設就顯示「即將開放」 */
   videoChallenge?: string
   homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean | VowelIntroConfig; finalsIntro?: boolean | FinalsIntroConfig  // true＝清尾音總表（L10 的 5 音 10 字）
