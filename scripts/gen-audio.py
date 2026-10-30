@@ -21,10 +21,12 @@ name_text = lambda s: re.sub(r"\s+", "", s)  # 同 src/audio/speak.ts 的 nameTe
 vowel_speech = lambda f: f.replace("-", "อ") if len(f.replace("-", "")) > 1 or f.replace("-", "") in ("อ", "ไ", "ใ", "ำ") else f.replace("-", "")  # อ ไ ใ 單念會念成符號名稱，補成 ออ ไอ ใอ
 
 # 個別詞指定來源（優先於自動規則）：聽過覺得某個來源唸得不對時，在這裡換成另一個
-FORCE_GTTS = {"องุ่น", "ปริมาณ", "กรุณา", "โก๋แก่", "เออเออ", "ขอ", "ผอผึ้ง", "ฃอฃวด", "พ้า", "ยอยักษ์", "ณอเณร", "นาฬิกา", "ทำไมวะ", "แฟน", "วาฬใหญ่", "กี่น", "คี่น", "คั้น", "กั๊บ", "ก๊าบ", "คับ", "ค้าบ", "คิด"}  # 子音名稱用「連寫」當 key（กอไก่ 這種）
+FORCE_GTTS = {"ข้าวเหนียว", "หมูปิ้ง", "ชอบมาก", "นิดหน่อย", "ฤๅษี", "องุ่น", "ปริมาณ", "กรุณา", "โก๋แก่", "เออเออ", "ขอ", "ผอผึ้ง", "ฃอฃวด", "พ้า", "ยอยักษ์", "ณอเณร", "นาฬิกา", "ทำไมวะ", "แฟน", "วาฬใหญ่", "กี่น", "คี่น", "คั้น", "กั๊บ", "ก๊าบ", "คับ", "ค้าบ", "คิด"}  # 子音名稱用「連寫」當 key（กอไก่ 這種）
 # 個別詞指定合成文字：ฃ 是廢字，edge-tts 讀不出單獨一個，改念「ฃอ」
 FORCE_SYNTH = {"ฃ": "ฃอ", "ฃอฃวด": "ขอ ฃวด"}  # ฃอ 引擎念不好，發音時偷換成 ขอ（畫面仍顯示 ฃอ ฃวด）
 FORCE_EDGE = {"เตอ", "เตีย", "เบือะ", "เจือะ", "เจือ", "อัว", "ตัวะ"}
+# 個別句子指定語速（edge-tts）：老師聽過覺得太快的
+FORCE_RATE = {"ช่วงนี้เป็นยังไงบ้าง": "-40%", "ไม่ไป ฉันเหนื่อย": "-40%"}
 
 gtts_texts = set()  # 以 อ 當載體的單獨母音（อะ、อา、เอะ…）與母音卡的短／長音例字（กะ、กา…）：edge-tts 會唸跑掉，改用 gTTS
 
@@ -43,6 +45,10 @@ def collect(lesson):
         gtts_texts.update(vs); texts.update(vs)  # 單獨母音走 gTTS
         texts.update(w["thai"] for w in v.get("words", []))
     texts.update(w["thai"] for w in lesson.get("vocab", []))
+    texts.update(lesson.get("homework", []))  # 作業聽寫字（L14 有幾個不在單字、練習裡）
+    for v in lesson.get("sanskritVowels", []):  # 梵文母音的念法（รึ、ริ…）同母音，走 gTTS
+        snd = {r["sound"] for r in v["readings"]}
+        gtts_texts.update(snd); texts.update(snd)
     for r in lesson.get("rules", []):
         texts.update(t["speak"] for t in r.get("demo", []) if t.get("speak"))
     # 聲調表：獨立的 toneTables，以及放在說明卡（rules）或母音前置說明卡（preface）裡的 toneTable
@@ -55,6 +61,7 @@ def collect(lesson):
             texts.update(re.sub(r"\s*\(x\)", "", c) for c in row["cells"] if not is_note(c))
     for g in lesson.get("practice", []):
         texts.update(i["thai"] for i in g.get("items", []))
+        synth_override.update({i["thai"]: i["thai"].replace("/", " ") for i in g.get("items", []) if "/" in i["thai"]})  # 「A / B」兩種回答：斜線不念出來
     return {t.strip() for t in texts if t and t.strip()}, synth_override
 
 BPS, FR = 6000, 144  # edge-tts 輸出 48kbps mono mp3：每秒 6000 bytes，每個 frame 144 bytes
@@ -74,7 +81,8 @@ async def gen(text, f, synth=None):
             return f.stat().st_size > 0
         except Exception as e:
             print("gTTS 失敗:", text, e); f.unlink(missing_ok=True); return False
-    for k, rate in enumerate((RATE, RATE, RATE, "+0%")):
+    r0 = FORCE_RATE.get(text, RATE)
+    for k, rate in enumerate((r0, r0, r0, "+0%")):
         if k: await asyncio.sleep(2 * k)  # 服務偶爾回 503／逾時，等一下再試
         try:
             if BARE.match(text):
