@@ -5,7 +5,7 @@
 前端 speak(text) 會先查 manifest，有檔就播 mp3，否則退回瀏覽器語音。
 已存在的檔案會略過；要重做某個詞，刪掉對應 mp3 與 manifest 條目再執行。
 """
-import asyncio, hashlib, json, pathlib, re, sys, edge_tts
+import asyncio, hashlib, json, pathlib, re, sys, aiohttp, edge_tts
 from gtts import gTTS  # pip install gTTS；非官方管道，公開／商用前見 docs/audio-rerecord.md
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -21,7 +21,7 @@ name_text = lambda s: re.sub(r"\s+", "", s)  # 同 src/audio/speak.ts 的 nameTe
 vowel_speech = lambda f: f.replace("-", "อ") if len(f.replace("-", "")) > 1 or f.replace("-", "") in ("อ", "ไ", "ใ", "ำ") else f.replace("-", "")  # อ ไ ใ 單念會念成符號名稱，補成 ออ ไอ ใอ
 
 # 個別詞指定來源（優先於自動規則）：聽過覺得某個來源唸得不對時，在這裡換成另一個
-FORCE_GTTS = {"โก๋แก่", "เออเออ", "ขอ", "ผอผึ้ง", "ฃอฃวด", "พ้า", "ยอยักษ์", "ณอเณร", "นาฬิกา", "ทำไมวะ", "แฟน", "วาฬใหญ่", "กี่น", "คี่น", "คั้น", "กั๊บ", "ก๊าบ", "คับ", "ค้าบ", "คิด"}  # 子音名稱用「連寫」當 key（กอไก่ 這種）
+FORCE_GTTS = {"องุ่น", "ปริมาณ", "กรุณา", "โก๋แก่", "เออเออ", "ขอ", "ผอผึ้ง", "ฃอฃวด", "พ้า", "ยอยักษ์", "ณอเณร", "นาฬิกา", "ทำไมวะ", "แฟน", "วาฬใหญ่", "กี่น", "คี่น", "คั้น", "กั๊บ", "ก๊าบ", "คับ", "ค้าบ", "คิด"}  # 子音名稱用「連寫」當 key（กอไก่ 這種）
 # 個別詞指定合成文字：ฃ 是廢字，edge-tts 讀不出單獨一個，改念「ฃอ」
 FORCE_SYNTH = {"ฃ": "ฃอ", "ฃอฃวด": "ขอ ฃวด"}  # ฃอ 引擎念不好，發音時偷換成 ขอ（畫面仍顯示 ฃอ ฃวด）
 FORCE_EDGE = {"เตอ", "เตีย", "เบือะ", "เจือะ", "เจือ", "อัว", "ตัวะ"}
@@ -74,7 +74,8 @@ async def gen(text, f, synth=None):
             return f.stat().st_size > 0
         except Exception as e:
             print("gTTS 失敗:", text, e); f.unlink(missing_ok=True); return False
-    for rate in (RATE, RATE, "+0%"):
+    for k, rate in enumerate((RATE, RATE, RATE, "+0%")):
+        if k: await asyncio.sleep(2 * k)  # 服務偶爾回 503／逾時，等一下再試
         try:
             if BARE.match(text):
                 data, wb = await stream(f"{text} {text} {text}", BARE_RATE)
@@ -86,7 +87,7 @@ async def gen(text, f, synth=None):
             else:
                 f.write_bytes((await stream(synth or text, rate))[0])
             return f.stat().st_size > 0
-        except edge_tts.exceptions.NoAudioReceived:
+        except (edge_tts.exceptions.NoAudioReceived, aiohttp.ClientError, asyncio.TimeoutError):
             f.unlink(missing_ok=True)
     return False
 
