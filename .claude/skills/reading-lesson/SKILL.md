@@ -30,6 +30,7 @@ description: 製作或優化泰文認字課程的一課（data/lessons/lesson-NN
 5. **生成音檔**：見下方「音檔」。
 6. **更新清單**：`npm run inventory` 重新產生 `docs/curriculum-inventory.md`。
 7. **交給老師看**：照「回報時要講清楚」列出。不要自己把 `status` 改成 `ready`；commit 等使用者說再做。
+8. **commit 前先更新這份 skill**：把這一課老師要求的修正、自己判斷之後也適用的做法，寫進對應的段落（不是只記在交接區），讓下一課第一版就照著做。skill 的修改跟課程內容放在同一個 commit，回報時列出這次補了哪些規格。
 
 ## 講義 → 課程資料
 
@@ -137,6 +138,7 @@ description: 製作或優化泰文認字課程的一課（data/lessons/lesson-NN
 
 - 兩張 `half: true` 的卡並排、圖片縮小；只有文字的卡設 `imageUrl: null`（沒填會顯示「圖片待補」）；只放圖可以 `title`、`desc` 留空。
 - 大字泰文用 `big`；只有大字、沒圖的 half 卡會自動放大置中。
+- 說明文字直接講內容，不要加「講義作業頁的推文：」這類出處前綴（L12 老師要求拿掉）。
 - 講義裡的梗圖、截圖（L12 作業頁的 คิดถึงมากกก 推文）也照這個方法從講義裁出來用。大字太長會斷行，`big` 要縮短到一行放得下。
 - 講義裡老師自己做的圖（L11 的 มปร）：用 `render-pdf.js` 以 2800px 重轉那一頁，再用 `sips -c <高> <寬> --cropOffset <y> <x>` 裁切，**看過裁切結果**再用。圖＋大字的組合拆成兩張 `half` 卡：一張放圖、一張只放 `big` 大字。
 - 圖片放 `public/extras/lesson-NN/`，路徑寫 `extras/lesson-NN/xxx.jpg`，長邊 960px 以內（`sips -Z 960`）。
@@ -175,6 +177,8 @@ python3 scripts/gen-audio.py lesson-NN --only 詞1 詞2  # 強制重生指定的
 - 改完更新這份 skill。
 
 ## Commit 慣例
+
+commit 前先確認「流程」第 8 步：這一課的修正已經寫進 skill。
 
 課程內容與音檔分開 commit，訊息用中文，標題一句話講這課改了什麼，內文用列點：
 
