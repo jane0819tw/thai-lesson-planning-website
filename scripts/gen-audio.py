@@ -49,6 +49,7 @@ def collect(lesson):
     tables = list(lesson.get("toneTables", []))
     tables += [r["toneTable"] for r in lesson.get("rules", []) if r.get("toneTable")]
     tables += [r["toneTable"] for v in lesson.get("vowels", []) for r in v.get("preface", []) if r.get("toneTable")]
+    tables += [t for x in lesson.get("review", []) + lesson.get("extras", []) for t in x.get("toneTables", [])]  # 複習、補充卡裡的聲調總表
     for t in tables:
         for row in t["rows"]:
             texts.update(re.sub(r"\s*\(x\)", "", c) for c in row["cells"] if not is_note(c))
