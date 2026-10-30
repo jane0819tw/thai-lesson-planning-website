@@ -61,6 +61,11 @@ export interface ClusterIntroConfig { c2: string[]; rows: ClusterRow[]; rules: s
 export interface GroupingWord { thai: string; split: string; mark?: boolean }
 export interface GroupingUnit { unit: string; subtitle?: string; c1: string; c2: string; caption?: string; consonants: string[]; pron: [string, string]; note?: string; words: GroupingWord[] }
 
+/** 梵文母音表（L14）：一個字母一組，readings 一個念法一列（字母那一格自動合併）；sound＝念法（例 รึ），word＝例字（中文從 vocab 帶），split＝講義的分音節念法（例 รึ-ดู），
+ *  沒有 word＝講義的「/」；unused＝講義「現今不使用」；mark＝講義淺黃底的格子（常用的念法） */
+export interface SanskritReading { sound: string; word?: string; split?: string; unused?: boolean; mark?: boolean }
+export interface SanskritVowel { char: string; readings: SanskritReading[] }
+
 /** 母音種類說明卡：focus＝這課要學（紅）、done＝學過（灰）、notes:false＝不顯示下方補充說明 */
 export interface VowelIntroConfig { focus: ('single' | 'compound' | 'special' | 'sanskrit')[]; done?: ('single' | 'compound' | 'special' | 'sanskrit')[]; notes?: boolean }
 
@@ -84,6 +89,8 @@ export interface Lesson {
   clusters?: ClusterIntroConfig
   /** Grouping 小單元（L15）：每個小單元自成一個區塊；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
   grouping?: GroupingUnit[]
+  /** 梵文母音表（L14，放在「母音」區塊）；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
+  sanskritVowels?: SanskritVowel[]
   /** 「說明」區塊（聲調總覽、聲調表）改排在子音後面、改叫「聲調」（L1：先概念、再子音、最後聲調） */
   tonesAfterConsonants?: boolean
   /** 開放投影片模式（課程頁出現「▶ 投影片模式」按鈕，見 lesson-slides skill） */

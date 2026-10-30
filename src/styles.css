@@ -629,11 +629,22 @@ table.gp-words th { background: var(--bg); }
 /* 補充卡的說明文字可以分行（L15 文化卡） */
 .memegrid p { white-space: pre-line; }
 
+/* 梵文母音表（L14） */
+table.sktable th.sk-char { font-size: 2.4rem; width: 1%; vertical-align: middle; }
+table.sktable td.sk-sound { font-size: 1.5rem; width: 1%; white-space: nowrap; }
+table.sktable td.sk-word { font-size: 1.7rem; }
+table.sktable td.sk-zh { font-size: 1.15rem; }
+table.sktable td.sk-unused { color: var(--muted); }
+table.sktable .sk-mark { background: #fbeed3; }
+@media (max-width: 760px) {
+  table.sktable th.sk-char { font-size: 1.8rem; }
+  table.sktable td.sk-word { font-size: 1.35rem; }
+}
+@media (prefers-color-scheme: dark) {
+  table.sktable .sk-mark { background: #4a3f1c; }
+}
 /* 課程標題下方的說明：列點時不要太大的縮排（L15） */
 .lsummary ul { margin: 0 0 1em; padding-left: 1.2em; }
-
-/* Grouping 小單元的副標：直接講規則（L15） */
-.gp-sub { margin: 0 0 10px; font-size: 1.1rem; font-weight: 700; color: var(--accent); }
 
 /* 投影片模式（PresentPage）：蓋住整個畫面，內容用 zoom 自動放大到填滿（筆順視窗 .overlay 的 z-index 10 要在上面） */
 .present { position: fixed; inset: 0; z-index: 5; background: var(--bg); display: grid; grid-template-rows: auto auto 1fr auto; }
@@ -670,5 +681,7 @@ table.gp-words th { background: var(--bg); }
 .pt-side > button:hover { border-color: var(--line); }
 .pt-side > button.on { border-color: var(--accent); color: var(--accent); }
 .pt-thumb { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; display: grid; place-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px; pointer-events: none; }
+/* Grouping 小單元的副標：直接講規則（L15） */
+.gp-sub { margin: 0 0 10px; font-size: 1.1rem; font-weight: 700; color: var(--accent); }
 .pt-inner .tablewrap { overflow: visible; }  /* 投影片不要表格內捲動：讓寬表格撐開、整頁一起縮放 */
 .pt-todo { padding: 48px; text-align: center; border: 2px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 1.4rem; }

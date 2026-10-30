@@ -22,6 +22,7 @@ import FinalsIntro from './FinalsIntro'
 import ClusterIntro from './ClusterIntro'
 import VowelShiftView from './VowelShiftView'
 import GroupingView from './GroupingView'
+import SanskritVowels from './SanskritVowels'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
 export type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | `unit-${number}`
@@ -49,13 +50,13 @@ export function lessonTabs(lesson: Lesson): [Tab, string][] {
   const hasRules = plainRules(lesson).length || lesson.toneTables.length || lesson.finalsIntro || lesson.vowelShifts?.length || (lesson.clusters && !lesson.clusters.unit)
   if (lesson.review?.length) t.push(['review', lesson.reviewLabel ?? '複習'])
   if (lesson.diagram) t.push(['diagram', lesson.rules.some(r => r.at === 'concept') ? '基本概念' : lesson.diagram.title])
-  if (lesson.vowels.length) t.push(['vowels', '母音'])
+  if (lesson.vowels.length || lesson.sanskritVowels?.length) t.push(['vowels', '母音'])
   if (hasRules && !lesson.tonesAfterConsonants) t.push(['rules', '說明'])
   unitsOf(lesson).forEach((u, i) => t.push([`unit-${i}`, u]))
   if (lesson.finals?.length) t.push(['finals', '尾音'])
   if (lesson.consonants.length) t.push(['consonants', '子音'])
   if (hasRules && lesson.tonesAfterConsonants) t.push(['rules', '聲調'])
-  if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length) t.push(['vocab', '單字'])
+  if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length && !lesson.sanskritVowels?.length) t.push(['vocab', '單字'])
   if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
   if (lesson.memes.length) t.push(['memes', '補充'])
   if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
@@ -69,15 +70,16 @@ export default function LessonPage() {
   const [lesson, setLesson] = useState<Lesson | null | undefined>(undefined)
   const [collapsed, setCollapsed] = useState<Set<Tab>>(new Set())
   const [navOpen, setNavOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 760)
-  const [showZh, setShowZh] = useState(true)
-  const [showRoman, setShowRoman] = useState(true)
+  // 中文、拼音一律顯示；只有練習卡可以各自隱藏中文（見 practiceCard）
+  const showZh = true, showRoman = true
   const [open, setOpen] = useState<Consonant | null>(null)
   const [openVowel, setOpenVowel] = useState<{ char: string; ipa: string } | null>(null)
   const [reviewTab, setReviewTab] = useState(0)
   const [finalsOpen, setFinalsOpen] = useState(false)  // 複習卡的尾音字母表：預設收起，按鈕展開（各分頁共用，切換分頁時高度不變）
   const [active, setActive] = useState<Tab | null>(null)
+  const [zhOff, setZhOff] = useState<Set<string>>(new Set())  // 隱藏中文的練習卡（unit 或 title）
 
-  useEffect(() => { getRepository().getLesson(id ?? '').then(l => { setLesson(l ?? null); setCollapsed(new Set()); setReviewTab(0); setFinalsOpen(false) }) }, [id])
+  useEffect(() => { getRepository().getLesson(id ?? '').then(l => { setLesson(l ?? null); setCollapsed(new Set()); setReviewTab(0); setFinalsOpen(false); setZhOff(new Set()) }) }, [id])
 
   // 只顯示這一課有資料的分頁
   const tabs = useMemo(() => lesson ? lessonTabs(lesson) : [], [lesson])
@@ -191,26 +193,37 @@ export default function LessonPage() {
   const ruleCard = (r: Rule) => (
     <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}<RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
   )
-  const practiceCard = (g: PracticeGroup, showTitle: boolean) => (
-    <article className="card" key={g.title}>
-      {showTitle && <h3>{g.title}</h3>}
+  // 練習卡有中文時，右上角可以單獨隱藏這張卡的中文（預設顯示）
+  const practiceCard = (g: PracticeGroup, showTitle: boolean) => {
+    const k = g.unit ?? g.title
+    const hasZh = g.items.some(i => i.zh)
+    const zh = showZh && !zhOff.has(k)
+    return (
+    <article className="card" key={k}>
+      {((showTitle && g.title) || hasZh) && (
+        <div className="card-head">
+          {showTitle && g.title ? <h3>{g.title}</h3> : <span />}
+          {hasZh && <button className="finals-toggle" aria-pressed={!zhOff.has(k)} onClick={() => setZhOff(s => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n })}>{zhOff.has(k) ? '顯示中文' : '隱藏中文'}</button>}
+        </div>
+      )}
       {g.images ? (
         <div className={g.half ? 'picgrid half' : g.third ? 'picgrid third' : 'picgrid'}>
           {g.items.map(i => (
             <figure className="picword" key={i.thai}>
               {i.image ? <ZoomImage src={`${import.meta.env.BASE_URL}${i.image.src}`} alt={i.image.alt} /> : <div className="meme-placeholder">圖片待補</div>}
-              <figcaption><span className="th big2">{i.thai}</span><SpeakButton text={i.thai} />{showZh && i.zh && <span>{i.zh}</span>}</figcaption>
+              <figcaption><span className="th big2">{i.thai}</span><SpeakButton text={i.thai} />{zh && i.zh && <span>{i.zh}</span>}</figcaption>
             </figure>
           ))}
         </div>
       ) : g.qa ? (
         <div className="qa">
-          <WordList words={g.items.slice(0, 1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={showZh} showRoman={showRoman} />
-          <WordList words={g.items.slice(1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={showZh} showRoman={showRoman} />
+          <WordList words={g.items.slice(0, 1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={zh} showRoman={showRoman} />
+          <WordList words={g.items.slice(1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={zh} showRoman={showRoman} />
         </div>
-      ) : <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />}
+      ) : <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={zh} showRoman={showRoman} tagFirst />}
     </article>
-  )
+    )
+  }
 
   // 卡片固定三段：標題（＋尾音字母按鈕）｜字母表等上方內容｜聲調表等主要內容（分頁切換時三段各自對齊）
   const extraCard = (x: NonNullable<Lesson['review']>[number], off: boolean) => (
@@ -316,6 +329,7 @@ export default function LessonPage() {
       {cur === 'vowels' && (
         <>
         {lesson.vowelIntro && <VowelIntro config={typeof lesson.vowelIntro === 'object' ? lesson.vowelIntro : undefined} />}
+        {lesson.sanskritVowels && <SanskritVowels vowels={lesson.sanskritVowels} vocab={lesson.vocab} showZh={showZh} />}
         {lesson.vowelNotes?.map(r => <article className="card" key={r.id}><h3>{r.title}</h3><RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}</article>)}
         <section className="vstack">
           {vowelGroups.map(g => (
@@ -377,12 +391,8 @@ export default function LessonPage() {
       {/* 說明有換行時列點（L15） */}
       <div className="muted lsummary"><RuleBody body={lesson.summary} /></div>
 
-      <div className="toolbar">
-        <label><input type="checkbox" checked={showZh} onChange={e => setShowZh(e.target.checked)} /> 顯示中文翻譯</label>
-        <label><input type="checkbox" checked={showRoman} onChange={e => setShowRoman(e.target.checked)} /> 顯示拼音</label>
-        {/* 投影片模式：資料設了 slides 的課才開放（見 lesson-slides skill） */}
-        {lesson.slides && <Link className="btn" to={`/reading/lesson/${lesson.id}/present`}>▶ 投影片模式</Link>}
-      </div>
+      {/* 投影片模式：資料設了 slides 的課才開放（見 lesson-slides skill） */}
+      {lesson.slides && <div className="toolbar"><Link className="btn" to={`/reading/lesson/${lesson.id}/present`}>▶ 投影片模式</Link></div>}
 
       <div className={`lesson-layout${navOpen ? '' : ' navclosed'}`}>
         <aside className="sidenav" aria-label="本課目錄">
