@@ -510,3 +510,38 @@ table.vshift .vs-word small { font-size: .8rem; margin-left: 2px; }
 table.vshift .vs-note { margin: 4px 0 0; }
 table.vshift .vs-split { border-left: 3px solid var(--line); }
 @media (prefers-color-scheme: dark) { table.vshift td.vs-f.changed { background: #5a3418; } }
+
+/* 聲調表裡講義整列橘底的重點列（L12 濁尾音：低子音＋長母音） */
+table.tone tr.mark > :not(.group) { background: #f6d2b5; }
+@media (prefers-color-scheme: dark) { table.tone tr.mark > :not(.group) { background: #5a3418; } }
+
+/* 二選一表格（L12 複習：哪一個拼法正確？） */
+table.choice { border-collapse: collapse; width: 100%; max-width: 640px; margin: 8px 0 12px; }
+table.choice th, table.choice td { border: 1px solid var(--line); padding: 6px; text-align: center; }
+table.choice thead th { color: var(--muted); font-weight: 600; }
+table.choice tbody th { width: 3em; font-size: 1.2rem; color: var(--muted); }
+.ch-opt { width: 100%; font-size: 2rem; padding: 10px 8px; background: var(--card); color: var(--fg); border: 2px solid transparent; border-radius: 10px; cursor: pointer; }
+.ch-opt:hover { border-color: var(--line); }
+.ch-opt.right { background: #dcf3e2; border-color: #2f9e55; }
+.ch-opt.wrong { background: #fbe0dc; border-color: #d0453a; }
+.ch-mark { margin-left: 8px; font-family: system-ui, sans-serif; font-size: 1.3rem; }
+.ch-opt.right .ch-mark { color: #2f9e55; } .ch-opt.wrong .ch-mark { color: #d0453a; }
+.ch-tools { display: flex; gap: 8px; }
+.ch-tools .btn { background: none; color: var(--accent); font: inherit; cursor: pointer; }
+@media (max-width: 640px) { .ch-opt { font-size: 1.5rem; } }
+@media (prefers-color-scheme: dark) { .ch-opt.right { background: #173d24; } .ch-opt.wrong { background: #4a1d19; } }
+
+/* 尾音字母分組、一組一列（L12 濁尾音） */
+.ftable td.flines { text-align: left; line-height: 1.5; padding-top: 8px; padding-bottom: 8px; }
+.ftable td.flines div { white-space: nowrap; letter-spacing: .12em; }
+.vcard.final.rows { grid-template-columns: 330px 1fr; }
+.vcard.final.rows .fletters { flex-direction: column; align-items: flex-start; gap: 8px; }
+.vcard.final .vforms.rows { display: flex; flex-direction: column; flex-wrap: nowrap; gap: 6px; }
+.vcard.final .vforms.rows .vrow { display: flex; gap: 6px; flex-wrap: wrap; }
+.vcard.final .vforms.rows .vform { min-width: 0; padding: 2px 8px 4px; }
+.vcard.final .vforms.rows .vglyph { font-size: 2rem; }
+@media (max-width: 760px) { .vcard.final.rows { grid-template-columns: 1fr; } }
+
+/* 問答排法：左邊問句、右邊回答（L12 天氣表達） */
+.qa { display: grid; grid-template-columns: max-content 1fr; gap: 16px; align-items: start; }
+@media (max-width: 640px) { .qa { grid-template-columns: 1fr; } }

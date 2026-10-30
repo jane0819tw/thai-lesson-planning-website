@@ -1,23 +1,41 @@
-// 清尾音總表＋音節結構圖（對應講義：5 音 10 字、有清尾音時依長音規則）
-const ROWS: [string, string, string?][] = [
-  ['m', 'ม'],
-  ['n', 'น', 'ณ ล ฬ ร ญ'],
-  ['y', 'ย'],
-  ['w', 'ว'],
-  ['ng', 'ง'],
-]
+import type { FinalsIntroConfig } from '../types'
 
-export default function FinalsIntro() {
+// 尾音總表＋音節結構圖（對應講義：清尾音 5 音 10 字、濁尾音 3 音 26 字，以及依長音／短音的規則）
+// finalsIntro: true 時用清尾音的預設表（L10）
+const CLEAR: FinalsIntroConfig = {
+  kind: '清',
+  rule: 'long',
+  rows: [
+    { sound: 'm', main: 'ม' },
+    { sound: 'n', main: 'น', others: 'ณ ล ฬ ร ญ' },
+    { sound: 'y', main: 'ย' },
+    { sound: 'w', main: 'ว' },
+    { sound: 'ng', main: 'ง' },
+  ],
+}
+
+export default function FinalsIntro({ config = CLEAR }: { config?: FinalsIntroConfig }) {
+  const count = (s?: string) => s ? s.split(/\s+/).length : 0
+  const letters = config.rows.reduce((n, r) => n + ('lines' in r ? r.lines.reduce((m, l) => m + count(l), 0) : 1 + count(r.others)), 0)
   return (
     <article className="card vintro">
       <div className="fintro">
-        <div className="fintro-count">5 音<br />10 字</div>
+        <div className="fintro-count">{config.rows.length} 音<br />{letters} 字</div>
         <table className="ftable">
           <tbody>
-            {ROWS.map(([sound, main, others]) => (
-              <tr key={sound}>
-                <th scope="row">{sound}</th>
-                <td className="th"><span className={others ? 'fmain' : undefined}>{main}</span>{others && <span className="fothers">（{others}）</span>}</td>
+            {config.rows.map(r => (
+              <tr key={r.sound}>
+                <th scope="row">{r.sound}</th>
+                {'lines' in r ? (
+                  // 分組：一組一列，第一列的第一個字母當主要字母（底線）
+                  <td className="th flines">
+                    {r.lines.map((l, i) => (
+                      <div key={l}>{i === 0 ? <><span className="fmain">{l.split(/\s+/)[0]}</span>{l.split(/\s+/).slice(1).map(ch => ' ' + ch).join('')}</> : l}</div>
+                    ))}
+                  </td>
+                ) : (
+                  <td className="th"><span className={r.others ? 'fmain' : undefined}>{r.main}</span>{r.others && <span className="fothers">（{r.others}）</span>}</td>
+                )}
               </tr>
             ))}
           </tbody>
@@ -34,7 +52,7 @@ export default function FinalsIntro() {
           <div className="vp fin">尾音</div>
           <div className="vp vow bottom">母音</div>
         </figure>
-        <p className="fintro-rule">有清尾音，不論長短音，<br /><strong>follow 長音的規則</strong>。</p>
+        <p className="fintro-rule">有{config.kind}尾音，不論長短音，<br /><strong>follow {config.rule === 'long' ? '長' : '短'}音的規則</strong>。</p>
       </div>
     </article>
   )

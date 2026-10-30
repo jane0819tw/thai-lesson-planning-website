@@ -7,7 +7,7 @@ const isNote = (s: string) => s === 'x' || s === '(x)' || s.includes('不發音'
 const isBlank = (s: string) => s === ''
 const clean = (cell: string) => cell.replace(/\s*\(x\)/, '')
 
-const tintOf = (label: string, tint: ToneTable['tint']) => tint === 'long' ? 'long' :  label.includes('短母音') ? 'short' : label.includes('長母音') ? 'long' : undefined
+const tintOf = (label: string, tint: ToneTable['tint']) => tint === 'long' || tint === 'short' ? tint : label.includes('短母音') ? 'short' : label.includes('長母音') ? 'long' : undefined
 
 export default function ToneTableView({ table }: { table: ToneTable }) {
   const grouped = table.rows.some(r => r.group)
@@ -18,7 +18,7 @@ export default function ToneTableView({ table }: { table: ToneTable }) {
     while (table.rows[i + n]?.group === r.group) n++
     return n
   })
-  const rowClass = (r: ToneTable['rows'][number]) => [r.fill && 'fill', table.tint && tintOf(r.label, table.tint)].filter(Boolean).join(' ') || undefined
+  const rowClass = (r: ToneTable['rows'][number]) => [r.fill && 'fill', r.mark && 'mark', table.tint && tintOf(r.label, table.tint)].filter(Boolean).join(' ') || undefined
   return (
     <div className="tablewrap">
       <table className={table.corner ? 'tone corner' : 'tone'}>

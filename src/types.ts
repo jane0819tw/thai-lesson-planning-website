@@ -20,27 +20,33 @@ export interface Vowel {
   inRow?: boolean
 }
 /** 尾音卡：一個尾音一張卡；group 對應 vocab 的 group，那幾個單字就排在這張卡裡 */
-export interface Final { id: string; sound: string; letters: string[]; group: string; mouth: string }
+export interface Final { id: string; sound: string; letters: string[]; group: string; mouth: string; lines?: string[] }  // lines：字母分組、一組一列顯示（每列用空白分隔，例：["ก", "ค ฆ ข"]），有填就取代 letters 的排法
 /** 母音加尾音後的寫法（L11 母音變形）：finals＝加尾音的寫法（x＝尾音位置，可有兩種，例：เ-ย、เ-ิx），沒填＝講義的「/」；words 的字要在 vocab 裡才有中文；changed＝寫法會變（講義橘底） */
 export interface VowelShift { vowel: string; finals?: string[]; words: string[]; changed?: boolean; note?: string }
 /** heads：左右兩組的標題（例如短母音、長母音）；rows：同一列左右對照。一種母音有兩種變形時分兩列：下一列那一邊填 null＝和上一列合併；vowel 填空字串＝只合併母音那一格 */
 export interface VowelShiftTable { title?: string; heads: [string, string]; rows: [VowelShift | null, VowelShift | null][] }
-export interface ToneRow { label: string; cells: string[]; fill?: boolean; group?: string }  // fill：ห 補齊的那一列（黃底、藍字），空字串＝空白格；group：最左側多一欄子音類型，相鄰同 group 的列合併成一格
-export interface ToneTable { title: string; note?: string; rows: ToneRow[]; corner?: boolean; tint?: boolean | 'long' }  // corner：標題放在表格左上角那一格（同講義排版）；tint：短母音列淺藍底、長母音列淺黃底；'long'＝全部淺黃底（例如有清尾音時一律依長母音的規則）
+export interface ToneRow { label: string; cells: string[]; fill?: boolean; group?: string; mark?: boolean }  // fill：ห 補齊的那一列（黃底、藍字），空字串＝空白格；group：最左側多一欄子音類型，相鄰同 group 的列合併成一格；mark：講義整列橘底標示的重點列（例如濁尾音裡的低子音＋長母音）
+export interface ToneTable { title: string; note?: string; rows: ToneRow[]; corner?: boolean; tint?: boolean | 'long' | 'short' }  // corner：標題放在表格左上角那一格（同講義排版）；tint：短母音列淺藍底、長母音列淺黃底；'long'＝全部淺黃底（例如有清尾音時一律依長母音的規則）；'short'＝全部淺藍底（有濁尾音時一律依短母音的規則）
 /** 短句斷句作業的一個音節：c 子音、v 母音（用 - 標子音位置，例如 เ-า）、m 聲調符號（沒有就省略）、t 念第幾聲（1–5） */
 export interface Syllable { syl: string; c: string; v: string; m?: string; t: number }
 /** parts：有填就變成作業頁的斷句題；demo：示範題（答案直接顯示、不計分） */
 export interface PracticeItem { thai: string; zh?: string; note?: string; parts?: Syllable[]; demo?: boolean; image?: ExtraImage }
-export interface PracticeGroup { title: string; items: PracticeItem[]; homework?: boolean; half?: boolean; third?: boolean; images?: boolean }  // homework：改放在作業頁、不顯示在課程頁；half：每格佔半列（一列兩個）；third：一列三個；images：每個字配一張示意圖（沒圖顯示「圖片待補」）
+export interface PracticeGroup { title: string; items: PracticeItem[]; homework?: boolean; half?: boolean; third?: boolean; images?: boolean; qa?: boolean }  // qa：問答排法，第一個 item 是問句放左邊、其他是回答排在右邊；homework：改放在作業頁、不顯示在課程頁；half：每格佔半列（一列兩個）；third：一列三個；images：每個字配一張示意圖（沒圖顯示「圖片待補」）
 export interface Pattern { thai: string; zh: string }
 export interface LinkItem { title: string; url: string }
 /** imageUrl：沒填＝顯示「圖片待補」；明確填 null＝這張卡本來就不需要圖（只有文字） */
 export interface Meme { title: string; desc: string; imageUrl?: string | null; big?: string; half?: boolean }  // big：標題下方用大字顯示的泰文；half：只佔半列（兩張 half 卡並排，圖片縮小）
 export interface ExtraImage { src: string; alt: string; credit?: string }  // credit：網路公開圖片的作者／授權標示（目前只記錄、不顯示在頁面上）
-export interface Extra { title: string; lines: string[]; images?: ExtraImage[]; toneTables?: ToneTable[] }  // toneTables：補充卡內直接顯示聲調表（例如複習總表）
+/** 二選一題：options 兩個寫法，answer＝正確的是第幾個（0 或 1） */
+export interface Choice { options: [string, string]; answer: 0 | 1 }
+export interface Extra { title: string; lines: string[]; images?: ExtraImage[]; toneTables?: ToneTable[]; choices?: Choice[] }  // toneTables：補充卡內直接顯示聲調表（例如複習總表）；choices：二選一表格（點選後顯示對錯）
 
 export interface DiagramTile { label: string; count?: string; color: 'pink' | 'yellow' | 'green' | 'blue'; dashed?: boolean; wide?: boolean; sub: { t?: string; b?: string; th?: string; i?: boolean }[] }
 export interface Diagram { title: string; intro: string; tiles: DiagramTile[]; result: string }
+
+/** 尾音總表（講義「N 音 M 字」）：kind＝清／濁；rule＝有這種尾音時依長音（long）或短音（short）的規則；rows 一個音一列，main＝主要字母、others＝同音的其他字母（空白分隔）；
+ *  或用 lines 分組、一組一列顯示（第一列的第一個字母當主要字母，例：["ก", "ค ฆ ข"]）。音數、字數自動計算 */
+export interface FinalsIntroConfig { kind: string; rule: 'long' | 'short'; rows: ({ sound: string; main: string; others?: string } | { sound: string; lines: string[] })[] }
 
 /** 母音種類說明卡：focus＝這課要學（紅）、done＝學過（灰）、notes:false＝不顯示下方補充說明 */
 export interface VowelIntroConfig { focus: ('single' | 'compound' | 'special' | 'sanskrit')[]; done?: ('single' | 'compound' | 'special' | 'sanskrit')[]; notes?: boolean }
@@ -61,5 +67,5 @@ export interface Lesson {
   vowelShifts?: VowelShiftTable[]
   /** 作業頁「延伸影片挑戰」按鈕的連結（站內路徑，例如 /video/xxx）；沒設就顯示「即將開放」 */
   videoChallenge?: string
-  homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean | VowelIntroConfig; finalsIntro?: boolean
+  homework: string[]; links: LinkItem[]; memes: Meme[]; extras: Extra[]; diagram?: Diagram; toneIntro?: boolean; vowelIntro?: boolean | VowelIntroConfig; finalsIntro?: boolean | FinalsIntroConfig  // true＝清尾音總表（L10 的 5 音 10 字）
 }

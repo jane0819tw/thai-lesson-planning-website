@@ -13,6 +13,7 @@ import DiagramView from './DiagramView'
 import { vowelForm, vowelSpeech } from '../strokes'
 import VowelText from './VowelText'
 import ZoomImage from './ZoomImage'
+import ChoiceTable from './ChoiceTable'
 import Games, { vowelSyllables } from './Games'
 import RuleDemo from './RuleDemo'
 import ToneIntro from './ToneIntro'
@@ -126,14 +127,24 @@ export default function LessonPage() {
   )
   // 尾音卡：左邊是字母（尾音不用看筆順，不能點）、右邊接音標，下面口型，右邊同一列排這個尾音的單字
   const finalCard = (f: NonNullable<Lesson['finals']>[number]) => (
-    <article className="vcard final" key={f.id}>
+    <article className={f.lines ? 'vcard final rows' : 'vcard final'} key={f.id}>
       <div className="vhead">
         <div className="fletters">
-          <div className={f.letters.length > 3 ? 'vforms many' : 'vforms'}>
-            {f.letters.map(ch => (
-              <span key={ch} className="vform th static"><span className="vglyph">{ch}</span></span>
-            ))}
-          </div>
+          {f.lines ? (
+            <div className="vforms rows">
+              {f.lines.map(line => (
+                <div key={line} className="vrow">
+                  {line.split(/\s+/).map(ch => <span key={ch} className="vform th static"><span className="vglyph">{ch}</span></span>)}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className={f.letters.length > 3 ? 'vforms many' : 'vforms'}>
+              {f.letters.map(ch => (
+                <span key={ch} className="vform th static"><span className="vglyph">{ch}</span></span>
+              ))}
+            </div>
+          )}
           <span className="vipa">{f.sound}</span>
         </div>
         {f.mouth && <p className="fmouth"><strong>口型：</strong>{f.mouth}</p>}
@@ -148,7 +159,7 @@ export default function LessonPage() {
 
       {cur === 'rules' && (
         <>
-          {lesson.finalsIntro && <FinalsIntro />}
+          {lesson.finalsIntro && <FinalsIntro config={lesson.finalsIntro === true ? undefined : lesson.finalsIntro} />}
           <section className="stack">
             {lesson.rules.map(r => (
               <article className="card" key={r.id}><h3>{r.title}</h3><RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
@@ -169,6 +180,7 @@ export default function LessonPage() {
             <article className="card" key={x.title}>
               <h3>{x.title}</h3>
               {x.lines.map((l, i) => <p className="th big2" key={i}>{l}</p>)}
+              {x.choices && <ChoiceTable choices={x.choices} />}
               {x.toneTables?.map(t => <ToneTableView key={t.title} table={t} />)}
               {x.images?.map(im => <ZoomImage key={im.src} src={`${import.meta.env.BASE_URL}${im.src}`} alt={im.alt} style={{ maxWidth: '100%', borderRadius: 12 }} />)}
             </article>
@@ -245,6 +257,11 @@ export default function LessonPage() {
                       <figcaption><span className="th big2">{i.thai}</span><SpeakButton text={i.thai} />{showZh && i.zh && <span>{i.zh}</span>}</figcaption>
                     </figure>
                   ))}
+                </div>
+              ) : g.qa ? (
+                <div className="qa">
+                  <WordList words={g.items.slice(0, 1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={showZh} showRoman={showRoman} />
+                  <WordList words={g.items.slice(1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={showZh} showRoman={showRoman} />
                 </div>
               ) : <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={showZh} showRoman={showRoman} />}
             </article>
