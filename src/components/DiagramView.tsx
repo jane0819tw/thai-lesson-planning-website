@@ -1,9 +1,11 @@
 import type { Diagram } from '../types'
 
 // 講義風格的組成圖：色塊 ＋ 色塊 … ＝ 單字，每個色塊下方列出分類。
-export default function DiagramView({ d }: { d: Diagram }) {
+// showTitle：和其他說明卡排在同一區塊時（L1 基本概念），卡片自己顯示標題
+export default function DiagramView({ d, showTitle }: { d: Diagram; showTitle?: boolean }) {
   return (
     <article className="card diagram">
+      {showTitle && <h3>{d.title}</h3>}
       <p>{d.intro}</p>
       <div className="dg-row">
         {d.tiles.map(t => (

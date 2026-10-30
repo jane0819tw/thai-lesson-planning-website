@@ -4,7 +4,7 @@ export type ConsonantGroup = 'mid' | 'high' | 'lcp' | 'lcs'
 
 export interface WordItem { thai: string; zh: string; roman?: string; star?: boolean; group?: string; audioUrl?: string | null; image?: ExtraImage }
 export interface DemoTile { th: string; sub?: string; op?: string; icon?: string; speak?: string }
-export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; toneTable?: ToneTable; unit?: string }  // toneTable：說明卡內直接顯示聲調表；title 留空＝不顯示標題；unit：放進這個小單元的區塊（見 Lesson.clusters）
+export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; toneTable?: ToneTable; unit?: string; at?: 'concept' | 'consonants' }  // toneTable：說明卡內直接顯示聲調表；title 留空＝不顯示標題；unit：放進這個小單元的區塊（見 Lesson.clusters）；at：concept＝放在「基本概念」區塊（和音節組成圖一起，L1），consonants＝放在「子音」區塊最上面
 export interface Consonant {
   id: string; char: string; name: string; roman: string; zh: string
   sound: string; group: ConsonantGroup; sameHigh: string; words: WordItem[]; audioUrl?: string | null
@@ -42,7 +42,7 @@ export interface Choice { options: [string, string]; answer: 0 | 1 }
 export interface Extra { title: string; tab?: string; lines: string[]; images?: ExtraImage[]; toneTables?: ToneTable[]; choices?: Choice[]; finals?: { sound: string; main: string; others?: string }[] }  // finals：尾音字母小表（一個音一列，main 加底線、others 放括號裡），放在聲調表上面；tab：複習有好幾張卡時用分頁切換，分頁按鈕的短名稱（沒填用 title）；toneTables：補充卡內直接顯示聲調表（例如複習總表）；choices：二選一表格（點選後顯示對錯）
 
 export interface DiagramTile { label: string; count?: string; color: 'pink' | 'yellow' | 'green' | 'blue'; dashed?: boolean; wide?: boolean; sub: { t?: string; b?: string; th?: string; i?: boolean }[] }
-export interface Diagram { title: string; intro: string; tiles: DiagramTile[]; result: string }
+export interface Diagram { title: string; intro: string; tiles: DiagramTile[]; result: string; after?: string }  // after：「基本概念」區塊裡，組成圖排在這張說明卡（id）之後；沒填＝排最前面
 
 /** 尾音總表（講義「N 音 M 字」）：kind＝清／濁；rule＝有這種尾音時依長音（long）或短音（short）的規則；rows 一個音一列，main＝主要字母、others＝同音的其他字母（空白分隔）；
  *  或用 lines 分組、一組一列顯示（第一列的第一個字母當主要字母，例：["ก", "ค ฆ ข"]）。音數、字數自動計算 */
@@ -84,6 +84,10 @@ export interface Lesson {
   clusters?: ClusterIntroConfig
   /** Grouping 小單元（L15）：每個小單元自成一個區塊；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
   grouping?: GroupingUnit[]
+  /** 「說明」區塊（聲調總覽、聲調表）改排在子音後面、改叫「聲調」（L1：先概念、再子音、最後聲調） */
+  tonesAfterConsonants?: boolean
+  /** 開放投影片模式（課程頁出現「▶ 投影片模式」按鈕，見 lesson-slides skill） */
+  slides?: boolean
   /** 作業頁聽寫取前幾個作業字，沒設＝8（L14 講義作業頁 10 個字都要放） */
   homeworkCount?: number
   /** 作業頁「延伸影片挑戰」按鈕的連結（站內路徑，例如 /video/xxx）；沒設就顯示「即將開放」 */

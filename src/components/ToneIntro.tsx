@@ -74,11 +74,12 @@ function Chart({ title, tones, color }: { title: string; tones: Tone[]; color: s
   )
 }
 
-export default function ToneIntro() {
+// part：只顯示其中一張（投影片模式一張卡一頁用），沒填＝兩張都顯示
+export default function ToneIntro({ part }: { part?: 'marks' | 'compare' } = {}) {
   const [open, setOpen] = useState<number | null>(null)
   return (
     <section className="stack toneintro">
-      <article className="card">
+      {part !== 'compare' && <article className="card">
         <h3>聲調符號與音高</h3>
         <div className="tablewrap">
           <table className="tone tmark">
@@ -101,13 +102,13 @@ export default function ToneIntro() {
           </table>
         </div>
         <p className="muted small">縱軸 1 最低、5 最高，線的起點到終點就是音高走向。</p>
-      </article>
+      </article>}
 
-      <article className="card">
+      {part !== 'marks' && <article className="card">
         <h3>對照：漢語聲調五度標記法</h3>
         <p className="muted small">漢語的聲調和泰語不同，這張只是拿來對照音高走向，四個聲調放在同一張圖。</p>
         <Chart title="" tones={ZH} color="#1d6fb8" />
-      </article>
+      </article>}
       {open !== null && <LetterDialog char={MARKS[open].trim()} caption={`${NAMES[open]}　${MARK_NAME[open]}`} onClose={() => setOpen(null)} />}
     </section>
   )

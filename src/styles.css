@@ -634,3 +634,41 @@ table.gp-words th { background: var(--bg); }
 
 /* Grouping 小單元的副標：直接講規則（L15） */
 .gp-sub { margin: 0 0 10px; font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+
+/* 投影片模式（PresentPage）：蓋住整個畫面，內容用 zoom 自動放大到填滿（筆順視窗 .overlay 的 z-index 10 要在上面） */
+.present { position: fixed; inset: 0; z-index: 5; background: var(--bg); display: grid; grid-template-rows: auto auto 1fr auto; }
+.pt-top, .pt-bottom { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 16px; color: var(--muted); font-size: .9rem; }
+.pt-bottom { justify-content: center; }
+.pt-tools { display: flex; gap: 6px; }
+.pt-tools button, .pt-bottom button { font: inherit; padding: 4px 12px; border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 8px; cursor: pointer; }
+.pt-tools button.on { color: var(--accent); border-color: var(--accent); }
+.pt-bottom button { font-size: 1.3rem; line-height: 1; padding: 4px 16px; }
+.pt-bottom button:disabled { opacity: .3; cursor: default; }
+.pt-stage { min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 8px 3vw; }
+.pt-inner { width: 900px; max-width: none; }
+.pt-progress { position: fixed; left: 0; bottom: 0; height: 3px; background: var(--accent); transition: width .2s; }
+.pt-title { text-align: center; padding: 24px; }
+.pt-title h1 { margin: 8px 0 16px; }
+.pt-title ul { text-align: left; display: inline-block; }
+.pt-num { color: var(--accent); font-weight: 700; font-size: 1.4rem; }
+.pt-letter { display: flex; align-items: center; justify-content: center; gap: 48px; }
+.pt-char { font-size: 13rem; line-height: 1.1; color: var(--accent); background: none; border: 0; cursor: pointer; padding: 0 16px; }
+.pt-letter-info { display: grid; gap: 8px; justify-items: start; }
+.pt-name { font-size: 2.4rem; display: flex; align-items: center; gap: 12px; }
+.pt-sub { font-size: 1.4rem; }
+.pt-hidden { visibility: hidden; }
+.pt-img { max-width: 100%; max-height: 520px; display: block; margin: 0 auto; border-radius: 12px; }
+.pt-rail { display: flex; justify-content: center; gap: 10px; padding: 0 16px; }
+.pt-rail:not(:empty) { padding-top: 4px; }
+.pt-rail button { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--line); background: var(--card); color: var(--muted); font-size: 1.3rem; line-height: 1; cursor: pointer; display: grid; place-items: center; padding: 0; transition: all .2s; }
+.pt-rail button.done { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--accent); }
+.pt-rail button.on { background: var(--accent); border-color: var(--accent); color: #fff; transform: scale(1.15); }
+.pt-sidebtn { position: fixed; left: 12px; bottom: 10px; font: inherit; padding: 4px 10px; border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 8px; cursor: pointer; z-index: 6; }
+.pt-edge { position: fixed; left: 0; top: 0; bottom: 0; width: 14px; z-index: 6; }
+.pt-side { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; overflow-y: auto; z-index: 7; background: var(--card); border-right: 1px solid var(--line); box-shadow: 4px 0 16px rgba(0,0,0,.12); padding: 10px; display: grid; gap: 10px; align-content: start; }
+.pt-side > button { display: grid; gap: 4px; padding: 6px; border: 2px solid transparent; border-radius: 10px; background: none; color: var(--muted); font: inherit; font-size: .8rem; text-align: left; cursor: pointer; }
+.pt-side > button:hover { border-color: var(--line); }
+.pt-side > button.on { border-color: var(--accent); color: var(--accent); }
+.pt-thumb { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; display: grid; place-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px; pointer-events: none; }
+.pt-inner .tablewrap { overflow: visible; }  /* 投影片不要表格內捲動：讓寬表格撐開、整頁一起縮放 */
+.pt-todo { padding: 48px; text-align: center; border: 2px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 1.4rem; }

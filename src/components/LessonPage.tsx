@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getSession } from '../reservation/session'
 import { getRepository } from '../data/repository'
-import type { Consonant, Lesson, PracticeGroup, Rule } from '../types'
+import type { Consonant, Diagram, Lesson, PracticeGroup, Rule } from '../types'
 import SpeakButton from './SpeakButton'
 import { nameText } from '../audio/speak'
 import WordIcon from './WordIcon'
@@ -24,17 +24,44 @@ import VowelShiftView from './VowelShiftView'
 import GroupingView from './GroupingView'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | `unit-${number}`
+export type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | `unit-${number}`
 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
 // 說明文字有換行時，每行列成一點
 // **文字**：本課重點，粗體＋主色
 const emph = (s: string) => s.split(/\*\*(.+?)\*\*/).map((t, i) => i % 2 ? <strong className="hl" key={i}>{t}</strong> : t)
-const RuleBody = ({ body }: { body: string }) => body.includes('\n') ? <ul>{body.split('\n').map((l, i) => <li key={i}>{emph(l)}</li>)}</ul> : <p>{emph(body)}</p>
+export const RuleBody = ({ body }: { body: string }) => body.includes('\n') ? <ul>{body.split('\n').map((l, i) => <li key={i}>{emph(l)}</li>)}</ul> : <p>{emph(body)}</p>
 // 標 homework 的練習改放在作業頁；標 unit 的練習放進那個小單元的區塊
 const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework && !g.unit)
 // 小單元（例 L13-1 複合子音、L13-2 อ นำ ย、L15 的四種 Grouping）：依組合表、說明卡、練習出現的順序，各自一個區塊
 const unitsOf = (l: Lesson) => [...new Set([l.clusters?.unit, ...(l.grouping ?? []).map(g => g.unit), ...l.rules.map(r => r.unit), ...l.practice.filter(g => !g.homework).map(g => g.unit)].filter((u): u is string => !!u))]
+// 「基本概念」區塊（L1）：標 at:'concept' 的說明卡＋音節組成圖，組成圖排在 diagram.after 那張卡之後
+export const conceptItems = (l: Lesson): (Rule | Diagram)[] => {
+  const rs = l.rules.filter(r => r.at === 'concept')
+  if (!l.diagram) return rs
+  const k = rs.findIndex(r => r.id === l.diagram!.after)
+  return [...rs.slice(0, k + 1), l.diagram, ...rs.slice(k + 1)]
+}
+const plainRules = (l: Lesson) => l.rules.filter(r => !r.unit && !r.at)
+// 本課的區塊與順序（課程頁的目錄、投影片模式共用）
+export function lessonTabs(lesson: Lesson): [Tab, string][] {
+  const t: [Tab, string][] = []
+  const hasRules = plainRules(lesson).length || lesson.toneTables.length || lesson.finalsIntro || lesson.vowelShifts?.length || (lesson.clusters && !lesson.clusters.unit)
+  if (lesson.review?.length) t.push(['review', lesson.reviewLabel ?? '複習'])
+  if (lesson.diagram) t.push(['diagram', lesson.rules.some(r => r.at === 'concept') ? '基本概念' : lesson.diagram.title])
+  if (lesson.vowels.length) t.push(['vowels', '母音'])
+  if (hasRules && !lesson.tonesAfterConsonants) t.push(['rules', '說明'])
+  unitsOf(lesson).forEach((u, i) => t.push([`unit-${i}`, u]))
+  if (lesson.finals?.length) t.push(['finals', '尾音'])
+  if (lesson.consonants.length) t.push(['consonants', '子音'])
+  if (hasRules && lesson.tonesAfterConsonants) t.push(['rules', '聲調'])
+  if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length) t.push(['vocab', '單字'])
+  if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
+  if (lesson.memes.length) t.push(['memes', '補充'])
+  if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
+  if (lesson.extras.length) t.push(['extras', '補充'])
+  return t
+}
 const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && lessonPractice(l).length === 1 ? lessonPractice(l)[0].title : '練習・句型')
 
 export default function LessonPage() {
@@ -53,23 +80,7 @@ export default function LessonPage() {
   useEffect(() => { getRepository().getLesson(id ?? '').then(l => { setLesson(l ?? null); setCollapsed(new Set()); setReviewTab(0); setFinalsOpen(false) }) }, [id])
 
   // 只顯示這一課有資料的分頁
-  const tabs = useMemo(() => {
-    if (!lesson) return [] as [Tab, string][]
-    const t: [Tab, string][] = []
-    if (lesson.review?.length) t.push(['review', lesson.reviewLabel ?? '複習'])
-    if (lesson.diagram) t.push(['diagram', lesson.diagram.title])
-    if (lesson.vowels.length) t.push(['vowels', '母音'])
-    if (lesson.rules.some(r => !r.unit) || lesson.toneTables.length || lesson.finalsIntro || lesson.vowelShifts?.length || (lesson.clusters && !lesson.clusters.unit)) t.push(['rules', '說明'])
-    unitsOf(lesson).forEach((u, i) => t.push([`unit-${i}`, u]))
-    if (lesson.finals?.length) t.push(['finals', '尾音'])
-    if (lesson.consonants.length) t.push(['consonants', '子音'])
-    if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length) t.push(['vocab', '單字'])
-    if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
-    if (lesson.memes.length) t.push(['memes', '補充'])
-    if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
-    if (lesson.extras.length) t.push(['extras', '補充'])
-    return t
-  }, [lesson])
+  const tabs = useMemo(() => lesson ? lessonTabs(lesson) : [], [lesson])
 
   // 捲到哪個區塊，左邊目錄的那一項就變色
   useEffect(() => {
@@ -226,14 +237,16 @@ export default function LessonPage() {
 
   const content = (cur: Tab) => (
     <>
-      {cur === 'diagram' && lesson.diagram && <DiagramView d={lesson.diagram} />}
+      {cur === 'diagram' && lesson.diagram && (lesson.rules.some(r => r.at === 'concept')
+        ? <section className="stack">{conceptItems(lesson).map(x => 'tiles' in x ? <DiagramView key="diagram" d={x} showTitle /> : ruleCard(x))}</section>
+        : <DiagramView d={lesson.diagram} />)}
 
       {cur === 'rules' && (
         <>
           {lesson.finalsIntro && <FinalsIntro config={lesson.finalsIntro === true ? undefined : lesson.finalsIntro} />}
           {lesson.clusters && !lesson.clusters.unit && <ClusterIntro config={lesson.clusters} vocab={lesson.vocab} showZh={showZh} />}
           <section className="stack">
-            {lesson.rules.filter(r => !r.unit).map(ruleCard)}
+            {plainRules(lesson).map(ruleCard)}
           </section>
           {lesson.vowelShifts && <section className="stack">{lesson.vowelShifts.map((t, i) => <VowelShiftView key={i} table={t} vocab={lesson.vocab} showZh={showZh} />)}</section>}
           {/* 聲調表放在說明的最下面 */}
@@ -273,6 +286,7 @@ export default function LessonPage() {
         </section>
       ) })()}
 
+      {cur === 'consonants' && lesson.rules.some(r => r.at === 'consonants') && <section className="stack">{lesson.rules.filter(r => r.at === 'consonants').map(ruleCard)}</section>}
       {cur === 'consonants' && (
         <section className="grid">
           {lesson.consonants.map(c => (
@@ -366,6 +380,8 @@ export default function LessonPage() {
       <div className="toolbar">
         <label><input type="checkbox" checked={showZh} onChange={e => setShowZh(e.target.checked)} /> 顯示中文翻譯</label>
         <label><input type="checkbox" checked={showRoman} onChange={e => setShowRoman(e.target.checked)} /> 顯示拼音</label>
+        {/* 投影片模式：資料設了 slides 的課才開放（見 lesson-slides skill） */}
+        {lesson.slides && <Link className="btn" to={`/reading/lesson/${lesson.id}/present`}>▶ 投影片模式</Link>}
       </div>
 
       <div className={`lesson-layout${navOpen ? '' : ' navclosed'}`}>
