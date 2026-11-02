@@ -57,7 +57,7 @@ function buildSlides(l: Lesson, v: View): Slide[] {
       else s.push({ section: label, body: <DiagramView d={l.diagram} /> })
     }
     if (k === 'rules') {
-      if (l.finalsIntro || l.vowelShifts?.length || (l.clusters && !l.clusters.unit)) s.push({ section: label, body: <div className="pt-todo">「{label}」裡的總表（尾音總表、母音變形表、組合表）還沒做成投影片</div> })
+      if (l.finalsIntro || l.vowelShifts?.length || (l.clusters && !l.clusters.unit) || l.readingCases?.some(t => !t.unit)) s.push({ section: label, body: <div className="pt-todo">「{label}」裡的總表（尾音總表、母音變形表、組合表）還沒做成投影片</div> })
       for (const r of l.rules.filter(r => !r.unit && !r.at)) s.push(ruleSlide(r, label))
       if (l.toneIntro) s.push({ section: label, body: <ToneIntro part="marks" /> }, { section: `${label}・對照`, body: <ToneIntro part="compare" /> })
       for (const t of l.toneTables) s.push({ section: `${label}・規則`, body: <ToneTableView table={t} /> })

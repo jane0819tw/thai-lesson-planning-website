@@ -67,6 +67,13 @@ export interface GroupingWord { thai: string; split: string; mark?: boolean; sta
 export interface GroupingCell { label?: string; big: string; sub?: string }
 export interface GroupingUnit { unit: string; subtitle?: string; heading?: string; body?: string; c1: string; c2: string; caption?: string; boxes?: { cells: GroupingCell[]; pink?: boolean }[]; consonants: string[]; vowels?: (string | null)[]; finals?: string[]; pron: string[]; pronOnly?: boolean; note?: string; words: GroupingWord[] }
 
+/** 情境讀法表（L19 รร 讀法、ร 特殊結合）：講義「情境｜讀法｜範例（例字｜[念法]｜意思）」一張表。unit＝小單元名稱（自成一個區塊），沒填＝放在「說明」；
+ *  caseHead／readHead＝前兩欄的欄名（沒填＝情境／讀法，**文字**＝紅字，例「原→**念法**」）；cases 一個情境一組，case＝情境說明、reading＝讀法（\n 分行，**文字**＝紅字），
+ *  沒有任何 reading＝不顯示讀法欄（L19「ร 已經扮演的角色」）；words＝例字，read＝講義方括號裡的念法，mark＝講義標紅；中文從 vocab 帶；note＝表格下方的補充說明 */
+export interface ReadingCaseWord { thai: string; read?: string; mark?: boolean }
+export interface ReadingCase { case: string; reading?: string; image?: ExtraImage; boxes?: GroupingCell[][]; words: ReadingCaseWord[] }  // image：情境格裡、說明文字下方的講義框圖（L19-b 的 ทร V (F) → ซ V (F)）；boxes：講義沒有框圖時用網頁畫（L19-a），一個陣列一個框、上下排，cells 同 Grouping 結構圖（label 小字、big 大字，**文字**＝紅字）
+export interface ReadingCaseTable { unit?: string; title?: string; caseHead?: string; readHead?: string; cases: ReadingCase[]; note?: string }
+
 /** 梵文母音表（L14）：一個字母一組，readings 一個念法一列（字母那一格自動合併）；sound＝念法（例 รึ），word＝例字（中文從 vocab 帶），split＝講義的分音節念法（例 รึ-ดู），
  *  沒有 word＝講義的「/」；unused＝講義「現今不使用」；mark＝講義淺黃底的格子（常用的念法） */
 export interface SanskritReading { sound: string; word?: string; split?: string; unused?: boolean; mark?: boolean }
@@ -97,6 +104,8 @@ export interface Lesson {
   clusters?: ClusterIntroConfig
   /** Grouping 小單元（L15）：每個小單元自成一個區塊；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
   grouping?: GroupingUnit[]
+  /** 情境讀法表（L19）：有 unit 的自成一個區塊，沒 unit 的放「說明」；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
+  readingCases?: ReadingCaseTable[]
   /** 梵文母音表（L14，放在「母音」區塊）；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
   sanskritVowels?: SanskritVowel[]
   // 大寫數字對照表（L18）：自成「大寫數字」區塊，每 5 個一張表；有填就不另開「單字」分頁

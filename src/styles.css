@@ -718,3 +718,25 @@ table.numtable td.num-word { font-size: 1.7rem; white-space: nowrap; }
   table.numtable td.num-arabic { font-size: 1.2rem; }
   table.numtable td.num-word { font-size: 1.05rem; white-space: normal; }
 }
+
+/* 情境讀法表（L19）：情境、讀法兩格往下合併，例字一字一列 */
+table.rc-table th { background: var(--bg); }
+table.rc-table th.rc-case { font-weight: 600; white-space: normal; min-width: 9em; max-width: 15em; }
+table.rc-table td.rc-read div { white-space: nowrap; }
+table.rc-table td.rc-read { white-space: normal; font-size: 1.15rem; }
+table.rc-table td.cl-w { text-align: left; font-size: 1.6rem; width: 1%; white-space: nowrap; }
+table.rc-table td.rc-pron { font-size: 1.3rem; }
+table.rc-table td.cl-zh { text-align: left; white-space: normal; }
+table.rc-table tbody { border-top: 2px solid var(--line); }
+@media (max-width: 760px) {
+  table.rc-table td.cl-w { font-size: 1.3rem; }
+  table.rc-table td.rc-pron { font-size: 1.1rem; }
+  table.rc-table th.rc-case { min-width: 6em; }
+}
+/* 情境格裡的講義框圖（L19-b） */
+table.rc-table .rc-img { display: block; width: 100%; max-width: 150px; margin: 8px auto 0; border-radius: 8px; }
+/* 情境格裡用網頁畫的框（L19-a，同 L19-b 講義框圖的樣式） */
+.rc-boxes { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 8px; }
+.rc-boxes .gp-box { padding: 6px 14px; gap: 12px; }
+.rc-boxes .gp-box b.th { font-size: 1.9rem; font-weight: 800; }
+.rc-boxes .gp-box small { font-size: .7rem; font-weight: 400; }

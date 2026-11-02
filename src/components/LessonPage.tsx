@@ -24,6 +24,7 @@ import VowelShiftView from './VowelShiftView'
 import GroupingView from './GroupingView'
 import NumeralTable from './NumeralTable'
 import SanskritVowels from './SanskritVowels'
+import ReadingCases from './ReadingCases'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
 export type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | 'numerals' | `unit-${number}`
@@ -48,7 +49,7 @@ const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework && !g.u
 const linkify = (s: string) => s.split(/(https?:\/\/\S+)/).map((t, i) => i % 2 ? <a key={i} href={t} target="_blank" rel="noopener noreferrer">{t}</a> : t)
 
 // 小單元（例 L13-1 複合子音、L13-2 อ นำ ย、L15 的四種 Grouping）：依組合表、說明卡、練習出現的順序，各自一個區塊
-const unitsOf = (l: Lesson) => [...new Set([l.clusters?.unit, ...(l.grouping ?? []).map(g => g.unit), ...l.rules.map(r => r.unit), ...l.practice.filter(g => !g.homework).map(g => g.unit)].filter((u): u is string => !!u))]
+const unitsOf = (l: Lesson) => [...new Set([l.clusters?.unit, ...(l.grouping ?? []).map(g => g.unit), ...(l.readingCases ?? []).map(t => t.unit), ...l.rules.map(r => r.unit), ...l.practice.filter(g => !g.homework).map(g => g.unit)].filter((u): u is string => !!u))]
 // 「基本概念」區塊（L1）：標 at:'concept' 的說明卡＋音節組成圖，組成圖排在 diagram.after 那張卡之後
 export const conceptItems = (l: Lesson): (Rule | Diagram)[] => {
   const rs = l.rules.filter(r => r.at === 'concept')
@@ -60,7 +61,7 @@ const plainRules = (l: Lesson) => l.rules.filter(r => !r.unit && !r.at)
 // 本課的區塊與順序（課程頁的目錄、投影片模式共用）
 export function lessonTabs(lesson: Lesson): [Tab, string][] {
   const t: [Tab, string][] = []
-  const hasRules = plainRules(lesson).length || lesson.toneTables.length || lesson.finalsIntro || lesson.vowelShifts?.length || (lesson.clusters && !lesson.clusters.unit)
+  const hasRules = plainRules(lesson).length || lesson.toneTables.length || lesson.finalsIntro || lesson.vowelShifts?.length || (lesson.clusters && !lesson.clusters.unit) || lesson.readingCases?.some(t => !t.unit)
   if (lesson.review?.length) t.push(['review', lesson.reviewLabel ?? '複習'])
   if (lesson.diagram) t.push(['diagram', lesson.rules.some(r => r.at === 'concept') ? '基本概念' : lesson.diagram.title])
   if (lesson.vowels.length || lesson.sanskritVowels?.length) t.push(['vowels', '母音'])
@@ -70,7 +71,7 @@ export function lessonTabs(lesson: Lesson): [Tab, string][] {
   if (lesson.finals?.length) t.push(['finals', '尾音'])
   if (lesson.consonants.length) t.push(['consonants', '子音'])
   if (hasRules && lesson.tonesAfterConsonants) t.push(['rules', '聲調'])
-  if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length && !lesson.sanskritVowels?.length && !lesson.numerals?.length) t.push(['vocab', '單字'])
+  if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length && !lesson.sanskritVowels?.length && !lesson.numerals?.length && !lesson.readingCases?.length) t.push(['vocab', '單字'])
   if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
   if (lesson.memes.length) t.push(['memes', '補充'])
   if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
@@ -209,7 +210,7 @@ export default function LessonPage() {
   )
   // 練習卡有中文時，右上角可以單獨隱藏這張卡的中文（預設顯示）
   const practiceCard = (g: PracticeGroup, showTitle: boolean) => {
-    const k = g.unit ?? g.title
+    const k = (g.unit ?? '') + '｜' + g.title  // 同一個小單元可以有好幾組練習（L19 多音節練習＋真的假的）
     const hasZh = g.items.some(i => i.zh)
     const zh = showZh && !zhOff.has(k)
     return (
@@ -272,6 +273,7 @@ export default function LessonPage() {
         <>
           {lesson.finalsIntro && <FinalsIntro config={lesson.finalsIntro === true ? undefined : lesson.finalsIntro} />}
           {lesson.clusters && !lesson.clusters.unit && <ClusterIntro config={lesson.clusters} vocab={lesson.vocab} showZh={showZh} />}
+          {lesson.readingCases?.filter(t => !t.unit).map((t, i) => <ReadingCases key={i} t={t} vocab={lesson.vocab} showZh={showZh} />)}
           <section className="stack">
             {plainRules(lesson).map(ruleCard)}
           </section>
@@ -291,6 +293,7 @@ export default function LessonPage() {
             {!lesson.grouping?.some(g => g.unit === u) && topRules(u)}
             {lesson.clusters?.unit === u && <ClusterIntro config={lesson.clusters} vocab={lesson.vocab} showZh={showZh} />}
             {lesson.grouping?.filter(g => g.unit === u).map((g, i) => <GroupingView key={i} top={i === 0 ? topRules(u) : null} g={g} vocab={lesson.vocab} showZh={showZh} />)}
+            {lesson.readingCases?.filter(t => t.unit === u).map((t, i) => <ReadingCases key={i} t={t} vocab={lesson.vocab} showZh={showZh} />)}
             <section className="stack">
               {lesson.rules.filter(r => r.unit === u && r.at !== 'top').map(ruleCard)}
               {lesson.practice.filter(g => !g.homework && g.unit === u).map(g => practiceCard(g, true))}
