@@ -73,6 +73,8 @@ export interface SanskritReading { sound: string; word?: string; split?: string;
 export interface SanskritVowel { char: string; readings: SanskritReading[] }
 
 /** 母音種類說明卡：focus＝這課要學（紅）、done＝學過（灰）、notes:false＝不顯示下方補充說明 */
+export interface Numeral { digit: string; arabic: string; word: string }  // 大寫數字（L18）：digit 泰文數字 ๑、arabic 阿拉伯數字 1、word 念法 หนึ่ง
+
 export interface VowelIntroConfig { focus: ('single' | 'compound' | 'special' | 'sanskrit')[]; done?: ('single' | 'compound' | 'special' | 'sanskrit')[]; notes?: boolean }
 
 export interface Lesson {
@@ -97,6 +99,8 @@ export interface Lesson {
   grouping?: GroupingUnit[]
   /** 梵文母音表（L14，放在「母音」區塊）；有設就不另開「單字」分頁，例字的中文從 vocab 帶 */
   sanskritVowels?: SanskritVowel[]
+  // 大寫數字對照表（L18）：自成「大寫數字」區塊，每 5 個一張表；有填就不另開「單字」分頁
+  numerals?: Numeral[]
   /** 「說明」區塊（聲調總覽、聲調表）改排在子音後面、改叫「聲調」（L1：先概念、再子音、最後聲調） */
   tonesAfterConsonants?: boolean
   /** 開放投影片模式（課程頁出現「▶ 投影片模式」按鈕，見 lesson-slides skill） */

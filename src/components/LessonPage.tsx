@@ -22,10 +22,11 @@ import FinalsIntro from './FinalsIntro'
 import ClusterIntro from './ClusterIntro'
 import VowelShiftView from './VowelShiftView'
 import GroupingView from './GroupingView'
+import NumeralTable from './NumeralTable'
 import SanskritVowels from './SanskritVowels'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-export type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | `unit-${number}`
+export type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | 'numerals' | `unit-${number}`
 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
 // 說明文字有換行時，每行列成一點
@@ -63,12 +64,13 @@ export function lessonTabs(lesson: Lesson): [Tab, string][] {
   if (lesson.review?.length) t.push(['review', lesson.reviewLabel ?? '複習'])
   if (lesson.diagram) t.push(['diagram', lesson.rules.some(r => r.at === 'concept') ? '基本概念' : lesson.diagram.title])
   if (lesson.vowels.length || lesson.sanskritVowels?.length) t.push(['vowels', '母音'])
+  if (lesson.numerals?.length) t.push(['numerals', '大寫數字'])
   if (hasRules && !lesson.tonesAfterConsonants) t.push(['rules', '說明'])
   unitsOf(lesson).forEach((u, i) => t.push([`unit-${i}`, u]))
   if (lesson.finals?.length) t.push(['finals', '尾音'])
   if (lesson.consonants.length) t.push(['consonants', '子音'])
   if (hasRules && lesson.tonesAfterConsonants) t.push(['rules', '聲調'])
-  if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length && !lesson.sanskritVowels?.length) t.push(['vocab', '單字'])
+  if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length && !lesson.sanskritVowels?.length && !lesson.numerals?.length) t.push(['vocab', '單字'])
   if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
   if (lesson.memes.length) t.push(['memes', '補充'])
   if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
@@ -296,6 +298,8 @@ export default function LessonPage() {
           </>
         )
       })()}
+
+      {cur === 'numerals' && lesson.numerals && <NumeralTable numerals={lesson.numerals} />}
 
       {cur === 'games' && <Games consonants={lesson.consonants} vowels={lesson.vowels} words={lesson.vocab} />}
 
