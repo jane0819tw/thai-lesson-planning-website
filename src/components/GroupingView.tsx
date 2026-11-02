@@ -7,6 +7,9 @@ const red = (s: string) => s.split('\n').map((line, k) => (
   <div key={k}>{line.split(/\*\*(.+?)\*\*/).map((t, i) => i % 2 ? <strong className="gp-red" key={i}>{t}</strong> : t)}</div>
 ))
 
+// 同上但不分行（結構圖大字、例字念法；L17 用紅字標 F1，例 ผ**น**-**ละ**-ไม้）
+const redInline = (s: string) => s.split(/\*\*(.+?)\*\*/).map((t, i) => i % 2 ? <span className="gp-red" key={i}>{t}</span> : t)
+
 // 例字依 group 分成好幾張表（相鄰同 group 一張；沒填 group 的標題叫「例字」）
 const groups = (ws: GroupingWord[]) => ws.reduce<[string, GroupingWord[]][]>((acc, w) => {
   const last = acc[acc.length - 1]
@@ -28,7 +31,7 @@ export default function GroupingView({ g, vocab, showZh, top }: { g: GroupingUni
   const vowels = g.vowels ?? ['ะ', 'V']
   const finals = g.finals ?? ['/', '(F)']
   const nextNull = (i: number) => vowels[i] === null  // 子音格往下合併到母音列
-  const label = boxes.map(b => b.cells.map(c => c.big + (c.sub ? `（${c.sub}）` : '')).join(' ')).join('｜')
+  const label = boxes.map(b => b.cells.map(c => c.big.replace(/\*/g, '') + (c.sub ? `（${c.sub}）` : '')).join(' ')).join('｜')
   return (
     <>
       {g.subtitle && <p className="gp-sub">{g.subtitle}</p>}
@@ -43,7 +46,7 @@ export default function GroupingView({ g, vocab, showZh, top }: { g: GroupingUni
         <figure className="gp-syl" aria-label={`音節結構：${label}`}>
           {boxes.map((b, i) => (
             <div key={i} className={'gp-box' + (b.cells.length > 1 ? ' gp-wide' : '') + (b.pink ? ' gp-pink' : '')}>
-              {b.cells.map((c, k) => <div key={k}><small>{c.label}</small><b className={thai(c.big) ? 'th' : undefined}>{c.big}</b><small>{c.sub}</small></div>)}
+              {b.cells.map((c, k) => <div key={k}><small>{c.label}</small><b className={thai(c.big.replace(/\*/g, '')) ? 'th' : undefined}>{redInline(c.big)}</b><small>{c.sub}</small></div>)}
             </div>
           ))}
           {g.caption && <figcaption>{g.caption}</figcaption>}
@@ -75,7 +78,7 @@ export default function GroupingView({ g, vocab, showZh, top }: { g: GroupingUni
                   return (
                     <tr key={w.thai}>
                       <td className="th cl-w">{w.star && '＊'}{w.thai}<SpeakButton text={w.thai} audioUrl={v?.audioUrl} /></td>
-                      <td className={'th cl-parts' + (w.mark ? ' gp-red' : '')}>{w.split}</td>
+                      <td className={'th cl-parts' + (w.mark ? ' gp-red' : '')}>{redInline(w.split)}</td>
                       <td className="cl-zh">{showZh && v?.zh}</td>
                     </tr>
                   )
