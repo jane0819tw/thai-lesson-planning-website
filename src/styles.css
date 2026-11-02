@@ -685,3 +685,20 @@ table.sktable .sk-mark { background: #fbeed3; }
 .gp-sub { margin: 0 0 10px; font-size: 1.1rem; font-weight: 700; color: var(--accent); }
 .pt-inner .tablewrap { overflow: visible; }  /* 投影片不要表格內捲動：讓寬表格撐開、整頁一起縮放 */
 .pt-todo { padding: 48px; text-align: center; border: 2px dashed var(--line); border-radius: 12px; color: var(--muted); font-size: 1.4rem; }
+
+/* Grouping 結構圖的粉紅框（L16-2 的 C1ำ、ประ） */
+.gp-box.gp-pink { background: #f4d4d4; }
+.gp-box b.th { font-size: 2.4rem; }
+@media (prefers-color-scheme: dark) {
+  .gp-box.gp-pink { background: #4a2c30; }
+}
+/* 三個音節（L16 Double Grouping）：結構圖在上、音節表在下，表格才不會擠到斷行 */
+.gp-3 .gp-syl { flex-basis: 100%; }
+.gp-3 .gp-wrap { flex-basis: 100%; }
+.gp-3 table.gp-table td > div { white-space: nowrap; }
+/* 補充卡大字可以用 \n 分行（L16 一整句廣告台詞） */
+.meme-big { white-space: pre-line; }
+/* Grouping 分情況時（L16-1）：結構圖卡片最上面的情況標題與說明 */
+.gp-head { flex-basis: 100%; }
+.gp-head h3 { margin: 0 0 6px; }
+.gp-head ul { margin: 0; padding-left: 1.2em; line-height: 1.8; }

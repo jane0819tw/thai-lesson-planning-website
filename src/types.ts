@@ -2,9 +2,10 @@
 // 內容來源：泰語認字講義 L1–L10（拼音、解釋、單元規劃皆依講義）。
 export type ConsonantGroup = 'mid' | 'high' | 'lcp' | 'lcs'
 
-export interface WordItem { thai: string; zh: string; roman?: string; star?: boolean; group?: string; audioUrl?: string | null; image?: ExtraImage }
+/** noQuiz：補充用的字（L16 ประวัติศาสตร์），課程頁照常顯示、有音檔，但不出現在聽音選字（作業、互動練習） */
+export interface WordItem { thai: string; zh: string; roman?: string; star?: boolean; noQuiz?: boolean; group?: string; audioUrl?: string | null; image?: ExtraImage }
 export interface DemoTile { th: string; sub?: string; op?: string; icon?: string; speak?: string }
-export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; toneTable?: ToneTable; unit?: string; at?: 'concept' | 'consonants' }  // toneTable：說明卡內直接顯示聲調表；title 留空＝不顯示標題；unit：放進這個小單元的區塊（見 Lesson.clusters）；at：concept＝放在「基本概念」區塊（和音節組成圖一起，L1），consonants＝放在「子音」區塊最上面
+export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; toneTable?: ToneTable; unit?: string; at?: 'concept' | 'consonants' | 'top' }  // toneTable：說明卡內直接顯示聲調表；title 留空＝不顯示標題；unit：放進這個小單元的區塊（見 Lesson.clusters）；at：concept＝放在「基本概念」區塊（和音節組成圖一起，L1），consonants＝放在「子音」區塊最上面，top＝放在所屬小單元（unit）區塊的最上面、結構圖前面（L16-1）
 export interface Consonant {
   id: string; char: string; name: string; roman: string; zh: string
   sound: string; group: ConsonantGroup; sameHigh: string; words: WordItem[]; audioUrl?: string | null
@@ -57,9 +58,14 @@ export interface ClusterIntroConfig { c2: string[]; rows: ClusterRow[]; rules: s
 /** Grouping（L15）：一個小單元一組「結構圖＋音節表＋例字表」。unit＝小單元名稱（自成一個區塊，同 unit 的說明卡、練習也排進來）；
  *  subtitle＝區塊標題下方的副標，直接講規則（例「MC/HC＋LCs：加 ห」），講義的小單元名稱容易混淆時用；c1／c2＝結構圖 C1、C2 下面的小字（例 MC/HC、LCs），空字串＝不寫；caption＝結構圖下方的補充；
  *  consonants＝音節表「子音」列：兩格＝第 1、第 2 個音節各一格，一格＝兩個音節合併；pron＝「音節發音」列，**文字**＝紅字（例 **ห**C2V(F)），\n 後面另起一行；
- *  note＝音節表最下面跨兩欄的紅字（例「＊不以複合子音發音」）；words＝例字，split＝講義「第1個音節-第2個音節」的念法，mark＝講義標紅的念法，中文從 vocab 帶 */
-export interface GroupingWord { thai: string; split: string; mark?: boolean }
-export interface GroupingUnit { unit: string; subtitle?: string; c1: string; c2: string; caption?: string; consonants: string[]; pron: [string, string]; note?: string; words: GroupingWord[] }
+ *  note＝音節表最下面跨兩欄的紅字（例「＊不以複合子音發音」）；words＝例字，split＝講義「第1個音節-第2個音節」的念法，mark＝講義標紅的念法，中文從 vocab 帶
+ *  L16 起可以有三個音節（Double Grouping）：pron 幾格就有幾個音節欄；vowels／finals＝「母音」「尾音」列（沒填＝ะ、V／/、(F)），null＝和上一列同一格（上下合併，例 L16-1 第 2 個音節「ร發ระ」跨子音、母音兩列）；
+ *  boxes＝自訂結構圖（沒填＝C1｜C2 V (F)）：一個 box 一個框，cells 一格一個記號（label 上方小字、big 大字、sub 下方小字），pink＝講義的粉紅框（L16-2 的 C1ำ、ประ）；
+ *  heading／body＝同一個小單元分好幾種情況時（L16-1 情況一 บ＋ริ、情況二 其他子音＋ร），每組結構圖上方的情況標題與說明（body 用 \n 分行列點，**文字**＝紅字）；
+ *  pronOnly＝音節表只有「音節發音」一列（L16-2 ประ 那張表）；同一個 unit 可以有好幾組（依序排在同一個區塊）；star＝例字前面的＊（講義標註） */
+export interface GroupingWord { thai: string; split: string; mark?: boolean; star?: boolean; group?: string }  // group：例字分組的標題（L16-1「C1 是 บ：บริ-」），換 group 就另起一張例字表
+export interface GroupingCell { label?: string; big: string; sub?: string }
+export interface GroupingUnit { unit: string; subtitle?: string; heading?: string; body?: string; c1: string; c2: string; caption?: string; boxes?: { cells: GroupingCell[]; pink?: boolean }[]; consonants: string[]; vowels?: (string | null)[]; finals?: string[]; pron: string[]; pronOnly?: boolean; note?: string; words: GroupingWord[] }
 
 /** 梵文母音表（L14）：一個字母一組，readings 一個念法一列（字母那一格自動合併）；sound＝念法（例 รึ），word＝例字（中文從 vocab 帶），split＝講義的分音節念法（例 รึ-ดู），
  *  沒有 word＝講義的「/」；unused＝講義「現今不使用」；mark＝講義淺黃底的格子（常用的念法） */

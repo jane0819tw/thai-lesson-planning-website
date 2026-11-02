@@ -107,7 +107,7 @@ function Memory({ items }: { items: Consonant[] }) {
 
 // ───────── 單字聽音選字（沒有新子音、母音的課，例如聲調規則、尾音）─────────
 export function WordListenQuiz({ words, onDone }: { words: WordItem[]; onDone?: (score: number, total: number) => void }) {
-  const all = useMemo(() => words.filter((w, k) => words.findIndex(x => x.thai === w.thai) === k), [words])
+  const all = useMemo(() => words.filter((w, k) => !w.noQuiz && words.findIndex(x => x.thai === w.thai) === k), [words])  // noQuiz＝補充字，不出題也不當選項
   const rounds = Math.min(10, all.length)
   const [seed, setSeed] = useState(0)
   const qs = useMemo(() => shuffle(all).slice(0, rounds).map(ans => {

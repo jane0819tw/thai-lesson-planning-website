@@ -31,9 +31,21 @@ export type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram'
 // 說明文字有換行時，每行列成一點
 // **文字**：本課重點，粗體＋主色
 const emph = (s: string) => s.split(/\*\*(.+?)\*\*/).map((t, i) => i % 2 ? <strong className="hl" key={i}>{t}</strong> : t)
-export const RuleBody = ({ body }: { body: string }) => body.includes('\n') ? <ul>{body.split('\n').map((l, i) => <li key={i}>{emph(l)}</li>)}</ul> : <p>{emph(body)}</p>
+// 說明卡：\n 分行列點；「- 」開頭的行是上一點底下的小點（L16-1）
+export const RuleBody = ({ body }: { body: string }) => {
+  if (!body.includes('\n')) return <p>{emph(body)}</p>
+  const items: { text: string; subs: string[] }[] = []
+  for (const l of body.split('\n')) {
+    if (l.startsWith('- ') && items.length) items[items.length - 1].subs.push(l.slice(2))
+    else items.push({ text: l, subs: [] })
+  }
+  return <ul>{items.map((it, i) => <li key={i}>{emph(it.text)}{it.subs.length > 0 && <ul>{it.subs.map((t, k) => <li key={k}>{emph(t)}</li>)}</ul>}</li>)}</ul>
+}
 // 標 homework 的練習改放在作業頁；標 unit 的練習放進那個小單元的區塊
 const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework && !g.unit)
+// 補充卡說明裡的網址（例如講義的 YouTube 影片）做成超連結，另開分頁
+const linkify = (s: string) => s.split(/(https?:\/\/\S+)/).map((t, i) => i % 2 ? <a key={i} href={t} target="_blank" rel="noopener noreferrer">{t}</a> : t)
+
 // 小單元（例 L13-1 複合子音、L13-2 อ นำ ย、L15 的四種 Grouping）：依組合表、說明卡、練習出現的順序，各自一個區塊
 const unitsOf = (l: Lesson) => [...new Set([l.clusters?.unit, ...(l.grouping ?? []).map(g => g.unit), ...l.rules.map(r => r.unit), ...l.practice.filter(g => !g.homework).map(g => g.unit)].filter((u): u is string => !!u))]
 // 「基本概念」區塊（L1）：標 at:'concept' 的說明卡＋音節組成圖，組成圖排在 diagram.after 那張卡之後
@@ -270,12 +282,15 @@ export default function LessonPage() {
 
       {cur.startsWith('unit-') && (() => {
         const u = unitsOf(lesson)[Number(cur.slice(5))]
+        const topRules = (u: string) => lesson.rules.some(r => r.unit === u && r.at === 'top') ? <section className="stack">{lesson.rules.filter(r => r.unit === u && r.at === 'top').map(ruleCard)}</section> : null
         return (
           <>
+            {/* at: 'top' 的說明卡排在小單元最上面（有 Grouping 副標時排在副標下面） */}
+            {!lesson.grouping?.some(g => g.unit === u) && topRules(u)}
             {lesson.clusters?.unit === u && <ClusterIntro config={lesson.clusters} vocab={lesson.vocab} showZh={showZh} />}
-            {lesson.grouping?.filter(g => g.unit === u).map(g => <GroupingView key={g.unit} g={g} vocab={lesson.vocab} showZh={showZh} />)}
+            {lesson.grouping?.filter(g => g.unit === u).map((g, i) => <GroupingView key={i} top={i === 0 ? topRules(u) : null} g={g} vocab={lesson.vocab} showZh={showZh} />)}
             <section className="stack">
-              {lesson.rules.filter(r => r.unit === u).map(ruleCard)}
+              {lesson.rules.filter(r => r.unit === u && r.at !== 'top').map(ruleCard)}
               {lesson.practice.filter(g => !g.homework && g.unit === u).map(g => practiceCard(g, true))}
             </section>
           </>
@@ -375,7 +390,7 @@ export default function LessonPage() {
             <article className={m.half ? 'card half' : 'card'} key={m.title || m.imageUrl}>
               {m.title && <h3>{m.title}</h3>}
               {m.big && <div className="th meme-big">{m.big}</div>}
-              {m.desc && <p className="muted small">{m.desc}</p>}
+              {m.desc && <p className="muted small">{linkify(m.desc)}</p>}
               {m.imageUrl ? <ZoomImage src={/^(https?:|data:|\/)/.test(m.imageUrl) ? m.imageUrl : `${import.meta.env.BASE_URL}${m.imageUrl}`} alt={m.title || m.big || ''} style={{ maxWidth: '100%' }} /> : m.imageUrl === undefined && <div className="meme-placeholder">圖片待補</div>}
             </article>
           ))}
