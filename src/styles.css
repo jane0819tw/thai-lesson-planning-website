@@ -726,8 +726,12 @@ table.rc-table td.rc-read div { white-space: nowrap; }
 table.rc-table td.rc-read { white-space: normal; font-size: 1.15rem; }
 table.rc-table td.cl-w { text-align: left; font-size: 1.6rem; width: 1%; white-space: nowrap; }
 table.rc-table td.rc-pron { font-size: 1.3rem; }
-table.rc-table td.cl-zh { text-align: left; white-space: normal; }
+table.rc-table td.cl-zh { text-align: left; white-space: normal; min-width: 6em; }
 table.rc-table tbody { border-top: 2px solid var(--line); }
+/* L20：縮寫的全名（กรุงเทพมหานคร）放在念法上面；例句（ฯลฯ 的句子）可以換行 */
+table.rc-table .rc-symbol { font-size: 2.6rem; line-height: 1.6; }
+table.rc-table .rc-full { font-size: 1.1rem; }
+table.rc-table td.cl-w.rc-sent { white-space: normal; font-size: 1.3rem; min-width: 12em; }
 @media (max-width: 760px) {
   table.rc-table td.cl-w { font-size: 1.3rem; }
   table.rc-table td.rc-pron { font-size: 1.1rem; }

@@ -33,12 +33,12 @@ export default function ReadingCases({ t, vocab, showZh }: { t: ReadingCaseTable
                 const v = vocab.find(x => x.thai === w.thai)
                 return (
                   <tr key={w.thai}>
-                    {i === 0 && <th scope="rowgroup" rowSpan={c.words.length} className="rc-case">{red(c.case)}{c.boxes && <div className="rc-boxes">{c.boxes.map((b, k) => (
+                    {i === 0 && <th scope="rowgroup" rowSpan={c.words.length} className="rc-case">{c.symbol && <div className="rc-symbol">{c.symbol}</div>}{red(c.case)}{c.boxes && <div className="rc-boxes">{c.boxes.map((b, k) => (
                       <div key={k} className="gp-box gp-wide">{b.map((x, j) => <div key={j}><small>{x.label}</small><b className="th">{redInline(x.big)}</b></div>)}</div>
                     ))}</div>}{c.image && <ZoomImage className="rc-img" src={`${import.meta.env.BASE_URL}${c.image.src}`} alt={c.image.alt} />}</th>}
                     {i === 0 && hasRead && <td rowSpan={c.words.length} className="th rc-read">{red(c.reading ?? '')}</td>}
-                    <td className="th cl-w">{w.thai}<SpeakButton text={w.thai} audioUrl={v?.audioUrl} /></td>
-                    {hasPron && <td className={'th rc-pron' + (w.mark ? ' gp-red' : '')}>{w.read && `[${w.read}]`}</td>}
+                    <td className={'th cl-w' + (w.thai.includes(' ') ? ' rc-sent' : '')} colSpan={hasPron && !w.read && !w.full ? 2 : undefined}>{w.thai}<SpeakButton text={w.thai} audioUrl={v?.audioUrl} /></td>
+                    {hasPron && (w.read || w.full) && <td className={'th rc-pron' + (w.mark ? ' gp-red' : '')}>{w.full && <div className="rc-full">{w.full}</div>}{w.read && `[${w.read}]`}</td>}
                     <td className="cl-zh">{showZh && v?.zh}</td>
                   </tr>
                 )

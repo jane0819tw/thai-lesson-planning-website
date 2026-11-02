@@ -69,9 +69,10 @@ export interface GroupingUnit { unit: string; subtitle?: string; heading?: strin
 
 /** 情境讀法表（L19 รร 讀法、ร 特殊結合）：講義「情境｜讀法｜範例（例字｜[念法]｜意思）」一張表。unit＝小單元名稱（自成一個區塊），沒填＝放在「說明」；
  *  caseHead／readHead＝前兩欄的欄名（沒填＝情境／讀法，**文字**＝紅字，例「原→**念法**」）；cases 一個情境一組，case＝情境說明、reading＝讀法（\n 分行，**文字**＝紅字），
- *  沒有任何 reading＝不顯示讀法欄（L19「ร 已經扮演的角色」）；words＝例字，read＝講義方括號裡的念法，mark＝講義標紅；中文從 vocab 帶；note＝表格下方的補充說明 */
-export interface ReadingCaseWord { thai: string; read?: string; mark?: boolean }
-export interface ReadingCase { case: string; reading?: string; image?: ExtraImage; boxes?: GroupingCell[][]; words: ReadingCaseWord[] }  // image：情境格裡、說明文字下方的講義框圖（L19-b 的 ทร V (F) → ซ V (F)）；boxes：講義沒有框圖時用網頁畫（L19-a），一個陣列一個框、上下排，cells 同 Grouping 結構圖（label 小字、big 大字，**文字**＝紅字）
+ *  沒有任何 reading＝不顯示讀法欄（L19「ร 已經扮演的角色」）；words＝例字，read＝講義方括號裡的念法，mark＝講義標紅；中文從 vocab 帶；note＝表格下方的補充說明
+ *  full＝縮寫的全名（L20 กรุงเทพฯ → กรุงเทพมหานคร），顯示在念法上面，音檔也念全名；沒有 read／full 的例字（例句）會跨過念法欄；symbol＝情境格最上面的大字符號（L20 ฯ、ๆ、์） */
+export interface ReadingCaseWord { thai: string; read?: string; mark?: boolean; full?: string }
+export interface ReadingCase { case: string; symbol?: string; reading?: string; image?: ExtraImage; boxes?: GroupingCell[][]; words: ReadingCaseWord[] }  // image：情境格裡、說明文字下方的講義框圖（L19-b 的 ทร V (F) → ซ V (F)）；boxes：講義沒有框圖時用網頁畫（L19-a），一個陣列一個框、上下排，cells 同 Grouping 結構圖（label 小字、big 大字，**文字**＝紅字）
 export interface ReadingCaseTable { unit?: string; title?: string; caseHead?: string; readHead?: string; cases: ReadingCase[]; note?: string }
 
 /** 梵文母音表（L14）：一個字母一組，readings 一個念法一列（字母那一格自動合併）；sound＝念法（例 รึ），word＝例字（中文從 vocab 帶），split＝講義的分音節念法（例 รึ-ดู），
