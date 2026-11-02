@@ -22,11 +22,14 @@ vowel_speech = lambda f: f.replace("-", "อ") if len(f.replace("-", "")) > 1 or
 
 # 個別詞指定來源（優先於自動規則）：聽過覺得某個來源唸得不對時，在這裡換成另一個
 FORCE_GTTS = {"ข้าวเหนียว", "หมูปิ้ง", "ชอบมาก", "นิดหน่อย", "ฤๅษี", "องุ่น", "ปริมาณ", "กรุณา", "โก๋แก่", "เออเออ", "ขอ", "ผอผึ้ง", "ฃอฃวด", "พ้า", "ยอยักษ์", "ณอเณร", "นาฬิกา", "ทำไมวะ", "แฟน", "วาฬใหญ่", "กี่น", "คี่น", "คั้น", "หรดี", "กั๊บ", "ก๊าบ", "คับ", "ค้าบ", "คิด", "จังหวัดอยุธยา", "จังหวัดอยุธยาสวยมาก"}  # 子音名稱用「連寫」當 key（กอไก่ 這種）
-# 個別詞指定合成文字：ฃ 是廢字，edge-tts 讀不出單獨一個，改念「ฃอ」
-FORCE_SYNTH = {"ฃ": "ฃอ", "ฃอฃวด": "ขอ ฃวด"}  # ฃอ 引擎念不好，發音時偷換成 ขอ（畫面仍顯示 ฃอ ฃวด）
+# 個別詞指定合成文字：含大寫數字的句子老師說要重錄的，數字直接寫成念法（L18 ฉันกินชานม ๓ แก้ว）；ฃ 是廢字，edge-tts 讀不出單獨一個，改念「ฃอ」
+FORCE_SYNTH = {"ฃ": "ฃอ", "ฃอฃวด": "ขอ ฃวด", "ฉันกินชานม ๓ แก้ว": "ฉันกินชานม สาม แก้ว"}  # ฃอ 引擎念不好，發音時偷換成 ขอ（畫面仍顯示 ฃอ ฃวด）
 FORCE_EDGE = {"เตอ", "เตีย", "เบือะ", "เจือะ", "เจือ", "อัว", "ตัวะ"}
 # 個別句子指定語速（edge-tts）：老師聽過覺得太快的
 FORCE_RATE = {"ช่วงนี้เป็นยังไงบ้าง": "-40%", "ไม่ไป ฉันเหนื่อย": "-40%"}
+
+THAI_DIGITS = re.compile("[๐-๙]")
+TO_ARABIC = str.maketrans("๐๑๒๓๔๕๖๗๘๙", "0123456789")
 
 gtts_texts = set()  # 以 อ 當載體的單獨母音（อะ、อา、เอะ…）與母音卡的短／長音例字（กะ、กา…）：edge-tts 會唸跑掉，改用 gTTS
 
@@ -49,6 +52,9 @@ def collect(lesson):
     for v in lesson.get("sanskritVowels", []):  # 梵文母音的念法（รึ、ริ…）同母音，走 gTTS
         snd = {r["sound"] for r in v["readings"]}
         gtts_texts.update(snd); texts.update(snd)
+    for n in lesson.get("numerals", []):  # 大寫數字（L18）：念法、數字本身
+        texts.update((n["word"], n["digit"]))
+        synth_override[n["digit"]] = n["word"]  # 單獨一個泰文數字直接念它的念法
     for r in lesson.get("rules", []):
         texts.update(t["speak"] for t in r.get("demo", []) if t.get("speak"))
     # 聲調表：獨立的 toneTables，以及放在說明卡（rules）或母音前置說明卡（preface）裡的 toneTable
@@ -62,6 +68,9 @@ def collect(lesson):
     for g in lesson.get("practice", []):
         texts.update(i["thai"] for i in g.get("items", []))
         synth_override.update({i["thai"]: i["thai"].replace("/", " ") for i in g.get("items", []) if "/" in i["thai"]})  # 「A / B」兩種回答：斜線不念出來
+    for t in texts:  # 含泰文數字的短語（๗๐ บาท）：換成阿拉伯數字再合成，引擎才會念成 เจ็ดสิบ
+        if THAI_DIGITS.search(t) and t not in synth_override:
+            synth_override[t] = t.translate(TO_ARABIC)
     return {t.strip() for t in texts if t and t.strip()}, synth_override
 
 BPS, FR = 6000, 144  # edge-tts 輸出 48kbps mono mp3：每秒 6000 bytes，每個 frame 144 bytes
