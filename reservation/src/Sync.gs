@@ -182,7 +182,8 @@ function confirmPrivate_(b) {
       notify_('尚未建立 Zoom：' + b['學生'], '請在「專案設定 → 指令碼屬性」設定 ZOOM_ACCOUNT_ID、ZOOM_CLIENT_ID、ZOOM_CLIENT_SECRET，再把這筆預約的狀態改一次。');
     } else {
       try {
-        const m = zoomCreateMeeting_(zoomTopic_(b['學生'], start), start, b['課長']);
+        const email = (student && String(student.email || '').trim()) || emailFromNote_(b['備註']);
+        const m = zoomCreateMeeting_(zoomTopic_(b['學生'], start), start, b['課長'], email);
         b['Zoom連結'] = m.joinUrl; b['會議編號'] = m.id;
       } catch (e) {
         addNote_(b, 'Zoom 建立失敗：' + e.message);

@@ -35,11 +35,16 @@ function zoomApi_(method, path, body) {
   return text ? JSON.parse(text) : {};
 }
 
-/** @return {{id:string, joinUrl:string}} 時間與長度同預約（實際上課長度，不是佔用長度） */
-function zoomCreateMeeting_(topic, startStr, minutes) {
+/**
+ * @param {string=} inviteeEmail 學生 email；有給就列進 Zoom 會議的「受邀者」
+ * @return {{id:string, joinUrl:string}} 時間與長度同預約（實際上課長度，不是佔用長度）
+ */
+function zoomCreateMeeting_(topic, startStr, minutes, inviteeEmail) {
+  const settings = { join_before_host: true, waiting_room: false, host_video: true, participant_video: true };
+  if (inviteeEmail) settings.meeting_invitees = [{ email: inviteeEmail }];
   const m = zoomApi_('post', '/users/me/meetings', {
     topic: topic, type: 2, start_time: startStr.replace(' ', 'T') + ':00', timezone: CONFIG.TZ, duration: minutes,
-    settings: { join_before_host: true, waiting_room: false, host_video: true, participant_video: true },
+    settings: settings,
   });
   return { id: String(m.id), joinUrl: m.join_url };
 }
