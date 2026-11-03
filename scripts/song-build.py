@@ -20,6 +20,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+from datetime import date
 from pathlib import Path
 
 from pythainlp.corpus.common import thai_words
@@ -116,7 +117,7 @@ def main():
     meta = oembed(video_id)
     last = subs[-1]
     doc = {
-        "id": page_id, "kind": "song", "draft": True, "subtitleSource": "official",
+        "id": page_id, "createdAt": date.today().isoformat(), "kind": "song", "draft": True, "subtitleSource": "official",
         "title": meta.get("title", video_id), "titleZh": "", "artist": meta.get("channel", ""),
         "youtubeId": video_id, "duration": round(last["start"] + last["duration"]),
         "note": "歌詞照 YouTube 官方泰文字幕。",

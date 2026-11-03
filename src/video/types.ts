@@ -20,6 +20,8 @@ export interface VideoTip { title: string; body: string }
 export interface VideoVocab { th: string; rom: string; zh: string; explain: string; example: VideoExample }
 export interface VideoLesson {
   id: string; title: string; titleZh: string
+  /** 建立日期 YYYY-MM-DD；列表依此排序（舊的在前） */
+  createdAt?: string
   youtubeId: string; duration: number
   topic: string; level: string; note: string
   lines: VideoLine[]; vocab?: VideoVocab[]; patterns: VideoPattern[]; tips?: VideoTip[]

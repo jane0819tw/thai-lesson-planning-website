@@ -22,6 +22,8 @@ export interface Song {
   subtitleSource: 'official'
   /** 草稿：只在本機 dev 列出 */
   draft?: boolean
+  /** 建立日期 YYYY-MM-DD；列表依此排序（舊的在前） */
+  createdAt?: string
   note: string
   lines: SongLine[]
   /** 歌詞下面的補充圖片（public/ 底下的相對路徑） */
