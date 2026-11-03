@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { getAdminKey } from '../reservation/api'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { getVideoRepository } from '../data/videoRepository'
 import type { VideoLesson, VideoLine, VideoWord } from '../video/types'
@@ -345,6 +346,7 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
                 <div className="vlh">
                   <button type="button" className="vtime" onClick={e => { e.stopPropagation(); playLine(i) }}>{i === active && playing ? '⏸' : '▶'} {mmss(starts[i])}</button>
                   <span className="small muted">第 {i + 1} 句</span>
+                  {L.guess && getAdminKey() && <span className="vguess">字幕不確定，請老師確認</span>}
                   <span className="vsp" />
                   <button type="button" className="vmini" onClick={e => { e.stopPropagation(); speak(L.words.map(w => w.th).join('')) }}>朗讀</button>
                   <button type="button" className="vmini" aria-pressed={loopIdx === i} onClick={e => { e.stopPropagation(); toggleLineLoop(i) }}>
