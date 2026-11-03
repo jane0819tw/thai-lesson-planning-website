@@ -16,9 +16,11 @@ export interface VideoLine {
 export interface VideoExample { th: string; rom: string; zh: string }
 export interface VideoPattern { id: string; th: string; zh: string; cmp: string; examples: VideoExample[] }
 export interface VideoTip { title: string; body: string }
+/** 需要講解的單字：只列老師挑的字（不是台詞裡每個字），附解釋和例句 */
+export interface VideoVocab { th: string; rom: string; zh: string; explain: string; example: VideoExample }
 export interface VideoLesson {
   id: string; title: string; titleZh: string
   youtubeId: string; duration: number
   topic: string; level: string; note: string
-  lines: VideoLine[]; patterns: VideoPattern[]; tips: VideoTip[]
+  lines: VideoLine[]; vocab?: VideoVocab[]; patterns: VideoPattern[]; tips?: VideoTip[]
 }

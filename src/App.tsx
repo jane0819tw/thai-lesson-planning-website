@@ -17,6 +17,7 @@ import DictationReview from './components/DictationReview'
 import VideoIndex from './components/VideoIndex'
 import VideoPage from './components/VideoPage'
 import SongPage, { SongIndex } from './components/SongPage'
+import { SongPresent, VideoPresent } from './components/StudyPresent'
 
 export default function App() {
   const loc = useLocation() // 換頁時重置錯誤保護
@@ -47,8 +48,10 @@ export default function App() {
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/video" element={<VideoIndex />} />
           <Route path="/video/:id" element={<VideoPage />} />
+          <Route path="/video/:id/present" element={<VideoPresent />} />
           <Route path="/song" element={<SongIndex />} />
           <Route path="/song/:id" element={<SongPage />} />
+          <Route path="/song/:id/present" element={<SongPresent />} />
           <Route path="*" element={<p>找不到頁面。<Link to="/">回首頁</Link></p>} />
         </Routes>
         </ErrorBoundary>

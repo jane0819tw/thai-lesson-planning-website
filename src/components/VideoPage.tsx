@@ -4,9 +4,16 @@ import { getVideoRepository } from '../data/videoRepository'
 import type { VideoLesson, VideoLine, VideoWord } from '../video/types'
 import { loadYouTubeApi, PLAYER_ERRORS, type YTPlayer } from '../video/youtube'
 import { Rom } from '../video/Rom'
+import { Volume } from '../video/Volume'
 import { speak } from '../audio/speak'
+import { fromVideo } from '../study/adapters'
+import { NoteSections } from '../study/NoteRow'
+import { PrintSheet, printDoc } from '../study/PrintSheet'
 import '../video.css'
+import '../song.css'
 
+/** 語速按鈕每點一次換下一個（同歌詞頁） */
+const RATES = [1, 0.75, 0.5]
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 
 /** 寬螢幕（≥900px）用左右兩欄，窄螢幕上下排列 */
@@ -23,11 +30,10 @@ function useWide() {
 }
 
 /**
- * 每個字的開始秒數。優先順序：打點結果 → 資料裡每個字的 t → 依字長在整句範圍內估算。
- * 估算只是近似值（YouTube 沒有逐字時間），要準確請用校時模式打點。
+ * 每個字的開始秒數。優先順序：資料裡每個字的 t → 依字長在整句範圍內估算。
+ * 估算只是近似值（YouTube 沒有逐字時間）；句子起點校準後，估算也會跟著變準。
  */
-function wordStartsFor(line: VideoLine, lineStart: number, lineEnd: number, override?: number[]): number[] {
-  if (override && override.length === line.words.length) return override
+function wordStartsFor(line: VideoLine, lineStart: number, lineEnd: number): number[] {
   if (line.words.every(w => typeof w.t === 'number')) return line.words.map(w => w.t as number)
   const weights = line.words.map(w => Math.max(1, [...w.th.replace(/\s/g, '')].length))
   const total = weights.reduce((a, b) => a + b, 0)
@@ -53,9 +59,8 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
   const ytUrl = (t: number) => `https://www.youtube.com/watch?v=${video.youtubeId}&t=${Math.floor(t)}s`
   const wide = useWide()
 
-  // 各句開始秒數與逐字打點結果放在 state，方便校時模式即時修改
+  // 各句開始秒數放在 state，方便校時模式即時修改
   const [starts, setStarts] = useState<number[]>(() => video.lines.map(l => l.start))
-  const [wordT, setWordT] = useState<Record<number, number[]>>({})
   const hostRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const playerRef = useRef<YTPlayer | null>(null)
@@ -67,17 +72,21 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
   const [follow, setFollow] = useState(true)
   const [wordFollow, setWordFollow] = useState(true)
   const [loopIdx, setLoopIdx] = useState<number | null>(null)
+  const [playing, setPlaying] = useState(false)
   const [rate, setRate] = useState(1)
   const [showRom, setShowRom] = useState(true)
   const [showZh, setShowZh] = useState(true)
-  const [showTone, setShowTone] = useState(true)
+  const [showSeg, setShowSeg] = useState(false)
+  // 藝術字只在這頁切換、預設關閉（同歌詞頁）
+  const [art, setArt] = useState(false)
   const [word, setWord] = useState<VideoWord | null>(null)
-  const [copied, setCopied] = useState(false)
-  const [rec, setRec] = useState<{ line: number; times: number[] } | null>(null)
+  const [saveMsg, setSaveMsg] = useState('')
+  const [rec, setRec] = useState<number | null>(null)
+  const [editMsg, setEditMsg] = useState('')
 
   const wordStarts = useMemo(
-    () => video.lines.map((L, i) => wordStartsFor(L, starts[i], i + 1 < starts.length ? starts[i + 1] : video.duration, wordT[i])),
-    [video, starts, wordT],
+    () => video.lines.map((L, i) => wordStartsFor(L, starts[i], i + 1 < starts.length ? starts[i + 1] : video.duration)),
+    [video, starts],
   )
 
   // 輪詢計時器要讀最新值，用 ref 避免閉包過期
@@ -144,6 +153,8 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
       }
       setActive(a => (a === idx ? a : idx))
       setActiveW(a => (a === w ? a : w))
+      const on = [1, 3].includes(p.getPlayerState())
+      setPlaying(v => (v === on ? v : on))
     }, 120)
     return () => window.clearInterval(timer)
   }, [status])
@@ -161,21 +172,23 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
   // 4) 播放速度
   useEffect(() => { if (status === 'ready') playerRef.current?.setPlaybackRate(rate) }, [rate, status])
 
-  // 5) 逐字打點：空白鍵記錄「下一個字」開始的時間
+  // 5) 打起點：從前一句開頭播放，聽到這句第一個字時按一次空白鍵
+  /** 按下去時人的反應會慢一點，往前扣一點，避免從這句開始播時切掉第一個字 */
+  const REACTION = 0.2
   const tapRef = useRef<() => void>(() => {})
   tapRef.current = () => {
     const p = playerRef.current
-    if (!rec || !p) return
-    const times = [...rec.times, Math.round(p.getCurrentTime() * 100) / 100]
-    if (times.length >= video.lines[rec.line].words.length) {
-      setWordT(m => ({ ...m, [rec.line]: times }))
-      setRec(null)
-    } else {
-      setRec({ line: rec.line, times })
-    }
+    if (rec === null || !p) return
+    const i = rec
+    setRec(null)
+    const t = Math.max(0, Math.round((p.getCurrentTime() - REACTION) * 10) / 10)
+    const bad = orderError(i, t)
+    if (bad) { setEditMsg(`第 ${i + 1} 句沒有改：${bad}`); return }
+    setStarts(s => s.map((v, j) => (j === i ? t : v)))
+    setEditMsg('')
   }
   useEffect(() => {
-    if (!rec) return
+    if (rec === null) return
     const onKey = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); tapRef.current() } }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -189,58 +202,80 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
     setActive(i)
     if (keepLoop && loopIdx !== null) setLoopIdx(i)
   }
-  const toggleGlobalLoop = () => setLoopIdx(l => (l === null ? Math.max(active, 0) : null))
+  /** 點整句泰文：暫停，讓學生看清楚；按該句的 ▶ 才繼續 */
+  const pause = (e: React.MouseEvent) => { e.stopPropagation(); playerRef.current?.pauseVideo() }
+  /** ▶：停在這句時從暫停處繼續，正在播這句就暫停，否則跳到這句開頭 */
+  const playLine = (i: number) => {
+    const p = playerRef.current
+    if (p && i === active) {
+      const st = p.getPlayerState()
+      if (st === 1 || st === 3) { p.pauseVideo(); setPlaying(false); return }
+      if (st === 2) { p.playVideo(); return }
+    }
+    seekTo(i)
+  }
+  const togglePlay = () => {
+    const p = playerRef.current
+    if (!p) return
+    if (playing) { p.pauseVideo(); setPlaying(false) } else p.playVideo()
+  }
   const toggleLineLoop = (i: number) => {
     if (loopIdx === i) { setLoopIdx(null); return }
     setLoopIdx(i)
     seekTo(i, false)
   }
   const openPattern = (pid: string) => {
-    const el = document.getElementById(`vpat-${pid}`) as HTMLDetailsElement | null
-    if (el) { el.open = true; el.scrollIntoView({ behavior: 'smooth', block: 'start' }) }
+    document.getElementById(`note-${pid}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+  /** 起點必須落在前一句起點之後、下一句起點之前，否則句子順序會亂 */
+  const orderError = (i: number, t: number) => {
+    if (i > 0 && t <= starts[i - 1]) return `${t.toFixed(1)} 秒早於第 ${i} 句的起點（${starts[i - 1]} 秒），請先校正第 ${i} 句`
+    if (i + 1 < starts.length && t >= starts[i + 1]) return `${t.toFixed(1)} 秒晚於第 ${i + 2} 句的起點（${starts[i + 1]} 秒），請先校正第 ${i + 2} 句`
+    return ''
   }
   const setStartNow = (i: number) => {
     const p = playerRef.current
     if (!p) return
     const t = Math.round(p.getCurrentTime() * 10) / 10
+    const bad = orderError(i, t)
+    if (bad) { setEditMsg(`第 ${i + 1} 句沒有改：${bad}`); return }
+    setEditMsg('')
     setStarts(s => s.map((v, j) => (j === i ? t : v)))
-    setWordT(m => { const n = { ...m }; delete n[i]; return n })
   }
   const startRec = (i: number) => {
     const p = playerRef.current
     if (!p) return
-    p.seekTo(Math.max(0, starts[i] - 0.5), true)
+    // 從前一句開頭播：這句可能在前一句還沒結束時就開始，從這句的舊起點播會漏掉開頭的字
+    p.seekTo(i > 0 ? starts[i - 1] : 0, true)
     p.playVideo()
     setLoopIdx(null)
-    setRec({ line: i, times: [] })
+    setEditMsg('')
+    setRec(i)
   }
-  // 校時後的完整資料：整份貼回 data/videos/*.json 即可
-  const exportJson = useMemo(() => {
-    const out: VideoLesson = {
-      ...video,
-      lines: video.lines.map((L, i) => ({
-        ...L,
-        start: starts[i],
-        words: L.words.map((w, j) => (wordT[i] ? { ...w, t: wordT[i][j] } : w)),
-      })),
-    }
-    return JSON.stringify(out, null, 1)
-  }, [video, starts, wordT])
-  const copyJson = () => {
-    navigator.clipboard?.writeText(exportJson).then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 1500) }).catch(() => {})
+  // 校時結果直接寫回 data/videos/<id>.json（只有本機 dev server 有這個存檔端點）
+  const changed = starts.filter((t, i) => t !== video.lines[i].start).length
+  const save = () => {
+    if (!import.meta.env.DEV) { setSaveMsg('只有本機 dev 能存檔'); return }
+    setSaveMsg('儲存中…')
+    fetch(`/__videos/${video.id}`, { method: 'POST', body: JSON.stringify({ starts }) })
+      .then(r => r.json())
+      .then(j => setSaveMsg(j.ok ? `已存到 ${j.file}` : `存檔失敗：${j.error}`))
+      .catch(() => setSaveMsg('存檔失敗'))
   }
 
-  const vocab = useMemo(() => {
-    const seen = new Map<string, VideoWord>()
-    video.lines.forEach(l => l.words.forEach(w => { if (!seen.has(w.th) && w.th !== '3') seen.set(w.th, w) }))
-    return [...seen.values()]
-  }, [video])
+  /** 投影片、講義、單字句型列表共用的資料（校時後的秒數一起帶過去） */
+  const doc = useMemo(() => fromVideo({ ...video, lines: video.lines.map((L, i) => ({ ...L, start: starts[i] })) }), [video, starts])
 
   return (
-    <div className={`vpage${showRom ? '' : ' hide-rom'}${showZh ? '' : ' hide-zh'}${showTone ? '' : ' no-tone'}`}>
+    <div className={`vpage spage tf-${art ? 'loopless' : 'std'}${showRom ? '' : ' hide-rom'}${showZh ? '' : ' hide-zh'}`}>
       <p><Link to="/video">← 影片教學</Link></p>
       <h1 className="th">{video.title}</h1>
       <p className="muted small">{video.titleZh}・{video.topic}・{video.level}・{mmss(video.duration)}</p>
+      <p className="sprint-btn">
+        <Link className="vtog" to={`/video/${video.id}/present`}>🖥 投影片模式</Link>
+        <button type="button" className="vtog" onClick={() => printDoc(doc)}>🖨 列印講義／存成 PDF</button>
+        <span className="small muted">照下面「音標」「中文」「藝術字」開關決定講義樣式</span>
+      </p>
 
       <div className="vcols">
         <div className="vleft">
@@ -259,24 +294,19 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
             )}
           </div>
           <div className="vctl">
+            <button type="button" className="vtog" aria-pressed={playing} onClick={togglePlay} disabled={status !== 'ready'}>{playing ? '⏸ 暫停' : '▶ 播放'}</button>
             <button type="button" className="vtog" aria-pressed={follow} onClick={() => setFollow(f => !f)}>自動跟隨</button>
-            <button type="button" className="vtog" aria-pressed={wordFollow} onClick={() => setWordFollow(f => !f)}>逐字高亮</button>
-            <button type="button" className="vtog" aria-pressed={loopIdx !== null} onClick={toggleGlobalLoop}>
-              單句循環{loopIdx !== null ? `（第 ${loopIdx + 1} 句）` : ''}
-            </button>
-            <label className="vrate">速度
-              <select value={rate} onChange={e => setRate(Number(e.target.value))} disabled={status !== 'ready'}>
-                <option value={0.5}>0.5×</option><option value={0.75}>0.75×</option><option value={1}>1×</option>
-              </select>
-            </label>
+            <button type="button" className="vtog" aria-pressed={rate !== 1} title="點一下換速度" onClick={() => setRate(r => RATES[(RATES.indexOf(r) + 1) % RATES.length])} disabled={status !== 'ready'}>語速 {rate}×</button>
+            <Volume player={playerRef.current} ready={status === 'ready'} />
           </div>
 
-          {rec && (
+          {edit && editMsg && <p className="small vguess" role="alert">{editMsg}</p>}
+          {rec !== null && (
             <div className="vrec" role="status">
-              <span className="small">第 {rec.line + 1} 句打點：聽到下面這個字開始時，按空白鍵或按鈕</span>
+              <span className="small">第 {rec + 1} 句打起點（從{rec > 0 ? '前一句' : '影片'}開頭播放）：聽到這句第一個字時，按空白鍵或按鈕</span>
               <button type="button" className="vtap" onClick={() => tapRef.current()}>
-                <span className="th">{video.lines[rec.line].words[rec.times.length].th}</span>
-                <small>{rec.times.length + 1} / {video.lines[rec.line].words.length}</small>
+                <span className="th">{video.lines[rec].words[0].th}</span>
+                <small>第 {rec + 1} 句開頭</small>
               </button>
               <button type="button" className="vmini" onClick={() => setRec(null)}>取消</button>
             </div>
@@ -298,10 +328,11 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
             <span className="small muted">顯示</span>
             <button type="button" className="vtog" aria-pressed={showRom} onClick={() => setShowRom(v => !v)}>音標</button>
             <button type="button" className="vtog" aria-pressed={showZh} onClick={() => setShowZh(v => !v)}>中文</button>
-            <button type="button" className="vtog" aria-pressed={showTone} onClick={() => setShowTone(v => !v)}>聲調顏色</button>
-            <span className="vlegend small">
-              <b className="tn-mid">平</b><b className="tn-low">低</b><b className="tn-fall">降</b><b className="tn-high">高</b><b className="tn-rise">升</b>
-            </span>
+            <button type="button" className="vtog" aria-pressed={showSeg} onClick={() => setShowSeg(v => !v)}>斷詞輔助</button>
+            <button type="button" className="vtog" aria-pressed={art} onClick={() => setArt(v => !v)}>藝術字</button>
+            {showSeg && <>
+              <button type="button" className="vtog" aria-pressed={wordFollow} onClick={() => setWordFollow(f => !f)}>逐字高亮</button>
+            </>}
           </div>
           <ol className="vlines">
             {video.lines.map((L, i) => (
@@ -312,16 +343,15 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
                 onClick={() => seekTo(i)}
               >
                 <div className="vlh">
-                  <button type="button" className="vtime" onClick={e => { e.stopPropagation(); seekTo(i) }}>▶ {mmss(starts[i])}</button>
+                  <button type="button" className="vtime" onClick={e => { e.stopPropagation(); playLine(i) }}>{i === active && playing ? '⏸' : '▶'} {mmss(starts[i])}</button>
                   <span className="small muted">第 {i + 1} 句</span>
-                  {L.guess && <span className="vguess">字幕不確定，請老師確認</span>}
                   <span className="vsp" />
                   <button type="button" className="vmini" onClick={e => { e.stopPropagation(); speak(L.words.map(w => w.th).join('')) }}>朗讀</button>
                   <button type="button" className="vmini" aria-pressed={loopIdx === i} onClick={e => { e.stopPropagation(); toggleLineLoop(i) }}>
                     {loopIdx === i ? '停止循環' : '循環這句'}
                   </button>
                 </div>
-                <div className="vwords">
+                {!showSeg ? <p className="th sfull" onClick={pause}>{L.words.map(w => w.th).join('')}</p> : <div className="vwords">
                   {L.words.map((w, j) => (
                     <button
                       key={j}
@@ -334,7 +364,7 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
                       <span className="vwzh">{w.zh}</span>
                     </button>
                   ))}
-                </div>
+                </div>}
                 <p className="vzh">{L.zh}</p>
                 {L.patterns.length > 0 && (
                   <div className="vchips">
@@ -347,8 +377,8 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
                 {edit && (
                   <div className="vedit" onClick={e => e.stopPropagation()}>
                     <button type="button" className="vmini" onClick={() => setStartNow(i)} disabled={status !== 'ready'}>把目前播放秒數設為這句開始</button>
-                    <button type="button" className="vmini" onClick={() => startRec(i)} disabled={status !== 'ready'}>逐字打點</button>
-                    <span className="small muted">開始 {starts[i]} 秒・{wordT[i] ? '字已打點' : '字為估算'}</span>
+                    <button type="button" className="vmini" onClick={() => startRec(i)} disabled={status !== 'ready'}>打起點</button>
+                    <span className="small muted">開始 {starts[i]} 秒{starts[i] !== L.start && '（已改）'}</span>
                   </div>
                 )}
               </li>
@@ -357,60 +387,29 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
         </div>
       </div>
 
-      <p className="vnote">{video.note}</p>
-      <p className="small muted">音標寫法依 <a href="https://thai2english.com/" target="_blank" rel="noopener noreferrer">thai2english.com</a>：ป 寫 bp、ต 寫 dtaa，聲調符號 ` 低、^ 降、´ 高、˘ 升，沒有符號是平。</p>
-      <p className="small muted">逐字高亮：資料裡沒有每個字的時間時，會依字長估算，可能與實際唸法差一點；用校時模式打點後就會準確。</p>
-
       {edit && (
         <div className="card vedit-out">
           <strong>校時模式</strong>
           <p className="small muted">
-            1) 播到某句開始的瞬間，按該句「把目前播放秒數設為這句開始」。
-            2) 按「逐字打點」，影片會從該句稍前播放，每聽到一個字開始就按空白鍵。
-            3) 全部完成後複製下面的完整 JSON，貼回 data/videos 對應檔案。
+            1) 按某句的「打起點」，影片會從前一句開頭播放，聽到這句第一個字時按一次空白鍵就好（會自動往前扣 0.2 秒反應時間）。這句在前一句還沒唸完就開始也沒關係。
+            2) 也可以自己暫停在這句開始的地方，按「把目前播放秒數設為這句開始」。
+            3) 每個字的高亮時間會依句子起點自動估算。改好後按「儲存回 JSON」，直接寫回 data/videos/{video.id}.json。
           </p>
-          <textarea className="vjson" readOnly value={exportJson} rows={8} onFocus={e => e.currentTarget.select()} />
-          <button type="button" className="vmini" onClick={copyJson}>{copied ? '已複製' : '複製完整 JSON'}</button>
+          <p className="vsave">
+            <button type="button" className="vtog" onClick={save} disabled={!changed}>💾 儲存回 JSON</button>
+            <span className="small muted">{saveMsg || (changed ? `改了 ${changed} 句，還沒儲存` : '沒有改動')}</span>
+          </p>
         </div>
       )}
 
-      <h2>這支影片的句型</h2>
-      {video.patterns.map(p => (
-        <details className="vpat card" id={`vpat-${p.id}`} key={p.id}>
-          <summary><span className="th vpat-th">{p.th}</span><span className="muted">{p.zh}</span></summary>
-          <p className="vcmp">{p.cmp}</p>
-          {p.examples.map((x, k) => (
-            <div className="vex" key={k}>
-              <span className="th vex-th">{x.th}</span>
-              <Rom text={x.rom} />
-              <span className="small muted">{x.zh}</span>
-              <button type="button" className="vmini" onClick={() => speak(x.th)}>播放</button>
-            </div>
-          ))}
-        </details>
-      ))}
+      {/* 順序同歌詞頁：單字 → 句型 */}
+      <NoteSections notes={doc.notes} onSpeak={speak} />
 
-      <h2>單字表</h2>
-      <div className="tablewrap">
-        <table className="tone vvocab">
-          <thead><tr><th>泰文</th><th>音標</th><th>中文</th><th /></tr></thead>
-          <tbody>
-            {vocab.map(w => (
-              <tr key={w.th}>
-                <td className="th vth">{w.th}</td>
-                <td><Rom text={w.rom} /></td>
-                <td>{w.zh}</td>
-                <td><button type="button" className="speak" aria-label={`播放發音：${w.th}`} onClick={() => speak(w.th)}>🔊</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
 
-      <h2>華人學習者的注意點</h2>
-      <ul className="plain vtips">
-        {video.tips.map(t => <li className="card" key={t.title}><b>{t.title}</b><br />{t.body}</li>)}
-      </ul>
+      <p className="vnote">{video.note}</p>
+      <p className="small muted">音標寫法依 <a href="https://thai2english.com/" target="_blank" rel="noopener noreferrer">thai2english.com</a>：ป 寫 bp、ต 寫 dtaa，聲調符號 ` 低、^ 降、´ 高、˘ 升，沒有符號是平。</p>
+      <p className="small muted">逐字高亮：資料裡沒有每個字的時間時，會依字長估算，可能與實際唸法差一點；用校時模式把句子起點校準後會更接近。</p>
+      <PrintSheet doc={doc} showRom={showRom} showZh={showZh} art={art} />
     </div>
   )
 }

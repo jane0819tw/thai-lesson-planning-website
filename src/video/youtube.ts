@@ -9,6 +9,10 @@ export interface YTPlayer {
   /** -1 未開始, 0 結束, 1 播放中, 2 暫停, 3 緩衝, 5 已排入 */
   getPlayerState(): number
   setPlaybackRate(rate: number): void
+  /** 0–100。iPhone／iPad 的 Safari 不支援，只能用機身音量鍵 */
+  setVolume(volume: number): void
+  mute(): void
+  unMute(): void
   destroy(): void
 }
 interface YTNamespace {

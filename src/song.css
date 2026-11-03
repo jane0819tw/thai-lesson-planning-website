@@ -1,6 +1,4 @@
-/* 歌詞跟讀頁。版面沿用 video.css 的 .v* 樣式，這裡只放歌詞頁自己的部分。 */
-.spage .vleft { margin-bottom: 12px; }
-.spage .sfull { cursor: pointer; }
+/* 歌詞跟讀頁。版面與影片教學頁共用 video.css（.v*、.sfull、.sextra），這裡只放歌詞頁自己的部分。 */
 .sadmin { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--accent-soft); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; }
 .srep { font-size: .75rem; color: var(--tn-fall); border: 1px solid currentColor; border-radius: 99px; padding: 0 8px; }
 .sx { color: var(--muted); }
@@ -11,24 +9,12 @@
 .sgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 6px; }
 .scell { display: grid; gap: 3px; }
 .serr { color: var(--tn-fall); }
-/* styles.css 的認字課也有 .vwords（網格兩欄），歌詞頁照斷詞自然排開 */
-.spage .vwords { display: flex; flex-wrap: wrap; gap: 6px 4px; padding: 0; }
 /* 補充區塊：寬螢幕每列兩張圖，窄螢幕一張 */
-.sextra { margin-top: 24px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px 16px; }
-.sextra h2 { margin: 0 0 12px; font-size: 1.1rem; }
 .sextra-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
 @media (max-width: 600px) { .sextra-grid { grid-template-columns: 1fr; } }
 .simg { margin: 0; text-align: center; }
 .simg img { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; }
-/* 斷詞輔助關閉：整句原文照一般泰文連寫 */
-.sfull { margin: 0; font-size: 1.35rem; line-height: 1.6; }
-/* 補充：單字、句型卡片 */
-/* 一列一張卡 */
-.snotes { display: grid; grid-template-columns: 1fr; gap: 12px; }
-.snote { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 6px; }
-.snote-h { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
-.snote-th { font-size: 1.4rem; }
-.snote-eg { display: grid; gap: 2px; background: var(--accent-soft); border-radius: 8px; padding: 6px 10px; }
+/* 單字、句型改用 video.css 的 .nrow（study/NoteRow.tsx） */
 /* 小測驗 */
 .squiz { margin: 0; padding-left: 1.4em; display: grid; gap: 16px; }
 .sq-q { margin: 0; font-size: 1.15rem; }
@@ -73,6 +59,14 @@
   .pr-note-h .th { font-size: 14pt; }
   .pr-eg { border-left: 2pt solid #f0c9ad; padding-left: 8pt; }
   .pr-mine { font-size: 9pt; color: #888; padding-top: 10pt; border-bottom: .6pt solid #bbb; }
+  .pr-kind { font-size: 8pt; color: #fff; background: #c2410c; border-radius: 99px; padding: 0 5pt; align-self: center; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  /* 句型標籤與畫面一樣用另一個顏色 */
+  .pr-kind.pk-pattern { background: #0f766e; }
+  .pr-vocab { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  .pr-vocab td { border-bottom: .5pt solid #ddd; padding: 3pt 6pt; vertical-align: baseline; }
+  .pr-vocab td.th { font-size: 12.5pt; width: 30%; }
+  .pr-tips { margin: 0; padding-left: 1.2em; display: grid; gap: 4pt; }
+  .pr-tips li { break-inside: avoid; }
   /* 練習 */
   .pr-quiz { margin: 0; padding-left: 1.4em; display: grid; gap: 10pt; }
   .pr-quiz li { break-inside: avoid; }
@@ -85,3 +79,43 @@
   .pr-img img { width: 100%; height: auto; border: .5pt solid #ccc; }
   .pr-img figcaption { font-size: 8.5pt; color: #666; margin-top: 3pt; }
 }
+
+/* 歌詞投影片模式（SongPresent）：外框沿用 styles.css 的 .present／.pt-*；左影片、右大字歌詞 */
+.present.spt { grid-template-rows: auto 1fr auto; }
+.spt-body { min-height: 0; display: grid; grid-template-columns: minmax(320px, 38%) minmax(0, 1fr); gap: 16px; padding: 0 16px 0 24px; }
+.spt-body.novid { grid-template-columns: minmax(0, 1fr); }
+.spt-body.novid .spt-vid { display: none; }
+.spt-vid { align-self: center; display: grid; gap: 4px; }
+.spt-vid .vplayer { max-width: none; }
+.spt-keys { margin: 4px 0 0; }
+.spt .spt-stage { padding: 8px 2vw; }
+.spt .spt-inner { width: 640px; }
+.spt .spt-body.novid .spt-inner { width: 900px; }
+a.vtog { text-decoration: none; display: inline-block; }
+.spt-cover { text-align: center; }
+.spt-cover h1 { font-size: 2.2rem; margin: 0 0 6px; }
+.spt-line { display: grid; gap: 10px; }
+.spt-th { margin: 0; font-size: 2.4rem; line-height: 1.5; }
+.spt-rom { margin: 0; }
+.spt-rom .rom { font-size: 1.15rem; }
+.spt .spt-words { display: flex; flex-wrap: wrap; gap: 10px 8px; padding: 0; }
+.spt-words .vth { font-size: 2rem; }
+.spt-words .rom { font-size: 1rem; }
+.spt-words .vwzh { font-size: .9rem; max-width: 10em; }
+.spt-zh { margin: 0; padding-top: 8px; border-top: 1px dashed var(--line); font-size: 1.25rem; }
+.spt-notes { margin-top: 6px; }
+.spt-review h2 { margin: 0 0 12px; }
+.spt-stack { display: grid; }
+.spt-stack > .spt-review { grid-area: 1 / 1; align-self: start; }
+.spt-stack > .spt-off { visibility: hidden; }
+.spt-tips { display: grid; gap: 10px; }
+.spt-tips li { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+.spt-quiz { display: grid; gap: 10px; justify-items: start; }
+.spt-q { margin: 0; font-size: 2rem; line-height: 1.5; }
+.spt-opts { display: grid; gap: 10px; width: 100%; }
+.spt-opts .vtog { font-size: 1.3rem; text-align: left; border-radius: 12px; padding: 10px 16px; }
+.spt-quiz p { margin: 0; }
+.spt-img { margin: 0; text-align: center; }
+.spt-img img { max-width: 100%; max-height: 70vh; border-radius: 10px; border: 1px solid var(--line); }
+.spt-side > button { display: grid; gap: 2px; }
+.spt-side-th { font-size: .85rem; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

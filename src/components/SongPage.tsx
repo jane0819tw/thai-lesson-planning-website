@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Link, useParams } from 'react-router-dom'
 import { getSong, listSongs } from '../data/songRepository'
-import type { Song, SongLine, SongNote, SongQuiz, SongWord } from '../song/types'
+import type { Song, SongLine, SongQuiz, SongWord } from '../song/types'
 import { loadYouTubeApi, PLAYER_ERRORS, type YTPlayer } from '../video/youtube'
 import { Rom } from '../video/Rom'
+import { Volume } from '../video/Volume'
+import { firstOfLines, repeatsOfLines, shownAsLines } from '../song/lines'
+import { fromSong } from '../study/adapters'
+import { NoteSections } from '../study/NoteRow'
+import { PrintSheet, printDoc } from '../study/PrintSheet'
 import { getAdminKey } from '../reservation/api'
 import ZoomImage from './ZoomImage'
 import '../video.css'
@@ -65,43 +69,9 @@ function SongView({ initial }: { initial: Song }) {
   // 藝術字只在這頁切換、預設關閉，不跟作業頁、鍵盤頁共用的字體設定連動
   const [art, setArt] = useState(false)
 
-  /** 每句第一次出現的句號；同樣的句子（如副歌）指回第一次 */
-  const firstOf = useMemo(() => {
-    const seen = new Map<string, number>()
-    return song.lines.map((L, i) => {
-      const key = L.th.replace(/\s/g, '')
-      if (!seen.has(key)) seen.set(key, i)
-      return seen.get(key) as number
-    })
-  }, [song.lines])
-
-  /** 隱藏的句子（重複的副歌）播放時改標在哪一句：找字最像的顯示句；顯示的句子就是自己 */
-  const shownAs = useMemo(() => {
-    const grams = (t: string) => {
-      const k = t.replace(/\s/g, '')
-      const g = new Set<string>()
-      for (let j = 0; j + 1 < k.length; j++) g.add(k.slice(j, j + 2))
-      return g
-    }
-    const all = song.lines.map(L => grams(L.th))
-    return song.lines.map((L, i) => {
-      if (!L.hidden) return i
-      let best = -1, score = 0.5
-      song.lines.forEach((M, k) => {
-        if (M.hidden) return
-        const common = [...all[i]].filter(g => all[k].has(g)).length
-        const dice = (2 * common) / (all[i].size + all[k].size || 1)
-        if (dice > score) { best = k; score = dice }
-      })
-      return best
-    })
-  }, [song.lines])
-  /** 每句被哪些隱藏句重唱（依時間順序），有的話就是副歌 */
-  const repeatsOf = useMemo(() => {
-    const m = song.lines.map(() => [] as number[])
-    shownAs.forEach((v, i) => { if (v >= 0 && v !== i) m[v].push(i) })
-    return m
-  }, [shownAs, song.lines])
+  const firstOf = useMemo(() => firstOfLines(song.lines), [song.lines])
+  const shownAs = useMemo(() => shownAsLines(song.lines), [song.lines])
+  const repeatsOf = useMemo(() => repeatsOfLines(shownAs), [shownAs])
 
   const live = useRef({ lines: song.lines, loopIdx })
   live.current = { lines: song.lines, loopIdx }
@@ -246,13 +216,8 @@ function SongView({ initial }: { initial: Song }) {
 
   const hiddenCount = song.lines.filter(L => L.hidden).length
 
-  /** 列印講義：瀏覽器列印視窗可選「另存為 PDF」，檔名預設取 document.title */
-  const printSheet = () => {
-    const old = document.title
-    document.title = `${song.title} 歌詞講義`
-    window.addEventListener('afterprint', () => { document.title = old }, { once: true })
-    window.print()
-  }
+  /** 投影片、講義、單字句型列表共用的資料（跟著老師的編輯即時更新） */
+  const doc = useMemo(() => fromSong(song), [song])
 
   return (
     <div className={`vpage spage tf-${art ? 'loopless' : 'std'}${showRom ? '' : ' hide-rom'}${showZh ? '' : ' hide-zh'}`}>
@@ -260,7 +225,8 @@ function SongView({ initial }: { initial: Song }) {
       <h1>{song.title}</h1>
       <p className="muted small">{[song.titleZh, song.artist, mmss(song.duration)].filter(Boolean).join('・')}</p>
       <p className="sprint-btn">
-        <button type="button" className="vtog" onClick={printSheet}>🖨 列印講義／存成 PDF</button>
+        <Link className="vtog" to={`/song/${song.id}/present`}>🖥 投影片模式</Link>
+        <button type="button" className="vtog" onClick={() => printDoc(doc)}>🖨 列印講義／存成 PDF</button>
         <span className="small muted">照下面「音標」「中文」「藝術字」開關決定講義樣式</span>
       </p>
 
@@ -292,6 +258,7 @@ function SongView({ initial }: { initial: Song }) {
           <button type="button" className="vtog" aria-pressed={playing} onClick={togglePlay} disabled={status !== 'ready'}>{playing ? '⏸ 暫停' : '▶ 播放'}</button>
           <button type="button" className="vtog" aria-pressed={follow} onClick={() => setFollow(f => !f)}>自動跟隨</button>
           <button type="button" className="vtog" aria-pressed={rate !== 1} title="點一下換速度" onClick={() => setRate(r => RATES[(RATES.indexOf(r) + 1) % RATES.length])} disabled={status !== 'ready'}>語速 {rate}×</button>
+          <Volume player={playerRef.current} ready={status === 'ready'} />
         </div>
       </div>
 
@@ -367,15 +334,7 @@ function SongView({ initial }: { initial: Song }) {
       </div>
 
       {/* 順序：單字 → 句型 → 小測驗 → 補充（圖片） */}
-      {(['word', 'pattern'] as const).map(k => {
-        const list = song.notes?.filter(n => n.kind === k) ?? []
-        return list.length > 0 && (
-          <section key={k} className="sextra">
-            <h2>{k === 'word' ? '單字' : '句型'}</h2>
-            <div className="snotes">{list.map(n => <NoteCard key={n.th} note={n} />)}</div>
-          </section>
-        )
-      })}
+      <NoteSections notes={doc.notes} />
 
       {!!song.quiz?.length && (
         <section className="sextra">
@@ -399,98 +358,7 @@ function SongView({ initial }: { initial: Song }) {
       )}
 
       <p className="vnote">{song.note}</p>
-      {createPortal(<PrintSheet song={song} firstOf={firstOf} repeatsOf={repeatsOf} showRom={showRom} showZh={showZh} art={art} />, document.body)}
-    </div>
-  )
-}
-
-/** 列印用講義：平常隱藏，只在列印時取代整個網站畫面。歌詞右邊留筆記線，後面接單字、句型、練習、補充圖片（不印詳細解釋和解答） */
-function PrintSheet({ song, firstOf, repeatsOf, showRom, showZh, art }: {
-  song: Song; firstOf: number[]; repeatsOf: number[][]; showRom: boolean; showZh: boolean; art: boolean
-}) {
-  const ABCD = 'ABCD'
-  const visible = song.lines.map((L, i) => ({ L, i })).filter(({ L }) => !L.hidden)
-  const notes = (k: SongNote['kind']) => song.notes?.filter(n => n.kind === k) ?? []
-  let sec = 0
-  const head = (t: string) => <h2>{'一二三四五'[sec++]}、{t}</h2>
-  return (
-    <div className={`sprint tf-${art ? 'loopless' : 'std'}`} aria-hidden="true">
-      <header className="pr-head">
-        <div>
-          <h1>{song.title}</h1>
-          <p>{[song.titleZh, song.artist].filter(Boolean).join('・')}</p>
-        </div>
-        <div className="pr-name">姓名＿＿＿＿＿＿　日期＿＿＿＿＿</div>
-      </header>
-
-      {head('歌詞')}
-      <ol className="pr-lines">
-        {visible.map(({ L, i }, n) => {
-          const rep = firstOf[i] !== i
-          const again = repeatsOf[i].length
-          return (
-            <li key={i} className="pr-line">
-              <span className="pr-no">{n + 1}</span>
-              <div>
-                <p className="th pr-th">{L.th}</p>
-                {rep ? <p className="pr-meta">（同第 {visible.findIndex(v => v.i === firstOf[i]) + 1} 句）</p> : <>
-                  {showRom && <p className="pr-rom"><Rom text={L.words.map(w => w.rom).filter(Boolean).join(' ')} /></p>}
-                  {showZh && L.zh && <p className="pr-zh">{L.zh}</p>}
-                </>}
-                {again > 0 && <p className="pr-meta">副歌・之後再唱 {again} 次</p>}
-              </div>
-              <div className="pr-rule" />
-            </li>
-          )
-        })}
-      </ol>
-
-      {(['word', 'pattern'] as const).map(k => notes(k).length > 0 && (
-        <section key={k}>
-          {head(k === 'word' ? '單字' : '句型')}
-          {notes(k).map(n => (
-            <div key={n.th} className="pr-note">
-              <p className="pr-note-h"><span className="th">{n.th}</span>{showRom && <Rom text={n.rom} />}<b>{n.zh}</b></p>
-              <div className="pr-eg">
-                <p className="th">例：{n.example.th}</p>
-                {showRom && <p className="pr-rom"><Rom text={n.example.rom} /></p>}
-                {showZh && <p className="pr-zh">{n.example.zh}</p>}
-              </div>
-              <p className="pr-mine">我的例句：</p>
-            </div>
-          ))}
-        </section>
-      ))}
-
-      {!!song.quiz?.length && (
-        <section>
-          {head('練習')}
-          <ol className="pr-quiz">
-            {song.quiz.map((q, i) => (
-              <li key={i}>
-                <p><span className="pr-blank">（　　）</span><span className="th">{q.q}</span></p>
-                {showZh && <p className="pr-zh">{q.qZh}</p>}
-                <p className="pr-opts">{q.options.map((o, j) => <span key={j}>({ABCD[j]}) <span className="th">{o}</span></span>)}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-
-      {!!song.images?.length && (
-        <section>
-          {head('補充')}
-          {/* 不用 lazy：講義平常是 display:none，lazy 的圖不會載入，印出來會空白 */}
-          <div className="pr-imgs">
-            {song.images.map(im => (
-              <figure key={im.src} className="pr-img">
-                <img src={im.src} alt={im.alt} />
-                {im.caption && <figcaption>{im.caption}</figcaption>}
-              </figure>
-            ))}
-          </div>
-        </section>
-      )}
+      <PrintSheet doc={doc} showRom={showRom} showZh={showZh} art={art} />
     </div>
   )
 }
@@ -530,20 +398,6 @@ function LineEditor({ line, onLine, onWord }: { line: SongLine; onLine: (p: Part
       <label className="small">整句中文
         <input value={line.zh} onChange={e => onLine({ zh: e.target.value })} />
       </label>
-    </div>
-  )
-}
-
-function NoteCard({ note }: { note: SongNote }) {
-  return (
-    <div className="snote">
-      <div className="snote-h"><span className="th snote-th">{note.th}</span><Rom text={note.rom} /><b>{note.zh}</b></div>
-      <div className="snote-eg">
-        <span className="small muted">例句</span>
-        <span className="th">{note.example.th}</span>
-        <Rom text={note.example.rom} />
-        <span className="small">{note.example.zh}</span>
-      </div>
     </div>
   )
 }
