@@ -7,9 +7,11 @@ import MonthGrid from './MonthGrid'
 import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
 import { REVIEW_UNITS, reviewRange, reviewTitle, homeworkLessonLabel } from '../reviews'
 import type { Unit } from './access'
-import { buildDraft, paintCells, serialize, setNote } from './schedule'
+import { buildDraft, paintCells, serialize, setNote, shiftDate } from './schedule'
 import type { Draft } from './schedule'
 import type { AdminState, HomeworkRow, Month, PendingVideo, PendingVideos, RecSession, StudentRow, Week } from './types'
+import { diffOn, fromBase, msIn, useViewTz, wdName } from './tz'
+import TzBar from './TzBar'
 import './booking.css'
 
 const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['issues', '錯誤訊息'], ['videos', '待補錄影'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
@@ -74,6 +76,11 @@ export default function AdminPage() {
   }, [])
   const lessons = useLessons()
   const units = readingUnits(lessons.map(l => l.number))
+  // 畫面用老師所在地的時間；後端資料都是台北時間（tz.ts）
+  const [tz, setTz, tzAuto] = useViewTz()
+  const tzRef = useRef(tz); tzRef.current = tz
+  /** 台北時間字串 → 所在地「2026/11/04（三）14:30」 */
+  const T = (x: string) => { const v = fromBase(x, tz); return `${v.slice(0, 10).replace(/-/g, '/')}（${wdName(v.slice(0, 10))}）${v.slice(11, 16)}` }
 
   // 讀取／儲存期間：蓋一層遮罩＋轉圈圈（太快完成的操作 0.3 秒內不顯示，見 CSS）
   const run = useCallback(async <T,>(text: string, f: () => Promise<T>): Promise<T> => {
@@ -84,11 +91,20 @@ export default function AdminPage() {
 
   const loadWeek = useCallback(async (date: string) => {
     setWk(null); setWeekErr('')
-    try { const w = await run('載入課表中…', () => api.adminGetWeek(date)); step(`4 課表已收到：${w.days?.length} 天`); setWk(w) } catch (e) { step('✗ 課表失敗：' + (e as Error).message); setWeekErr((e as Error).message) }
+    try {
+      const w = await run('載入課表中…', () => api.adminGetWeek(date)); step(`4 課表已收到：${w.days?.length} 天`); setWk(w)
+      // 所在地和台北有時差時，這週頭尾的課可能在台北的前一週／下一週：再讀一週補上（一個一個讀，同時送容易遇到 Google 的 404）
+      const ds = [diffOn(tzRef.current, w.days[0].date), diffOn(tzRef.current, w.days[6].date)]
+      const near = ds.some(d => d > 0) ? shiftDate(w.monday, -7) : ds.some(d => d < 0) ? shiftDate(w.monday, 7) : ''
+      if (near) { const x = await api.adminGetWeek(near); setWk(c => (c?.monday === w.monday ? { ...c, more: x.days } : c)) }
+    } catch (e) { step('✗ 課表失敗：' + (e as Error).message); setWeekErr((e as Error).message) }
   }, [api, run, step])
+  // 換時區：重讀這週（前後週的補充資料要換一邊）
+  const wkMonday = wk?.monday
+  useEffect(() => { if (wkMonday) loadWeek(wkMonday) }, [tz]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadMonth = useCallback(async (date: string) => {
-    const key = (date || new Date(Date.now() + 8 * 3600000).toISOString()).slice(0, 7) // 沒給日期＝台北的這個月
+    const key = (date || msIn(Date.now(), tzRef.current)).slice(0, 7) // 沒給日期＝所在地的這個月
     setMoKey(key); setMoErr('')
     if (monthsRef.current[key]) return
     try { const m = await run('載入月曆中…', () => api.adminGetMonth(key + '-01')); setMonths(c => ({ ...c, [m.month]: m })) } catch (e) { setMoErr((e as Error).message) }
@@ -153,7 +169,7 @@ export default function AdminPage() {
         const fresh = s.pending.filter(p => !seen.current!.has(p.id))
         s.pending.forEach(p => seen.current!.add(p.id))
         if (!fresh.length) return
-        const text = fresh.map(p => `${p.name} ${p.start}（${p.length} 分）`).join('、')
+        const text = fresh.map(p => `${p.name} ${fromBase(p.start, tzRef.current)}（${p.length} 分）`).join('、')
         document.title = `(${s.pending.length}) ${BASE_TITLE}`
         try { if ('Notification' in window && Notification.permission === 'granted') new Notification('泰時刻：有新的預約', { body: text }) } catch { /* 忽略 */ }
         setNewBar(text)
@@ -224,6 +240,7 @@ export default function AdminPage() {
   return (
     <div className="bk wide">
       <h1>老師管理</h1>
+      <TzBar tz={tz} setTz={setTz} auto={tzAuto} />
       <Diag lines={diag} fatal={fatal} />
       {msg && <div className={`bk-msg ${msg.ok ? 'ok' : 'err'}`}>{msg.text}</div>}
       <div className="mgr-shell">
@@ -250,11 +267,11 @@ export default function AdminPage() {
                     <button className={calView === 'week' ? 'sel' : ''} onClick={() => goCal('week')}>週</button>
                   </div>
                 )}
-                <p className="bk-muted" style={{ marginTop: 0 }}>{tab === 'reg' ? '每週固定開放的時段，套用到每一個星期。' : calView === 'month' ? '整個月的課（待確認／已確認）與行事曆其他行程。點某一天切到那一週，在週檢視調整開放時段。' : '某一週的實際日期。改動只影響那一天（單日設定），不會改到固定時間。'} 時間為台北時間。</p>
-                {tab === 'cal' && calView === 'month' ? (moErr ? <div className="bk-msg err">{moErr}</div> : <MonthGrid mo={mo} draft={draft} onMonth={loadMonth} onDay={date => goCal('week', date)} />)
+                <p className="bk-muted" style={{ marginTop: 0 }}>{tab === 'reg' ? '每週固定開放的時段，套用到每一個星期。' : calView === 'month' ? '整個月的課（待確認／已確認）與行事曆其他行程。點某一天切到那一週，在週檢視調整開放時段。' : '某一週的實際日期。改動只影響那一天（單日設定），不會改到固定時間。'} 時間為上方顯示的所在地時間（存檔時自動換回台北時間）。</p>
+                {tab === 'cal' && calView === 'month' ? (moErr ? <div className="bk-msg err">{moErr}</div> : <MonthGrid mo={mo} draft={draft} tz={tz} onMonth={loadMonth} onDay={date => goCal('week', date)} />)
                 : tab === 'cal' && weekErr ? <div className="bk-msg err">{weekErr}</div> : (
                   <ScheduleGrid
-                    tab={tab} draft={draft} wk={wk}
+                    tab={tab} draft={draft} wk={wk} tz={tz}
                     onPaint={(key, mins, on) => { setDraft(d => paintCells(d!, tab, key, mins, on)); setDirty(true) }}
                     onNote={date => {
                       const label = prompt('休假說明（只有老師看得到，不會關閉時段；要關的時段請在格子上點掉。清空＝刪除）', draft.notes[date] ?? '休假')
@@ -289,7 +306,7 @@ export default function AdminPage() {
               <h2>待確認的私下預約</h2>
               {st.pending.length ? st.pending.map(p => (
                 <div className="bk-item" key={p.id}>
-                  <div>{p.name}　{p.start}（{p.length} 分）<div className="bk-muted">{p.note}</div></div>
+                  <div>{p.name}　{T(p.start)}（{p.length} 分）<div className="bk-muted">{p.note}</div></div>
                   <div className="bk-row">
                     <button className="primary" onClick={() => act('處理預約中（建立 Zoom、寫入記錄表、更新行事曆），約需數秒…', () => api.adminSetStatus(p.id, '已確認'), '已確認')}>確認</button>
                     <button className="danger" onClick={() => act('處理預約中…', () => api.adminSetStatus(p.id, '已拒絕'), '已拒絕')}>拒絕</button>
@@ -308,7 +325,7 @@ export default function AdminPage() {
                 : st.issues.length ? st.issues.map(it => (
                   <div className="bk-item" key={it.id}>
                     <div>
-                      {it.name}　{it.start}<span className="bk-muted">（{it.id}・{it.source}・{it.status}）</span>
+                      {it.name}　{T(it.start)}<span className="bk-muted">（{it.id}・{it.source}・{it.status}）</span>
                       {it.items.map((t, i) => <div key={i} className="bk-muted">・{t}</div>)}
                     </div>
                     <button title="已讀" aria-label="標成已讀" onClick={() => dismissNote(it.id)}>×</button>
@@ -325,7 +342,7 @@ export default function AdminPage() {
               </div>
               <p className="bk-muted">有勾「需要課後錄影」的學生，上完課但記錄表「影片連結」還空白的課（從勾選那天起算）。連續的課算一支影片。貼上連結按儲存，會寫進學生記錄表那一堂，學生在「我的課程與作業」就看得到。</p>
               {!pv ? <p className="bk-muted">載入中…（要打開需錄影學生的記錄表，約需數秒）</p>
-                : pv.items.length ? pv.items.map(it => <PendingVideoItem key={it.name + it.start} it={it} onSave={url => saveVideo(it, url)} />)
+                : pv.items.length ? pv.items.map(it => <PendingVideoItem key={it.name + it.start} it={it} tz={tz} onSave={url => saveVideo(it, url)} />)
                 : <p className="bk-muted">影片連結都補齊了。</p>}
               {pv && pv.problems.length > 0 && (
                 <div className="bk-msg warn">
@@ -344,7 +361,7 @@ export default function AdminPage() {
                 const list = st.bookings.filter(b => !onlyActive || ['待確認', '已確認'].includes(b.status))
                 return list.length ? list.map(b => (
                   <div className="bk-item" key={b.id}>
-                    <div>{b.start}・{b.length} 分<div className="bk-muted">{b.name}　{b.source}</div></div>
+                    <div>{T(b.start)}・{b.length} 分<div className="bk-muted">{b.name}　{b.source}</div></div>
                     <div className="bk-row">
                       {['待確認', '已確認'].includes(b.status) && (
                         <button className="danger" onClick={() => { if (confirm('確定取消這堂課？時段會釋放，也請記得到 AmazingTalker 取消。')) act('處理中…', () => api.adminSetStatus(b.id, '已取消'), '已取消這堂課') }}>取消這堂課</button>
@@ -362,8 +379,8 @@ export default function AdminPage() {
                   <p className="bk-muted">這些課寫在學生的課程記錄表裡（例如之前手寫的），不在預約表。取消會清掉記錄表那一堂的上課日期與會議連結，並刪除行事曆上同一時間、標題含學生名字的事件；Zoom 會議本身不會被刪除。</p>
                   {rec.map(r => (
                     <div className="bk-item" key={r.name + r.start}>
-                      <div>{r.start.slice(0, 10).replace(/-/g, '/')} {r.start.slice(11)}–{r.end.slice(11)}<div className="bk-muted">{r.name}　記錄表</div></div>
-                      <button className="danger" onClick={() => { if (confirm(`取消 ${r.name} ${r.start} 這堂課？會清掉記錄表那一堂的日期與連結，並刪除行事曆上同一時間、標題含學生名字的事件。`)) act('清除記錄表中…', () => api.adminCancelRecordLesson(r.name, r.start), '已從記錄表取消這堂課') }}>取消這堂課</button>
+                      <div>{T(r.start)}–{fromBase(r.end, tz).slice(11, 16)}<div className="bk-muted">{r.name}　記錄表</div></div>
+                      <button className="danger" onClick={() => { if (confirm(`取消 ${r.name} ${T(r.start)} 這堂課？會清掉記錄表那一堂的日期與連結，並刪除行事曆上同一時間、標題含學生名字的事件。`)) act('清除記錄表中…', () => api.adminCancelRecordLesson(r.name, r.start), '已從記錄表取消這堂課') }}>取消這堂課</button>
                     </div>
                   ))}
                 </>
@@ -383,7 +400,7 @@ export default function AdminPage() {
                 <div className="mgr-scroll">
                   <table className="mgr-table">
                     <thead><tr><th>繳交時間</th><th>學生</th><th>課別</th><th>聽音選字</th><th>聽寫</th><th>斷句</th></tr></thead>
-                    <tbody>{hw.map((r, i) => <tr key={i}><td>{r.time.slice(5).replace('-', '/')}</td><td>{r.name}</td><td>{homeworkLessonLabel(r.lesson)}</td><td>{r.listen}</td><td>{r.typing}</td><td>{r.parse || ''}</td></tr>)}</tbody>
+                    <tbody>{hw.map((r, i) => <tr key={i}><td>{fromBase(r.time, tz).slice(5).replace('-', '/')}</td><td>{r.name}</td><td>{homeworkLessonLabel(r.lesson)}</td><td>{r.listen}</td><td>{r.typing}</td><td>{r.parse || ''}</td></tr>)}</tbody>
                   </table>
                 </div>
               )}
@@ -534,12 +551,12 @@ function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDispla
   )
 }
 
-function PendingVideoItem({ it, onSave }: { it: PendingVideo; onSave: (url: string) => void }) {
+function PendingVideoItem({ it, tz, onSave }: { it: PendingVideo; tz: string; onSave: (url: string) => void }) {
   const [url, setUrl] = useState('')
   return (
     <div className="bk-item">
       <div>
-        {it.name}　{it.start.slice(5, 10).replace('-', '/')}{it.dateOnly ? '' : ` ${it.start.slice(11)}–${it.end.slice(11)}`}・第 {it.no} 堂
+        {it.name}　{it.dateOnly ? it.start.slice(5, 10).replace('-', '/') : `${fromBase(it.start, tz).slice(5, 16).replace('-', '/')}–${fromBase(it.end, tz).slice(11, 16)}`}・第 {it.no} 堂
         {it.progress && <div className="bk-muted">{it.progress}</div>}
       </div>
       <div className="bk-row" style={{ flexBasis: '100%' }}>

@@ -25,6 +25,8 @@ AmazingTalker 通知信 ─▶ Gmail 標籤 ─▶ Apps Script（每 10 分鐘 s
 
 沒有資料庫伺服器、沒有 npm 套件。前端以 `fetch` POST 呼叫 Apps Script 的 `/exec` 網址。
 
+**時區**：後端與試算表一律存台北時間字串（`yyyy-MM-dd HH:mm`）。網站前端（`src/reservation/tz.ts`）在學生頁、老師頁都換成看的人所在地的時區顯示（預設跟裝置，可在頁面上方「更換時區」，記在瀏覽器 `thaiskr_tz`），送回後端前再換回台北時間。老師頁的週曆／固定時間點格子時，也是換算成台北的日期與分鐘才寫進規則。
+
 ## 2. 功能清單
 
 ### A. AmazingTalker 信件同步（第一版）

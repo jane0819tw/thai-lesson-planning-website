@@ -145,3 +145,8 @@ a.bk-course:hover { border-color: var(--accent); }
 .bk-tabs button { font-size: 1rem; }
 .bk-watch { padding: 6px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); text-decoration: none; font-weight: 600; white-space: nowrap; }
 .mgr-rec { margin-left: 8px; padding: 1px 8px; border-radius: 99px; font-size: .8rem; background: var(--accent-soft); color: var(--accent); }
+/* 時區提示：學生頁、老師頁最上方 */
+.bk-tz { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin: 0 0 16px; padding: 8px 12px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 10%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); }
+.bk-tz .mini { font-size: .8rem; margin-top: 0; }
+.bk-tz select { font-size: .85rem; }
+.mgr-gc .cell.x:not(.on) { background: repeating-linear-gradient(45deg, var(--line), var(--line) 6px, transparent 6px, transparent 12px); } /* 換算時區後，休假那天的格子可能分在兩欄，逐格標示 */
