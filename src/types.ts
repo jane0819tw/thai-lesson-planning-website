@@ -5,10 +5,14 @@ export type ConsonantGroup = 'mid' | 'high' | 'lcp' | 'lcs'
 /** noQuiz：補充用的字（L16 ประวัติศาสตร์），課程頁照常顯示、有音檔，但不出現在聽音選字（作業、互動練習） */
 export interface WordItem { thai: string; zh: string; roman?: string; star?: boolean; noQuiz?: boolean; group?: string; audioUrl?: string | null; image?: ExtraImage }
 export interface DemoTile { th: string; sub?: string; op?: string; icon?: string; speak?: string }
-export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; toneTable?: ToneTable; unit?: string; at?: 'concept' | 'consonants' | 'top' }  // toneTable：說明卡內直接顯示聲調表；title 留空＝不顯示標題；unit：放進這個小單元的區塊（見 Lesson.clusters）；at：concept＝放在「基本概念」區塊（和音節組成圖一起，L1），consonants＝放在「子音」區塊最上面，top＝放在所屬小單元（unit）區塊的最上面、結構圖前面（L16-1）
+/** 例句：一個 part＝空格隔開的一段（words＝段裡的詞，下方逐詞標中文；zh＝整段的意思） */
+export interface SentencePart { words: { th: string; zh: string }[]; zh?: string }
+export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; parts?: { body: string; demo?: DemoTile[] }[]; toneTable?: ToneTable; unit?: string; at?: 'concept' | 'consonants' | 'top'; afterLetter?: string; sentence?: SentencePart[]; noSlide?: boolean }  // toneTable：說明卡內直接顯示聲調表；title 留空＝不顯示標題；unit：放進這個小單元的區塊（見 Lesson.clusters）；parts：接在 demo 後面的「說明＋圖解」段落，讓每段說明緊接著自己的圖解（L1 子音怎麼念：第 1、2 點配 ก＋อ，第 3 點配 กอ＋ไก่）；sentence：例句（L1 文字系統：สวัสดีค่ะ ฉันชื่อเจน，標出空格分句、詞與詞不空格），整句有音檔；noSlide：課程頁顯示、投影片不放；afterLetter：搭配 at:'consonants'，改排在這個字母（char）後面（L1：看完 ก 再解釋）；at：concept＝放在「基本概念」區塊（和音節組成圖一起，L1），consonants＝放在「子音」區塊最上面，top＝放在所屬小單元（unit）區塊的最上面、結構圖前面（L16-1）
 export interface Consonant {
   id: string; char: string; name: string; roman: string; zh: string
   sound: string; group: ConsonantGroup; sameHigh: string; words: WordItem[]; audioUrl?: string | null
+  /** 取代「發音 X」的說明（L1 อ：當子音不發音，當母音發 or 音） */
+  soundNote?: string
 }
 export interface Vowel {
   id: string; ipa: string; short: string; long: string
@@ -85,6 +89,8 @@ export interface Numeral { digit: string; arabic: string; word: string }  // 大
 
 export interface VowelIntroConfig { focus: ('single' | 'compound' | 'special' | 'sanskrit')[]; done?: ('single' | 'compound' | 'special' | 'sanskrit')[]; notes?: boolean }
 
+export interface RecapPoint { point: string; items?: string[]; toneTable?: ToneTable }
+
 export interface Lesson {
   id: string; number: number; title: string; summary: string; status: 'draft' | 'ready'  // summary：標題下方的說明，用 \n 分行會列點
   rules: Rule[]; consonants: Consonant[]; vowels: Vowel[]; toneTables: ToneTable[]
@@ -113,6 +119,8 @@ export interface Lesson {
   numerals?: Numeral[]
   /** 「說明」區塊（聲調總覽、聲調表）改排在子音後面、改叫「聲調」（L1：先概念、再子音、最後聲調） */
   tonesAfterConsonants?: boolean
+  /** 小結（放在單字、練習之後、補充之前）：一點對一個 summary 的點（point 照抄、開頭綠色勾），items＝底下的細項（**文字**＝重點），toneTable＝直接放一小張聲調表（L1：ก 那一列） */
+  recap?: RecapPoint[]
   /** 開放投影片模式（課程頁出現「▶ 投影片模式」按鈕，見 lesson-slides skill） */
   slides?: boolean
   /** 作業頁聽寫取前幾個作業字，沒設＝8（L14 講義作業頁 10 個字都要放） */

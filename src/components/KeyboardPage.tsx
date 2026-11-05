@@ -1,3 +1,4 @@
+import { soundLabel } from '../consonant'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useCatalog } from '../data/useCatalog'
@@ -64,7 +65,7 @@ export default function KeyboardPage() {
       {last && (
         <div className="kinfo">
           <span className="big th">{last}</span>
-          {info ? <span><b className="th">{info.name}</b>　{info.roman}　{info.zh}<br /><span className="muted small">發音 {info.sound}</span></span> : <span className="muted small">母音／符號</span>}
+          {info ? <span><b className="th">{info.name}</b>　{info.roman}　{info.zh}<br /><span className="muted small">{soundLabel(info)}</span></span> : <span className="muted small">母音／符號</span>}
           <button className="act" onClick={() => setOpen(true)}>筆順</button>
         </div>
       )}

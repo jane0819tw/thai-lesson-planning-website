@@ -211,7 +211,9 @@ export default function BookingPage() {
                   <strong>泰文認字課程</strong>
                   {myUnits.map(u => (
                     <div className="bk-unit" key={u.id}>
-                      <span className="bk-unit-h">{unitLabel(u)}</span>
+                      <span className="bk-unit-h">{unitLabel(u)}</span>{' '}
+                      {/* 認字課一個單位一份講義（和開放權限同一單位），列印按鈕放這裡、不放在各課 */}
+                      <Link className="bk-print" to={`/reading/handout/${u.n}`}>🖨 列印講義</Link>
                       <ul className="bk-lessons">
                         {lessons.filter(x => x.number >= u.from && x.number <= u.to).map(x => (
                           <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<HomeworkButton to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`} rec={view.homework?.[String(x.number)]} /><VideoChallenge to={x.videoChallenge ?? (dictClipsOf(x.number).length ? `/reading/lesson/${x.id}/video?t=${encodeURIComponent(token)}` : undefined)} rec={view.homework?.[videoKey(x.number)]} /></li>

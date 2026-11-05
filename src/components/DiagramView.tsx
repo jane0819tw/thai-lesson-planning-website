@@ -6,7 +6,7 @@ export default function DiagramView({ d, showTitle }: { d: Diagram; showTitle?: 
   return (
     <article className="card diagram">
       {showTitle && <h3>{d.title}</h3>}
-      <p>{d.intro}</p>
+      <p>{d.intro.split(/\*\*(.+?)\*\*/).map((t, i) => i % 2 ? <strong className="hl" key={i}>{t}</strong> : t)}</p>
       <div className="dg-row">
         {d.tiles.map(t => (
           <div className={`dg-col${t.wide ? ' wide' : ''}`} key={t.label}>

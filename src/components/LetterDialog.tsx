@@ -1,4 +1,6 @@
 import { useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { soundLabel } from '../consonant'
 import { Link } from 'react-router-dom'
 import type { Consonant } from '../types'
 import { getStrokes, isToneMark } from '../strokes'
@@ -17,7 +19,8 @@ export default function LetterDialog({ char, info, caption, onClose }: { char: s
     return () => window.removeEventListener('keydown', h)
   }, [onClose])
   const strokes = getStrokes(char)
-  return (
+  // 掛到 body：投影片的內容區有 zoom 縮放，視窗放在裡面會跟著放大、超出畫面
+  return createPortal(
     <div className="overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div className="dialog" onClick={e => e.stopPropagation()}>
         <button className="close" onClick={onClose} aria-label="關閉">✕</button>
@@ -28,7 +31,7 @@ export default function LetterDialog({ char, info, caption, onClose }: { char: s
             <div>
               <div className="th">{info.name} <SpeakButton text={nameText(info.name)} audioUrl={info.audioUrl} /></div>
               <div className="muted">{info.roman}　{info.zh}</div>
-              <div className="small muted">{GROUP_ZH[info.group]}｜發音 {info.sound}{info.sameHigh && `｜同音高子音：${info.sameHigh}`}</div>
+              <div className="small muted">{GROUP_ZH[info.group]}｜{soundLabel(info)}{info.sameHigh && `｜同音高子音：${info.sameHigh}`}</div>
             </div>
           )}
           {!info && (caption ? <div className="th">{caption}</div> : <SpeakButton text={char} />)}
@@ -38,6 +41,7 @@ export default function LetterDialog({ char, info, caption, onClose }: { char: s
           <p className="muted">這個字的筆順資料還沒有。<Link to="/reading/stroke-editor" onClick={onClose}>用錄製工具建立</Link></p>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

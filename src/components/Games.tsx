@@ -142,7 +142,7 @@ export function WordListenQuiz({ words, onDone }: { words: WordItem[]; onDone?: 
       </div>
       {picked && (
         <div>
-          <p>{picked === q.ans.thai ? '✅ 答對了！' : '❌ 答錯了'}　正確：<span className="th big2">{q.ans.thai}</span>　{q.ans.roman}　{q.ans.zh}</p>
+          <p>{picked === q.ans.thai ? '✅ 答對了！' : '❌ 答錯了'}　正確：<span className="th big2">{q.ans.thai}</span>　{q.ans.zh}</p>{/* 認字課單字不顯示拼音 */}
           <button className="gbtn" onClick={() => { setI(i + 1); setPicked(null) }}>{i + 1 >= qs.length ? '看成績' : '下一題'}</button>
         </div>
       )}

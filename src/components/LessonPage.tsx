@@ -2,7 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getSession } from '../reservation/session'
 import { getRepository } from '../data/repository'
-import type { Consonant, Diagram, Lesson, PracticeGroup, Rule } from '../types'
+import type { Consonant, Diagram, Lesson, PracticeGroup, RecapPoint, Rule } from '../types'
 import SpeakButton from './SpeakButton'
 import { nameText } from '../audio/speak'
 import WordIcon from './WordIcon'
@@ -16,6 +16,8 @@ import ZoomImage from './ZoomImage'
 import ChoiceTable from './ChoiceTable'
 import Games, { vowelSyllables } from './Games'
 import RuleDemo from './RuleDemo'
+import RuleExtras from './RuleExtras'
+import { soundLabel } from '../consonant'
 import ToneIntro from './ToneIntro'
 import VowelIntro from './VowelIntro'
 import FinalsIntro from './FinalsIntro'
@@ -27,13 +29,24 @@ import SanskritVowels from './SanskritVowels'
 import ReadingCases from './ReadingCases'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-export type Tab = 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | 'numerals' | `unit-${number}`
+export type Tab = 'recap' | 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | 'numerals' | `unit-${number}`
 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
 // 說明文字有換行時，每行列成一點
 // **文字**：本課重點，粗體＋主色
 const emph = (s: string) => s.split(/\*\*(.+?)\*\*/).map((t, i) => i % 2 ? <strong className="hl" key={i}>{t}</strong> : t)
 // 說明卡：\n 分行列點；「- 」開頭的行是上一點底下的小點（L16-1）
+// 小結：呼應 summary 的幾點，開頭用綠色勾表示「這個重點學會了」，底下列細項
+export const Recap = ({ points }: { points: RecapPoint[] }) => (
+  <article className="card recap">
+    <ul>{points.map((p, i) => (
+      <li key={i}>{emph(p.point)}
+        {p.items?.length ? <ul>{p.items.map((t, k) => <li key={k}>{emph(t)}</li>)}</ul> : null}
+        {p.toneTable && <ToneTableView table={p.toneTable} />}
+      </li>
+    ))}</ul>
+  </article>
+)
 export const RuleBody = ({ body }: { body: string }) => {
   if (!body.includes('\n')) return <p>{emph(body)}</p>
   const items: { text: string; subs: string[] }[] = []
@@ -73,6 +86,7 @@ export function lessonTabs(lesson: Lesson): [Tab, string][] {
   if (hasRules && lesson.tonesAfterConsonants) t.push(['rules', '聲調'])
   if (lesson.vocab.length && !lesson.vocabAfterVowel && !lesson.finals?.length && !lesson.vowelShifts?.length && !lesson.clusters && !lesson.grouping?.length && !lesson.sanskritVowels?.length && !lesson.numerals?.length && !lesson.readingCases?.length) t.push(['vocab', '單字'])
   if (lessonPractice(lesson).length || lesson.patterns.length) t.push(['practice', practiceLabel(lesson)])
+  if (lesson.recap?.length) t.push(['recap', '小結'])
   if (lesson.memes.length) t.push(['memes', '補充'])
   if (lesson.consonants.length >= 4 || vowelSyllables(lesson.vowels).length >= 6 || lesson.vocab.length >= 4) t.push(['games', '互動練習'])
   if (lesson.extras.length) t.push(['extras', '補充'])
@@ -80,13 +94,16 @@ export function lessonTabs(lesson: Lesson): [Tab, string][] {
 }
 const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && lessonPractice(l).length === 1 ? lessonPractice(l)[0].title : '練習・句型')
 
-export default function LessonPage() {
-  const { id } = useParams()
-  const [lesson, setLesson] = useState<Lesson | null | undefined>(undefined)
+// printLesson：列印講義（HandoutPage）直接傳入課程資料，只排內容：不要返回連結、按鈕、目錄、互動練習，區塊全部展開
+export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {}) {
+  const { id: routeId } = useParams()
+  const id = printLesson?.id ?? routeId
+  const [lesson, setLesson] = useState<Lesson | null | undefined>(printLesson)
   const [collapsed, setCollapsed] = useState<Set<Tab>>(new Set())
   const [navOpen, setNavOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 760)
   // 中文、拼音一律顯示；只有練習卡可以各自隱藏中文（見 practiceCard）
   const showZh = true, showRoman = true
+  const wordRoman = false  // 認字課的單字、例字、練習一律不顯示拼音（L1 老師 2026-11-05）；子音名稱的拼音照常顯示
   const [open, setOpen] = useState<Consonant | null>(null)
   const [openVowel, setOpenVowel] = useState<{ char: string; ipa: string } | null>(null)
   const [reviewTab, setReviewTab] = useState(0)
@@ -94,7 +111,7 @@ export default function LessonPage() {
   const [active, setActive] = useState<Tab | null>(null)
   const [zhOff, setZhOff] = useState<Set<string>>(new Set())  // 隱藏中文的練習卡（unit 或 title）
 
-  useEffect(() => { getRepository().getLesson(id ?? '').then(l => { setLesson(l ?? null); setCollapsed(new Set()); setReviewTab(0); setFinalsOpen(false); setZhOff(new Set()) }) }, [id])
+  useEffect(() => { if (printLesson) return; getRepository().getLesson(id ?? '').then(l => { setLesson(l ?? null); setCollapsed(new Set()); setReviewTab(0); setFinalsOpen(false); setZhOff(new Set()) }) }, [id, printLesson])
 
   // 只顯示這一課有資料的分頁
   const tabs = useMemo(() => lesson ? lessonTabs(lesson) : [], [lesson])
@@ -133,7 +150,7 @@ export default function LessonPage() {
           <span className="th vword-th">{w.star ? '＊' : ''}{w.thai}</span>
           <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
           <span className="vword-meta">
-            {showRoman && w.roman && <span className="muted">{w.roman}</span>}
+            {wordRoman && w.roman && <span className="muted">{w.roman}</span>}
             {showZh && w.zh && <span>{w.zh}</span>}
           </span>
           {w.image && <ZoomImage className="vword-img" src={`${import.meta.env.BASE_URL}${w.image.src}`} alt={w.image.alt} />}
@@ -206,7 +223,7 @@ export default function LessonPage() {
   )
 
   const ruleCard = (r: Rule) => (
-    <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}<RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>
+    <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}<RuleBody body={r.body} /><RuleExtras r={r} Body={RuleBody} /></article>
   )
   // 練習卡有中文時，右上角可以單獨隱藏這張卡的中文（預設顯示）
   const practiceCard = (g: PracticeGroup, showTitle: boolean) => {
@@ -232,10 +249,10 @@ export default function LessonPage() {
         </div>
       ) : g.qa ? (
         <div className="qa">
-          <WordList words={g.items.slice(0, 1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={zh} showRoman={showRoman} />
-          <WordList words={g.items.slice(1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={zh} showRoman={showRoman} />
+          <WordList words={g.items.slice(0, 1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={zh} showRoman={wordRoman} />
+          <WordList words={g.items.slice(1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={zh} showRoman={wordRoman} />
         </div>
-      ) : <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={zh} showRoman={showRoman} tagFirst />}
+      ) : <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={zh} showRoman={wordRoman} tagFirst />}
     </article>
     )
   }
@@ -302,6 +319,8 @@ export default function LessonPage() {
         )
       })()}
 
+      {cur === 'recap' && lesson.recap && <Recap points={lesson.recap} />}
+
       {cur === 'numerals' && lesson.numerals && <NumeralTable numerals={lesson.numerals} />}
 
       {cur === 'games' && <Games consonants={lesson.consonants} vowels={lesson.vowels} words={lesson.vocab} />}
@@ -321,17 +340,17 @@ export default function LessonPage() {
         </section>
       ) })()}
 
-      {cur === 'consonants' && lesson.rules.some(r => r.at === 'consonants') && <section className="stack">{lesson.rules.filter(r => r.at === 'consonants').map(ruleCard)}</section>}
+      {cur === 'consonants' && lesson.rules.some(r => r.at === 'consonants' && !r.afterLetter) && <section className="stack">{lesson.rules.filter(r => r.at === 'consonants' && !r.afterLetter).map(ruleCard)}</section>}
       {cur === 'consonants' && (
         <section className="grid">
-          {lesson.consonants.map(c => (
-            <article className="card letter" key={c.id}>
+          {lesson.consonants.map(c => (<Fragment key={c.id}>
+            <article className="card letter">
               <button className="big th clickable" onClick={() => setOpen(c)} aria-label={`查看 ${c.char} 的筆順`}>{c.char}</button>
               <WordIcon char={c.char} label={c.zh} />
               <div className="th">{c.name} <SpeakButton text={nameText(c.name)} audioUrl={c.audioUrl} /></div>
               {showRoman && <div className="muted">{c.roman}</div>}
               {showZh && <div>{c.zh}</div>}
-              <div className="small muted">{GROUP_ZH[c.group]}｜發音 {c.sound}{c.sameHigh && <>｜同音高子音：<span className="th">{c.sameHigh}</span></>}</div>
+              <div className="small muted">{GROUP_ZH[c.group]}｜{soundLabel(c)}{c.sameHigh && <>｜同音高子音：<span className="th">{c.sameHigh}</span></>}</div>
               {c.words.length > 0 && (
                 <div className="cwords">
                   {c.words.map(w => (
@@ -344,7 +363,9 @@ export default function LessonPage() {
                 </div>
               )}
             </article>
-          ))}
+            {/* afterLetter：說明卡排在這個字母後面、佔滿一整列（L1 看完 ก 再解釋子音怎麼念） */}
+            {lesson.rules.filter(r => r.at === 'consonants' && r.afterLetter === c.char).map(r => <div className="gridfull" key={r.id}>{ruleCard(r)}</div>)}
+          </Fragment>))}
         </section>
       )}
 
@@ -362,7 +383,7 @@ export default function LessonPage() {
             {lesson.vocabAfterVowel && g.some(v => v.id === lesson.vocabAfterVowel) && lesson.vocab.length > 0 && (
               <>
                 <h3 className="vgroup-h">單字</h3>
-                <WordList compact="wide" words={lesson.vocab} showZh={showZh} showRoman={showRoman} />
+                <WordList compact="wide" words={lesson.vocab} showZh={showZh} showRoman={wordRoman} />
               </>
             )}
             </Fragment>
@@ -377,7 +398,7 @@ export default function LessonPage() {
         </section>
       )}
 
-      {cur === 'vocab' && <WordList compact="wide" words={lesson.vocab} showZh={showZh} showRoman={showRoman} />}
+      {cur === 'vocab' && <WordList compact="wide" words={lesson.vocab} showZh={showZh} showRoman={wordRoman} />}
 
       {cur === 'practice' && (
         <section className="stack">
@@ -404,6 +425,19 @@ export default function LessonPage() {
         </section>
       )}
     </>
+  )
+
+  if (printLesson) return (
+    <article className="h-lesson">
+      <header className="h-head">
+        <div className="h-num">L{lesson.number}</div>
+        <h1>{lesson.title}</h1>
+        <RuleBody body={lesson.summary} />
+      </header>
+      {tabs.filter(([k]) => k !== 'games').map(([k, label]) => (
+        <section className={`lsec sec-${k}`} key={k}><h2 className="lsec-h">{label}</h2>{content(k)}</section>
+      ))}
+    </article>
   )
 
   return (

@@ -10,6 +10,7 @@ import AdminPage from './reservation/AdminPage'
 import VideoChallengePage from './components/VideoChallengePage'
 import HomeworkPage from './components/HomeworkPage'
 import PresentPage from './components/PresentPage'
+import HandoutPage from './components/HandoutPage'
 import ChartPage from './components/ChartPage'
 import KeyboardPage from './components/KeyboardPage'
 import StrokeEditor from './components/StrokeEditor'
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/reading/dictation-review" element={<DictationReview />} />
           <Route path="/reading/lesson/:id" element={<LessonPage />} />
           <Route path="/reading/lesson/:id/present" element={<PresentPage />} />
+          <Route path="/reading/handout/:unit" element={<HandoutPage />} />
           <Route path="/reading/lesson/:id/homework" element={<HomeworkPage />} />
           <Route path="/reading/lesson/:id/video" element={<VideoChallengePage />} />
           <Route path="/reading/review/:unit" element={<HomeworkPage />} />

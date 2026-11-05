@@ -74,7 +74,7 @@ function Chart({ title, tones, color }: { title: string; tones: Tone[]; color: s
   )
 }
 
-// part：只顯示其中一張（投影片模式一張卡一頁用），沒填＝兩張都顯示
+// part：只顯示其中一張，沒填＝兩張都顯示
 export default function ToneIntro({ part }: { part?: 'marks' | 'compare' } = {}) {
   const [open, setOpen] = useState<number | null>(null)
   return (
