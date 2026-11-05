@@ -150,3 +150,8 @@ a.bk-course:hover { border-color: var(--accent); }
 .bk-tz .mini { font-size: .8rem; margin-top: 0; }
 .bk-tz select { font-size: .85rem; }
 .mgr-gc .cell.x:not(.on) { background: repeating-linear-gradient(45deg, var(--line), var(--line) 6px, transparent 6px, transparent 12px); } /* 換算時區後，休假那天的格子可能分在兩欄，逐格標示 */
+/* 我的預約：取消預約（12 小時前才出現按鈕；按下去再確認一次） */
+.bk-cancel { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: .9em; }
+.bk-cancel:empty { display: none; }
+.bk button.bk-cancel-btn { min-height: 0; padding: 3px 10px; font-size: .85rem; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 6px; }
+.bk button.bk-cancel-btn:hover { color: var(--bk-err); border-color: color-mix(in srgb, var(--bk-err) 50%, var(--line)); }

@@ -1,4 +1,4 @@
-import type { AdminState, HomeworkRecord, HomeworkRow, Month, OpenDays, PendingVideos, RecSession, Rule, StudentInfo, StudentView, Week } from './types'
+import type { AdminState, HomeworkRecord, HomeworkRow, Month, OpenDays, PendingVideos, RecSession, Rule, StudentInfo, StudentView, Upcoming, Week } from './types'
 
 // Apps Script「網頁應用程式」網址（結尾 /exec）。這個網址本來就會公開，不是密碼。
 // 留空或網址帶 mock=1 時使用假資料，不會碰到真實試算表。
@@ -11,6 +11,8 @@ interface Api {
   /** force＝略過後端快取（學生按「重新整理時段」） */
   getOpenDays(force?: boolean): Promise<OpenDays>
   submitBooking(token: string, name: string, email: string, start: string, len: number): Promise<{ ok: boolean }>
+  /** 學生取消「我的預約」的一筆（start＝台北時間；連續的課一起取消）。上課前 24 小時內後端會拒絕 */
+  cancelBooking(token: string, start: string): Promise<{ ok: boolean; count: number }>
   getHomeworkInfo(token: string, lessonNumber: number | string): Promise<{ name: string; last: HomeworkRecord | null }>
   submitHomework(token: string, lessonNumber: number | string, result: HomeworkResult): Promise<{ ok: boolean; name: string }>
   adminGetHomework(): Promise<HomeworkRow[]>
@@ -65,6 +67,7 @@ const real: Api = {
   getStudentInfo: t => call('getStudentInfo', [t]),
   getOpenDays: f => call('getOpenDays', [!!f]),
   submitBooking: (t, n, e, s, l) => call('submitBooking', [t, n, e, s, l]),
+  cancelBooking: (t, s) => call('cancelBooking', [t, s]),
   getHomeworkInfo: (t, n) => call('getHomeworkInfo', [t, n]),
   submitHomework: (t, n, r) => call('submitHomework', [t, n, r]),
   // 舊版後端的學生資料沒有 courses 欄位：補成空陣列（＝尚未開放任何課程）
@@ -149,6 +152,12 @@ const mockVideos: PendingVideos = {
   problems: [{ name: '王小明', reason: '尚未綁定課程記錄表' }],
 }
 
+const mockUpcoming: Upcoming[] = [
+  { start: `${day(0)} ${hhmm(5)}`, end: `${day(0)} ${hhmm(35)}`, length: 25, count: 1, status: '已確認', zoom: 'https://zoom.us/j/123' },
+  { start: `${day(2)} 09:00`, end: `${day(2)} 10:00`, length: 25, count: 2, status: '已確認', zoom: 'https://zoom.us/j/456' },
+  { start: `${day(3)} 10:00`, end: `${day(3)} 10:25`, length: 25, count: 1, status: '待確認', zoom: '' },
+]
+
 const mockHw: Record<string, HomeworkRecord> = { '1': { time: `${day(-1)} 20:15`, listen: '8/9', typing: '5/6', count: 2 } }
 
 const mock: Api = {
@@ -165,11 +174,7 @@ const mock: Api = {
       { no: '4', start: `${day(-4)} 20:00`, end: `${day(-4)} 20:25`, dateOnly: false, progress: '會話 L2 第 2 頁', video: 'https://youtu.be/dQw4w9WgXcQ' },
       { no: '3', start: `${day(-8)} 20:00`, end: `${day(-8)} 20:25`, dateOnly: false, progress: '會話 L2 第 1 頁', video: 'https://youtu.be/dQw4w9WgXcQ' },
     ] : [],
-    upcoming: t ? [
-      { start: `${day(0)} ${hhmm(5)}`, end: `${day(0)} ${hhmm(35)}`, length: 25, count: 1, status: '已確認', zoom: 'https://zoom.us/j/123' },
-      { start: `${day(2)} 09:00`, end: `${day(2)} 10:00`, length: 25, count: 2, status: '已確認', zoom: 'https://zoom.us/j/456' },
-      { start: `${day(3)} 10:00`, end: `${day(3)} 10:25`, length: 25, count: 1, status: '待確認', zoom: '' },
-    ] : [],
+    upcoming: t ? structuredClone(mockUpcoming) : [],
   }),
   getOpenDays: () => delay({
     days: [
@@ -181,6 +186,7 @@ const mock: Api = {
     asOf: new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 19).replace('T', ' '),
   }),
   submitBooking: (t, n) => (!t && !n ? Promise.reject(new Error('請填姓名')) : delay({ ok: true })),
+  cancelBooking: (_t, s) => { const i = mockUpcoming.findIndex(u => u.start === s); if (i < 0) return Promise.reject(new Error('找不到這堂課')); const n = mockUpcoming[i].count; mockUpcoming.splice(i, 1); return delay({ ok: true, count: n }) },
   getHomeworkInfo: (t, n) => delay({ name: t ? 'Jenny' : '', last: t ? mockHw[String(n)] ?? null : null }),
   adminGetHomework: () => delay(Object.entries(mockHw).map(([n, r]) => ({ time: r.time, name: 'Jenny', lesson: /^R/.test(n) ? n : 'L' + n, listen: r.listen, typing: r.typing, parse: r.parse }))),
   submitHomework: (t, n, r) => (t ? (mockHw[String(n)] = { time: `${day(0)} ${hhmm(0)}`, listen: r.listen ? r.listen.join('/') : '未做', typing: r.typing ? r.typing.join('/') : '未做', ...(r.parse ? { parse: r.parse.join('/') } : {}), count: (mockHw[String(n)]?.count ?? 0) + 1 }, delay({ ok: true, name: 'Jenny' })) : Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))),

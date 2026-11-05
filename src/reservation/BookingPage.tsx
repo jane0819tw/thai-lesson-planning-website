@@ -22,6 +22,8 @@ interface LSlot { key: string; time: string; can25: boolean; can50: boolean }
 const canJoin = (now: number, start: string, end: string) => now >= toMs(start) - 10 * 60000 && now <= toMs(end) + 15 * 60000
 // 只開放 24 小時之後的時段（後端 Config.gs 的 MIN_NOTICE_HOURS 也是 24；前端再濾一次，頁面開著放久了也不會露出 24 小時內的格子）
 const NOTICE_HOURS = 24
+// 上課前 12 小時內不能自己取消，要私訊老師（後端 Config.gs 的 CANCEL_NOTICE_HOURS 也是 12）
+const CANCEL_HOURS = 12
 
 function HomeworkButton({ to, rec }: { to: string; rec?: HomeworkRecord }) {
   return (
@@ -99,6 +101,8 @@ export default function BookingPage() {
   const [email, setEmail] = useState('')
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
+  const [askCancel, setAskCancel] = useState<string | null>(null) // 按了「取消預約」、等學生再確認的那一筆（開始時間）
+  const [cancelMsg, setCancelMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const [now, setNow] = useState(Date.now())
   const [tab, setTab] = useState<'book' | 'courses' | 'records'>(() => { try { return sessionStorage.getItem(TAB_KEY) === 'courses' ? 'courses' : 'book' } catch { return 'book' } })
   useEffect(() => { try { sessionStorage.removeItem(TAB_KEY) } catch { /* 存不了就算了 */ } }, [])
@@ -173,6 +177,16 @@ export default function BookingPage() {
     try { await Promise.all([loadInfo(), loadDays(true)]) } catch { /* 送出已成功，重讀失敗不影響 */ }
   }
 
+  const cancel = async (start: string) => {
+    setBusy(true); setCancelMsg(null)
+    try {
+      const r = await api.cancelBooking(token, start)
+      setCancelMsg({ ok: true, text: r.count > 1 ? `已取消這 ${r.count} 堂課。` : '已取消這堂課。' })
+    } catch (e) { setCancelMsg({ ok: false, text: (e as Error).message }) }
+    setAskCancel(null); setBusy(false)
+    try { await Promise.all([loadInfo(), loadDays(true)]) } catch { /* 取消已成功，重讀失敗不影響 */ }
+  }
+
   return (
     <div className="bk">
       <h1>{platform ? '我的課程與作業' : '預約泰語課'}</h1>
@@ -236,11 +250,11 @@ export default function BookingPage() {
           </div>
         )}
 
-        {view.upcoming.length > 0 && (
+        {(view.upcoming.length > 0 || cancelMsg) && (
           <div className="bk-card">
             <h2>我的預約</h2>
             <p className="bk-muted" style={{ marginTop: -4 }}>🌏 {tzLabel(tz, now)}・現在 {(n => `${n.slice(0, 10).replace(/-/g, '/')}（${wdName(n.slice(0, 10))}）${n.slice(11)}`)(msIn(now, tz))}</p>
-            {view.upcoming.map((u, i) => { const us = fromBase(u.start, tz), ue = fromBase(u.end, tz); return (
+            {view.upcoming.map((u, i) => { const us = fromBase(u.start, tz), ue = fromBase(u.end, tz), canCancel = toMs(u.start) - now >= CANCEL_HOURS * 3600000; return (
               <div className="bk-item" key={u.start}>
                 <div>
                   {us.slice(0, 10).replace(/-/g, '/')}（{wdName(us.slice(0, 10))}）{hm(us)}–{hm(ue)}・{u.count > 1 ? `連續 ${u.count} 堂` : `${u.length} 分`}
@@ -249,6 +263,13 @@ export default function BookingPage() {
                 {u.status !== '已確認' ? null : u.zoom
                   ? (canJoin(now, u.start, u.end) && <button className="primary" onClick={() => window.open(u.zoom, '_blank', 'noopener')}>進入教室</button>)
                   : <span className="bk-muted">教室連結老師會另外提供</span>}
+                <div className="bk-cancel">
+                  {!canCancel
+                    ? (toMs(u.start) > now && <span className="bk-muted">上課前 {CANCEL_HOURS} 小時內要取消，請直接私訊老師</span>)
+                    : askCancel === u.start
+                      ? <>確定要取消{u.count > 1 ? `這 ${u.count} 堂` : '這堂'}課嗎？<button className="danger" disabled={busy} onClick={() => cancel(u.start)}>{busy ? '取消中…' : '確定取消'}</button><button disabled={busy} onClick={() => setAskCancel(null)}>不用了</button></>
+                      : <button className="bk-cancel-btn" onClick={() => { setAskCancel(u.start); setCancelMsg(null) }}>取消預約</button>}
+                </div>
                 {i === 0 && u.status === '已確認' && view.lastLesson && (view.lastLesson.next || view.lastLesson.progress) && (
                   <div className="bk-note">
                     {view.lastLesson.next && <div><strong>這堂課內容</strong>　{view.lastLesson.next}</div>}
@@ -257,6 +278,8 @@ export default function BookingPage() {
                 )}
               </div>
             ) })}
+            {!view.upcoming.length && <p className="bk-muted" style={{ margin: 0 }}>目前沒有預約。</p>}
+            {cancelMsg && <div className={`bk-msg ${cancelMsg.ok ? 'ok' : 'err'}`}>{cancelMsg.text}</div>}
           </div>
         )}
 

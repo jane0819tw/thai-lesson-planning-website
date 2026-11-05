@@ -4,7 +4,7 @@
  * 學生用的函式公開；admin 開頭的函式需要管理密鑰（指令碼屬性 ADMIN_KEY）。
  */
 
-const PUBLIC_API_ = { getStudentView: getStudentView, getStudentInfo: getStudentInfo, getOpenDays: getOpenDays, submitBooking: submitBooking, getHomeworkInfo: getHomeworkInfo, submitHomework: submitHomework };
+const PUBLIC_API_ = { getStudentView: getStudentView, getStudentInfo: getStudentInfo, getOpenDays: getOpenDays, submitBooking: submitBooking, cancelBooking: cancelBooking, getHomeworkInfo: getHomeworkInfo, submitHomework: submitHomework };
 const ADMIN_API_ = {
   adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminGetMonth: adminGetMonth, adminSaveRules: adminSaveRules,
   adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetDisplay: adminSetDisplay, adminImportPlatformStudents: adminImportPlatformStudents, adminDeleteStudent: adminDeleteStudent, adminSetCourses: adminSetCourses,
@@ -336,6 +336,63 @@ function submitBooking(token, name, email, startStr, length) {
     notifyTeacher_('📚 新預約：' + studentName + '\n' + startStr + '（' + length + ' 分）\n\n管理頁：' + CONFIG.ADMIN_URL +
       '\n管理密鑰：' + (PropertiesService.getScriptProperties().getProperty('ADMIN_KEY') || '（尚未建立，請執行 createAdminKey）'));
     return { ok: true, id: b['編號'] };
+  } finally { lock.releaseLock(); }
+}
+
+/**
+ * 學生在「我的預約」按「取消預約」。startStr 是學生頁那一筆的開始時間（台北，yyyy-MM-dd HH:mm）；
+ * 連續的課在學生頁合成一筆，所以會把這段時間內的課一起取消：
+ * - 預約表裡的私下預約（待確認／已確認）→ 改「已取消」，走 applyStatusChange_（清記錄表、刪 Zoom、刪行事曆）
+ * - 記錄表裡老師手寫、預約表沒有的課 → 同老師頁 adminCancelRecordLesson（清記錄表那一列、刪行事曆事件）
+ * 上課前 CONFIG.CANCEL_NOTICE_HOURS 小時內不能自己取消（前端 BookingPage 也擋），要私訊老師。
+ */
+function cancelBooking(token, startStr) {
+  const s = studentByToken_(token);
+  if (!s) throw new Error('預約連結已失效，請向老師索取新的連結');
+  if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(String(startStr))) throw new Error('時間格式不正確');
+  const nowStr = toLocalStr_(new Date());
+  if (strToMin_(startStr) - strToMin_(nowStr) < CONFIG.CANCEL_NOTICE_HOURS * 60) {
+    throw new Error('上課前 ' + CONFIG.CANCEL_NOTICE_HOURS + ' 小時內無法在這裡取消，請直接私訊老師。');
+  }
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(20000)) throw new Error('系統忙碌中，請稍後再試');
+  try {
+    const rec = s['課程記錄表'] ? readRecordBundle_(s['課程記錄表']) : null;
+    const mine = readBookings_().filter(function (b) {
+      return b['學生'] === s.name && (b['狀態'] === STATUS.PENDING || b['狀態'] === STATUS.CONFIRMED) && b['開始'];
+    });
+    const bks = mine.map(function (b) {
+      return { start: toLocalStr_(b['開始']), end: toLocalStr_(b['實際結束']), zoom: b['Zoom連結'] || '', status: b['狀態'], length: b['課長'] };
+    });
+    // 用和學生頁一樣的方式合併，找出學生按的那一筆涵蓋哪段時間
+    const sess = buildSessions_(rec ? rec.sessions : [], bks, nowStr).filter(function (x) { return x.start === startStr; })[0];
+    if (!sess) throw new Error('找不到這堂課，可能已經取消了，請重新整理頁面');
+    const inSess = function (st) { return st >= sess.start && st < sess.end; };
+
+    const targets = mine.filter(function (b) { return inSess(toLocalStr_(b['開始'])); });
+    if (targets.some(function (b) { return b['來源'] !== '私下'; })) throw new Error('這堂課是在平台上預約的，請到平台取消或私訊老師。');
+    targets.forEach(function (b) {
+      b['狀態'] = STATUS.CANCELLED;
+      b['取消原因'] = '學生自行取消（' + nowStr + '）';
+      applyStatusChange_(b);
+    });
+    // 記錄表裡老師手寫、預約表沒有的課
+    const known = {};
+    mine.forEach(function (b) { known[toLocalStr_(b['開始'])] = true; });
+    let recOnly = 0;
+    const problems = [];
+    (rec ? rec.sessions : []).forEach(function (x) {
+      if (!inSess(x.start) || known[x.start]) return;
+      try { clearBookingFromRecord_(s['課程記錄表'], x.start, strToMin_(x.end) - strToMin_(x.start), ''); }
+      catch (e) { problems.push('記錄表 ' + x.start + ' 清除失敗：' + e.message); }
+      if (!deleteCalendarEventsFor_([s.name, s.display], x.start)) problems.push('行事曆找不到 ' + x.start + ' 的事件，請自行刪除');
+      recOnly++;
+    });
+    bustCaches_();
+    const n = targets.length + recOnly;
+    notifyTeacher_('❌ 學生取消：' + s.name + '\n' + sess.start + '–' + sess.end.slice(11) + (n > 1 ? '（' + n + ' 堂）' : '') +
+      '\n\n已自動釋放時段、清除記錄表與 Zoom。' + (problems.length ? '\n⚠️ ' + problems.join('\n⚠️ ') : ''));
+    return { ok: true, count: n };
   } finally { lock.releaseLock(); }
 }
 

@@ -13,6 +13,7 @@ const CONFIG = {
   NOTIFY_EMAIL: '',             // 空白 = 執行者自己的 Email
   BOOKING_DAYS_AHEAD: 92,       // 預約頁顯示未來幾天（約三個月）
   MIN_NOTICE_HOURS: 24,         // 至少提前幾小時才能預約（前端 BookingPage 的 NOTICE_HOURS 要一致）
+  CANCEL_NOTICE_HOURS: 12,      // 上課前幾小時內學生不能自己取消、要私訊老師（前端 BookingPage 的 CANCEL_HOURS 要一致）
   DAILY_REMINDER_HOUR: 0,       // 每天幾點用 LINE 推播「當天」的課（0＝午夜 24:00；Apps Script 觸發時間會有 ±15 分鐘誤差）
   SHEETS: { BOOKINGS: '預約', STUDENTS: '學生', LOG: '信件紀錄', RULES: '開放時段', HOMEWORK: '作業' },
 };

@@ -168,6 +168,7 @@ Server-to-Server OAuth，token 以 CacheService 快取約 50 分鐘。會議類�
 |---|---|---|
 | `getStudentView` | token | 回傳 `mode`（`known`／`generic`／`invalid`）、可預約日期與格子、剩餘堂數、我的預約 |
 | `submitBooking` | token, name, email, startStr(`yyyy-MM-dd HH:mm`), length | 驗證 → ScriptLock → 再檢查一次該格仍空 → 寫入「待確認」＋行事曆 |
+| `cancelBooking` | token, startStr | 學生取消「我的預約」的一筆（連續的課一起）：上課前 `CANCEL_NOTICE_HOURS`(12h) 內拒絕、要私訊老師；不需老師審核，直接生效；私下預約改「已取消」（清記錄表、刪 Zoom、行事曆），記錄表手寫的課清該列＋刪行事曆事件；平台預約拒絕；LINE 通知老師 |
 
 **管理**（`fn` 以 `admin` 開頭，需 `key` ＝ 指令碼屬性 `ADMIN_KEY`；錯誤時延遲 1 秒再回應）
 
@@ -216,7 +217,7 @@ cd web && python3 -m http.server 8765
 
 **尚未實作**
 - 確認信與課前提醒（`notify_` 為空）。
-- 學生自助取消／改期。
+- 學生改期（取消已可自助，見 §5 `cancelBooking`）。
 - `zoomPatchMeeting_` 已寫好但沒有任何呼叫處（改期時用）。
 - 私下預約成立後，仍需老師**手動**到 AmazingTalker 關閉同一時段（反向無自動同步）。
 
