@@ -53,7 +53,7 @@ function buildSlides(l: Lesson, v: View): Slide[] {
   ) })
   // 區塊順序和課程頁一樣（lessonTabs），區塊內一張卡一頁；目前先支援 L1 用到的區塊
   const ruleSlide = (r: Rule, section: string): Slide => ({ section, body: (
-    <article className="card">{r.title && <h3>{r.title}</h3>}<SlideBody body={r.body} /><RuleExtras r={r} Body={SlideBody} /></article>
+    <article className="card">{r.title && <h3>{r.title}</h3>}{r.body && <SlideBody body={r.body} />}<RuleExtras r={r} Body={SlideBody} /></article>
   ) })
   // 一個詞一頁：大字＋播放鈕＋中文（Z 開關，投影片預設不顯示）＋圖；認字課不顯示拼音（單字、多音節練習共用）
   const wordSlides = (label: string, words: { thai: string; zh?: string; audioUrl?: string | null; image?: { src: string; alt: string } }[]) => words.forEach((w, n) => s.push({ section: `${label} ${n + 1}/${words.length}`, body: (
@@ -95,18 +95,19 @@ function buildSlides(l: Lesson, v: View): Slide[] {
             <div className={v.showRoman ? 'muted pt-sub' : 'muted pt-sub pt-hidden'}>{c.roman}</div>
             <div className={v.showZh ? 'pt-sub' : 'pt-sub pt-hidden'}>{c.zh}</div>
             <div className="muted">{GROUP_ZH[c.group]}｜{soundLabel(c)}{c.sameHigh && <>｜同音高子音：<span className="th">{c.sameHigh}</span></>}</div>
-            {c.words.length > 0 && (
+          </div>
+          {/* 例字排在右邊（L4 老師） */}
+          {c.words.length > 0 && (
               <div className="cwords pt-cwords">
                 {c.words.map(w => (
-                  <div key={w.thai} className="cword">
-                    <span className="th cword-th">{w.star ? '＊' : ''}{w.thai}</span>
+                  <div key={w.thai} className={w.star ? 'cword wstar' : 'cword'}>
+                    <span className="th cword-th">{w.thai}</span>
                     <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
                     {w.zh && <span className={v.showZh ? 'cword-zh' : 'cword-zh pt-hidden'}>{w.zh}</span>}
                   </div>
                 ))}
               </div>
             )}
-          </div>
         </article>
       ) })
         // afterLetter：說明卡排在這個字母後面（L1 看完 ก 再解釋子音怎麼念）

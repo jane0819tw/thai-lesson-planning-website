@@ -670,7 +670,7 @@ table.sktable .sk-mark { background: #fbeed3; }
 .pt-letter-info { display: grid; gap: 8px; justify-items: start; }
 .pt-name { font-size: 2.4rem; display: flex; align-items: center; gap: 12px; }
 .pt-sub { font-size: 1.4rem; }
-.pt-cwords { min-width: 320px; margin-top: 4px; }  /* 子音頁的例字（L4 起） */
+.pt-cwords { width: 300px; flex: none; margin: 0; }  /* 子音頁的例字（L4 起）：排在資訊右邊 */
 .pt-hidden { visibility: hidden; }
 .pt-img { max-width: 100%; max-height: 520px; display: block; margin: 0 auto; border-radius: 12px; }
 .pt-rail { display: flex; justify-content: center; gap: 10px; padding: 0 16px; }
@@ -867,3 +867,7 @@ table.rc-table .rc-img { display: block; width: 100%; max-width: 150px; margin: 
 .present .pt-meme img { max-height: 440px; width: auto; display: block; margin: 8px auto 0; }
 /* 投影片：量同一組頁面（uniform）尺寸用，看不見 */
 .pt-measure { position: absolute; left: -10000px; top: 0; visibility: hidden; pointer-events: none; }
+
+/* 講義標＊的字：不放＊，改用黃色底標出（L4 老師） */
+.wstar { background: #fdf0b8 !important; border-color: #f0d870 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+@media (prefers-color-scheme: dark) { .wstar { background: #3d3414 !important; border-color: #6b5a1c !important; } }

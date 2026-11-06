@@ -31,8 +31,8 @@ export default function VowelShiftView({ table, vocab, showZh }: { table: VowelS
         {s.words.length ? s.words.map(t => {
           const w = vocab.find(x => x.thai === t)
           return (
-            <div className="vs-word" key={t}>
-              <span className="th">{w?.star ? '＊' : ''}{t}</span><SpeakButton text={t} audioUrl={w?.audioUrl} />
+            <div className={w?.star ? 'vs-word wstar' : 'vs-word'} key={t}>
+              <span className="th">{t}</span><SpeakButton text={t} audioUrl={w?.audioUrl} />
               {showZh && w?.zh && <small className="muted">{w.zh}</small>}
             </div>
           )

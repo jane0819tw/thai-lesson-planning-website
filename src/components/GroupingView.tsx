@@ -77,7 +77,7 @@ export default function GroupingView({ g, vocab, showZh, top }: { g: GroupingUni
                   const v = vocab.find(x => x.thai === w.thai)
                   return (
                     <tr key={w.thai}>
-                      <td className="th cl-w">{w.star && '＊'}{w.thai}<SpeakButton text={w.thai} audioUrl={v?.audioUrl} /></td>
+                      <td className={w.star ? 'th cl-w wstar' : 'th cl-w'}>{w.thai}<SpeakButton text={w.thai} audioUrl={v?.audioUrl} /></td>
                       <td className={'th cl-parts' + (w.mark ? ' gp-red' : '')}>{redInline(w.split)}</td>
                       <td className="cl-zh">{showZh && v?.zh}</td>
                     </tr>

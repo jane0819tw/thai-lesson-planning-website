@@ -8,9 +8,9 @@ export default function WordList({ words, showZh, showRoman, compact, tagFirst }
   return (
     <section className={compact === 'wide' || compact === 'half' || compact === 'third' ? `list compact ${compact}` : compact ? 'list compact' : 'list'}>
       {words.map((w, i) => (
-        <article className="row" key={w.thai + i}>
+        <article className={w.star ? 'row wstar' : 'row'} key={w.thai + i}>
           {tagFirst && w.group && <span className="chip">{w.group}</span>}
-          <div className="th big2">{w.star ? '＊' : ''}{w.thai}</div>
+          <div className="th big2">{w.thai}</div>
           <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
           <div className="meta">
             {showRoman && w.roman && <span className="muted">{w.roman}</span>}

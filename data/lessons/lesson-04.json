@@ -4,7 +4,34 @@
     {
       "id": "r1",
       "title": "高子音的聲調規則",
-      "body": "與長母音不加上音調符號，發第五聲。\n表中「不發音」代表該聲調在這組沒有對應字。"
+      "body": "與長母音不加上音調符號，發第五聲。\n表中「不發音」代表該聲調在這組沒有對應字。",
+      "at": "consonants",
+      "afterLetter": "ผ",
+      "toneTable": {
+        "title": "高子音＋母音",
+        "rows": [
+          {
+            "label": "＋短母音",
+            "cells": [
+              "x",
+              "ผะ",
+              "不發音",
+              "不發音",
+              "x"
+            ]
+          },
+          {
+            "label": "＋長母音",
+            "cells": [
+              "不發音",
+              "ผ่า",
+              "ผ้า",
+              "不發音",
+              "ผา"
+            ]
+          }
+        ]
+      }
     }
   ],
   "consonants": [
@@ -216,33 +243,7 @@
     }
   ],
   "vowels": [],
-  "toneTables": [
-    {
-      "title": "高子音＋母音",
-      "rows": [
-        {
-          "label": "＋短母音",
-          "cells": [
-            "x",
-            "ผะ",
-            "不發音",
-            "不發音",
-            "x"
-          ]
-        },
-        {
-          "label": "＋長母音",
-          "cells": [
-            "不發音",
-            "ผ่า",
-            "ผ้า",
-            "不發音",
-            "ผา"
-          ]
-        }
-      ]
-    }
-  ],
+  "toneTables": [],
   "vocab": [],
   "practice": [
     {
@@ -286,18 +287,13 @@
       "title": "這 5 個連續出現的字母是什麼意思？",
       "big": "ถถถถถ",
       "desc": "",
-      "imageUrl": null
+      "imageUrl": null,
+      "half": true
     },
     {
       "title": "這間手搖的 logo 像什麼泰文字？",
       "desc": "",
       "imageUrl": "extras/lesson-04/koi-the.png",
-      "half": true
-    },
-    {
-      "title": "電梯按鈕：ผี → ผี → 13",
-      "desc": "電梯按鈕 14、15、16／11、12、12A，沒有 13 樓",
-      "imageUrl": "extras/lesson-04/lift-13.png",
       "half": true
     }
   ],
@@ -305,5 +301,6 @@
   "id": "lesson-04",
   "number": 4,
   "title": "高子音（11 個）",
-  "summary": "學 11 個高子音；高子音加長母音不加符號時發第五聲。"
+  "summary": "學 11 個高子音；高子音加長母音不加符號時發第五聲。",
+  "slides": true
 }

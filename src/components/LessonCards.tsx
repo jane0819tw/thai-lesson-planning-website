@@ -16,8 +16,8 @@ export function VowelWords({ words, showZh, showRoman = false }: { words: Lesson
   return (
     <div className="vwords">
       {words.map((w, i) => (
-        <div className="vword" key={w.thai + i}>
-          <span className="th vword-th">{w.star ? '＊' : ''}{w.thai}</span>
+        <div className={w.star ? 'vword wstar' : 'vword'} key={w.thai + i}>
+          <span className="th vword-th">{w.thai}</span>
           <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
           <span className="vword-meta">
             {showRoman && w.roman && <span className="muted">{w.roman}</span>}

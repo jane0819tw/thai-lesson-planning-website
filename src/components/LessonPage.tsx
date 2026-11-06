@@ -170,7 +170,7 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
   )
 
   const ruleCard = (r: Rule) => (
-    <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}<RuleBody body={r.body} /><RuleExtras r={r} Body={RuleBody} /></article>
+    <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}{r.body && <RuleBody body={r.body} />}<RuleExtras r={r} Body={RuleBody} /></article>
   )
   // 練習卡有中文時，右上角可以單獨隱藏這張卡的中文（預設顯示）
   const practiceCard = (g: PracticeGroup, showTitle: boolean) => {
@@ -287,8 +287,8 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
               {c.words.length > 0 && (
                 <div className="cwords">
                   {c.words.map(w => (
-                    <div key={w.thai} className="cword">
-                      <span className="th cword-th">{w.star ? '＊' : ''}{w.thai}</span>
+                    <div key={w.thai} className={w.star ? 'cword wstar' : 'cword'}>
+                      <span className="th cword-th">{w.thai}</span>
                       <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
                       {showZh && w.zh && <span className="cword-zh">{w.zh}</span>}
                     </div>
