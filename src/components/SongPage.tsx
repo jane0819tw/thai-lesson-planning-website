@@ -13,6 +13,7 @@ import { getAdminKey } from '../reservation/api'
 import ZoomImage from './ZoomImage'
 import '../video.css'
 import '../song.css'
+import BackLink from '../reservation/BackLink'
 
 /** 語速按鈕每點一次換下一個 */
 const RATES = [1, 0.75, 0.5]
@@ -21,7 +22,7 @@ const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).
 export function SongIndex() {
   return (
     <>
-      <p><Link to="/">← 所有課程</Link></p>
+      <p><BackLink to="/" label="所有課程" /></p>
       <h1>歌詞跟讀</h1>
       <p className="muted">跟著歌曲一句一句聽、一句一句唸。歌詞照 YouTube 官方泰文字幕。</p>
       <ul className="lessons">

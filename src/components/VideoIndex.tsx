@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getVideoRepository } from '../data/videoRepository'
 import type { VideoLesson } from '../video/types'
+import BackLink from '../reservation/BackLink'
 
 export default function VideoIndex() {
   const [videos, setVideos] = useState<VideoLesson[]>([])
   useEffect(() => { getVideoRepository().listVideos().then(setVideos) }, [])
   return (
     <>
-      <p><Link to="/">← 所有課程</Link></p>
+      <p><BackLink to="/" label="所有課程" /></p>
       <h1>影片教學</h1>
       <p className="muted">跟著影片逐句精讀：點句子跳播、自動跟隨、單句循環。</p>
       <ul className="lessons">

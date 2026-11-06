@@ -5,6 +5,7 @@ import ReadingIndex from './components/ReadingIndex'
 import LessonPage from './components/LessonPage'
 import StudentLink from './reservation/StudentLink'
 import AdminLink from './reservation/AdminLink'
+import { getSession } from './reservation/session'
 import BookingPage from './reservation/BookingPage'
 import AdminPage from './reservation/AdminPage'
 import VideoChallengePage from './components/VideoChallengePage'
@@ -25,7 +26,7 @@ export default function App() {
   return (
     <>
       <header className="top">
-        <Link to="/" className="brand"><span className="th">ก</span> 泰語學習</Link>
+        <Link to={(st => st ? `/book?t=${encodeURIComponent(st.token)}` : '/')(getSession())} className="brand"><span className="th">ก</span> 泰語學習</Link>
         <span className="topright">
           <AdminLink />
           <StudentLink />

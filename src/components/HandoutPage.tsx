@@ -6,6 +6,7 @@ import { ghostText, guideLines, vowelForm, STROKE_VIEWBOX as V } from '../stroke
 import { reviewRange, reviewRangeLabel } from '../reviews'
 import LessonPage from './LessonPage'
 import MarkGlyph from './MarkGlyph'
+import BackLink from '../reservation/BackLink'
 
 // 可列印講義（A4）：一個單元一份（L1–L5、L6–L10…，和學生開放的權限單位一樣），學生不用自己彙整各課。
 // 每一課：課程內容（直接用課程頁的排版，LessonPage printLesson）→ 這課的寫字作業（描字與書寫、聲調填空）。
@@ -93,7 +94,7 @@ export default function HandoutPage() {
 
   return (
     <div className="handout">
-      <p className="noprint"><Link to="/reading">← 認字課程</Link>　<button className="btn" onClick={() => window.print()}>列印／存成 PDF</button></p>
+      <p className="noprint"><BackLink to="/reading" label="認字課程" />　<button className="btn" onClick={() => window.print()}>列印／存成 PDF</button></p>
       <header className="h-cover">
         <div className="h-num">泰文認字課程</div>
         <h1>{reviewRangeLabel(unit)} 講義</h1>
