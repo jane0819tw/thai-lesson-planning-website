@@ -13,13 +13,15 @@ import RuleExtras from './RuleExtras'
 import Annotator, { type Stroke } from './Annotator'
 import { soundLabel } from '../consonant'
 import ToneIntro from './ToneIntro'
-import { Recap, RuleBody, conceptItems, lessonTabs, type Tab } from './LessonPage'
+import { Recap, RuleBody, conceptItems, lessonPractice, lessonTabs, practiceLabel, type Tab } from './LessonPage'
+import VowelIntro from './VowelIntro'
+import { MemeCard, VowelCard } from './LessonCards'
 
 // 投影片模式（試做，先支援 L1 用到的區塊）：同一份課程資料，一張卡一頁，內容自動縮放到填滿螢幕
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-interface Slide { section: string; body: ReactNode; letter?: number; chapter?: number }  // letter：子音頁是第幾個子音（上方的子音進度圓圈用）；chapter：屬於第幾章（上方章節列用，封面沒有）
+interface Slide { section: string; body: ReactNode; letter?: number; chapter?: number; uniform?: string }  // uniform：同一組的頁用同一個縮放比例（L2 母音頁寬度一致：以這組最高的那頁來縮）  // letter：子音頁是第幾個子音（上方的子音進度圓圈用）；chapter：屬於第幾章（上方章節列用，封面沒有）
 const PEN_COLORS = ['#e11d48', '#2563eb', '#16a34a']
-interface View { showZh: boolean; showRoman: boolean; openLetter: (c: Consonant) => void }
+interface View { showZh: boolean; showRoman: boolean; openLetter: (c: Consonant) => void; openVowel: (x: { char: string; ipa: string }) => void }
 
 // 投影時說明文字分點：遇到「。」「；」就換一點（括號、引號裡的不算），句尾標點拿掉；原本用 \n 分行的照舊
 const points = (body: string) => {
@@ -38,7 +40,7 @@ const points = (body: string) => {
 const SlideBody = ({ body }: { body: string }) => { const p = points(body); return p.length > 1 ? <RuleBody body={p.join('\n')} /> : <RuleBody body={p[0] ?? ''} /> }
 
 // 已經做成投影片的區塊；games（互動練習）刻意不放。其他區塊先顯示一頁「還沒做成投影片」，不會默默漏掉
-const SUPPORTED: Tab[] = ['diagram', 'rules', 'consonants', 'vocab', 'recap', 'extras', 'games']
+const SUPPORTED: Tab[] = ['diagram', 'rules', 'vowels', 'consonants', 'vocab', 'practice', 'recap', 'memes', 'extras', 'games']
 
 function buildSlides(l: Lesson, v: View): Slide[] {
   const s: Slide[] = []
@@ -53,6 +55,18 @@ function buildSlides(l: Lesson, v: View): Slide[] {
   const ruleSlide = (r: Rule, section: string): Slide => ({ section, body: (
     <article className="card">{r.title && <h3>{r.title}</h3>}<SlideBody body={r.body} /><RuleExtras r={r} Body={SlideBody} /></article>
   ) })
+  // 一個詞一頁：大字＋播放鈕＋中文（Z 開關，投影片預設不顯示）＋圖；認字課不顯示拼音（單字、多音節練習共用）
+  const wordSlides = (label: string, words: { thai: string; zh?: string; audioUrl?: string | null; image?: { src: string; alt: string } }[]) => words.forEach((w, n) => s.push({ section: `${label} ${n + 1}/${words.length}`, body: (
+    <article className={w.image ? 'pt-word has-img' : 'pt-word'}>
+      <div className="pt-word-text">
+        <div className="th pt-word-th">{w.thai} <SpeakButton text={w.thai} audioUrl={w.audioUrl} /></div>
+        <div className={v.showZh ? 'pt-word-zh' : 'pt-word-zh pt-hidden'}>{w.zh}</div>
+      </div>
+      {/* 有圖的字：圖放在右邊（L2 老師） */}
+      {w.image && <ZoomImage src={`${import.meta.env.BASE_URL}${w.image.src}`} alt={w.image.alt} className="pt-word-img" />}
+    </article>
+  ) }))
+  const vocabSlides = (label: string) => wordSlides(label, l.vocab)
   // 每個區塊＝一章；記下每頁屬於第幾章，上方章節列標出目前進度
   let ci = -1
   for (const [k, label] of lessonTabs(l)) {
@@ -70,7 +84,9 @@ function buildSlides(l: Lesson, v: View): Slide[] {
     if (k === 'consonants') {
       for (const r of l.rules.filter(r => r.at === 'consonants' && !r.afterLetter && !r.noSlide)) s.push(ruleSlide(r, label))
       // 一個字母一頁，字母放大，點字母看筆順
-      l.consonants.forEach((c, i) => { s.push({ section: `${label} ${i + 1}/${l.consonants.length}`, letter: i, body: (
+      // 有例字的課（L4 起）：例字列在資訊下面（中文跟 Z），整組子音頁用同一個縮放比例，字母大小不會一頁大一頁小
+      const hasWords = l.consonants.some(c => c.words.length)
+      l.consonants.forEach((c, i) => { s.push({ section: `${label} ${i + 1}/${l.consonants.length}`, letter: i, uniform: hasWords ? 'letter' : undefined, body: (
         <article className="pt-letter">
           <button className="pt-char th" onClick={() => v.openLetter(c)} aria-label={`查看 ${c.char} 的筆順`}>{c.char}</button>
           <div className="pt-letter-info">
@@ -78,7 +94,18 @@ function buildSlides(l: Lesson, v: View): Slide[] {
             <div className="th pt-name">{c.name} <SpeakButton text={nameText(c.name)} audioUrl={c.audioUrl} /></div>
             <div className={v.showRoman ? 'muted pt-sub' : 'muted pt-sub pt-hidden'}>{c.roman}</div>
             <div className={v.showZh ? 'pt-sub' : 'pt-sub pt-hidden'}>{c.zh}</div>
-            <div className="muted">{GROUP_ZH[c.group]}｜{soundLabel(c)}</div>
+            <div className="muted">{GROUP_ZH[c.group]}｜{soundLabel(c)}{c.sameHigh && <>｜同音高子音：<span className="th">{c.sameHigh}</span></>}</div>
+            {c.words.length > 0 && (
+              <div className="cwords pt-cwords">
+                {c.words.map(w => (
+                  <div key={w.thai} className="cword">
+                    <span className="th cword-th">{w.star ? '＊' : ''}{w.thai}</span>
+                    <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
+                    {w.zh && <span className={v.showZh ? 'cword-zh' : 'cword-zh pt-hidden'}>{w.zh}</span>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </article>
       ) })
@@ -86,14 +113,30 @@ function buildSlides(l: Lesson, v: View): Slide[] {
         for (const r of l.rules.filter(r => r.at === 'consonants' && r.afterLetter === c.char && !r.noSlide)) s.push(ruleSlide(r, label))
       })
     }
+    // 母音：總覽一頁、母音前的說明卡（拼讀範例、聲調表）各一頁、一個母音一頁（L2）
+    if (k === 'vowels') {
+      if (l.vowelIntro) s.push({ section: label, body: <VowelIntro config={typeof l.vowelIntro === 'object' ? l.vowelIntro : undefined} /> })
+      if (l.sanskritVowels?.length) s.push({ section: label, body: <div className="pt-todo">梵文母音表還沒做成投影片</div> })
+      for (const r of l.vowelNotes ?? []) s.push(ruleSlide(r, label))
+      for (const vw of l.vowels) {
+        if (vw.heading) s.push({ section: label, body: <div className="pt-title"><h1>{vw.heading}</h1></div> })
+        for (const r of vw.preface ?? []) s.push(ruleSlide(r, label))
+        s.push({ section: `${label} ${vw.ipa}`, uniform: 'vowel', body: <VowelCard v={vw} showZh={v.showZh} onOpen={v.openVowel} /> })
+        for (const r of vw.after ?? []) s.push(ruleSlide(r, label))
+        if (l.vocabAfterVowel === vw.id) vocabSlides(label)
+      }
+    }
+    // 練習：一個詞一頁（中文跟著 Z 開關）
+    if (k === 'practice') {
+      // 一個詞一頁（L2 老師：多音節練習也要一頁一頁顯示）；有好幾組時頁首標上組名
+      for (const g of lessonPractice(l)) wordSlides(g.title && g.title !== practiceLabel(l) ? `${label}・${g.title}` : label, g.items)
+      if (l.patterns.length) s.push({ section: label, body: <div className="pt-todo">句型還沒做成投影片</div> })
+    }
+    // 補充（梗圖、影片截圖）：一張卡一頁
+    if (k === 'memes') for (const m of l.memes) s.push({ section: label, body: <MemeCard m={m} className="card pt-meme" /> })
     if (!SUPPORTED.includes(k)) s.push({ section: label, body: <div className="pt-todo">「{label}」區塊還沒做成投影片</div> })
     // 單字一個一頁：大字＋播放鈕＋中文（Z 開關，投影片預設不顯示）；認字課單字不顯示拼音
-    if (k === 'vocab') l.vocab.forEach((w, n) => s.push({ section: `${label} ${n + 1}/${l.vocab.length}`, body: (
-      <article className="pt-word">
-        <div className="th pt-word-th">{w.thai} <SpeakButton text={w.thai} audioUrl={w.audioUrl} /></div>
-        <div className={v.showZh ? 'pt-word-zh' : 'pt-word-zh pt-hidden'}>{w.zh}</div>
-      </article>
-    ) }))
+    if (k === 'vocab') vocabSlides(label)
     if (k === 'recap' && l.recap?.length) s.push({ section: label, body: <Recap points={l.recap} /> })
     if (k === 'extras') for (const x of l.extras) s.push({ section: label, body: (
       <article className="card">
@@ -111,12 +154,13 @@ function buildSlides(l: Lesson, v: View): Slide[] {
 const chaptersOf = (l: Lesson) => lessonTabs(l).filter(([k]) => k !== 'games').map(([, label]) => label)
 
 // 內容先用原本大小排版、量好尺寸（含超出 900px 的表格），再縮放到剛好放進外框的內容區
-function fitInto(box: HTMLElement, el: HTMLElement, max: number) {
+// minH／minW：同一組（uniform）裡最大的內容尺寸，讓整組用同一個比例
+function fitInto(box: HTMLElement, el: HTMLElement, max: number, minH = 0, minW = 0) {
   el.style.zoom = '1'
   const cs = getComputedStyle(box)
   const w = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
   const h = box.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
-  el.style.zoom = String(Math.min(w / Math.max(el.offsetWidth, el.scrollWidth), h / Math.max(el.offsetHeight, el.scrollHeight), max))
+  el.style.zoom = String(Math.min(w / Math.max(el.offsetWidth, el.scrollWidth, minW), h / Math.max(el.offsetHeight, el.scrollHeight, minH), max))
 }
 
 // 側邊欄的縮圖：同一頁內容縮小顯示，裡面的按鈕不能點（點縮圖＝跳到那一頁）
@@ -141,6 +185,7 @@ export default function PresentPage() {
   const [showZh, setShowZh] = useState(false)  // 投影片預設不顯示中文（L1 老師），按 Z 或「中文」打開
   const [showRoman, setShowRoman] = useState(true)
   const [letter, setLetter] = useState<Consonant | null>(null)
+  const [vowel, setVowel] = useState<{ char: string; ipa: string } | null>(null)  // 母音筆順視窗
   const [side, setSide] = useState(false)  // 左側縮圖列：滑到畫面最左邊或按 ☰ 打開
   // 每一頁的筆跡：存在這台電腦（每課分開），離開投影片再回來還在；按「清除筆跡」才清掉
   const inkKey = `present-ink-${id}`
@@ -163,7 +208,7 @@ export default function PresentPage() {
   const saveNotes = (t: string) => { setNotes(t); localStorage.setItem(notesKey, t) }
 
   useEffect(() => { getRepository().getLesson(id ?? '').then(l => setLesson(l ?? null)) }, [id])
-  const slides = lesson ? buildSlides(lesson, { showZh, showRoman, openLetter: setLetter }) : []
+  const slides = lesson ? buildSlides(lesson, { showZh, showRoman, openLetter: setLetter, openVowel: setVowel }) : []
   const n = slides.length
   const go = useCallback((d: number) => setI(k => Math.min(Math.max(k + d, 0), Math.max(n - 1, 0))), [n])
   const exit = useCallback(() => { if (document.fullscreenElement) document.exitFullscreen(); nav(`/reading/lesson/${id}`) }, [id, nav])
@@ -171,7 +216,7 @@ export default function PresentPage() {
   // 鍵盤：← → 空白鍵／翻頁筆的 PageUp PageDown 換頁，Z 中文、R 拼音，F 全螢幕，Esc 離開
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (letter || document.querySelector('.zoom-overlay, .overlay')) return  // 筆順視窗（含聲調符號）、放大圖片開著時不換頁、Esc 不離開
+      if (letter || vowel || document.querySelector('.zoom-overlay, .overlay')) return  // 筆順視窗（含聲調符號）、放大圖片開著時不換頁、Esc 不離開
       const t = e.target as HTMLElement
       if (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT') { if (e.key === 'Escape') t.blur(); return }  // 在筆記裡打字時不換頁
       if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(1) }
@@ -188,16 +233,24 @@ export default function PresentPage() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [go, n, exit, letter, pen])
+  }, [go, n, exit, letter, vowel, pen])
 
   // 放大到填滿畫面（最多放大 2.6 倍，避免字少的頁面大得誇張）
-  const fit = useCallback(() => { if (stage.current && inner.current) fitInto(stage.current, inner.current, 2.6) }, [])
+  const measure = useRef<HTMLDivElement>(null)  // 看不見的量尺寸區：放同一組（uniform）的所有頁，找出最大的寬高
+  const fit = useCallback(() => {
+    if (!stage.current || !inner.current) return
+    const kids = [...(measure.current?.children ?? [])] as HTMLElement[]
+    const minH = Math.max(0, ...kids.map(k => Math.max(k.offsetHeight, k.scrollHeight)))
+    const minW = Math.max(0, ...kids.map(k => Math.max(k.offsetWidth, k.scrollWidth)))
+    fitInto(stage.current, inner.current, 2.6, minH, minW)
+  }, [])
   useLayoutEffect(fit, [fit, i, lesson, showZh, showRoman])
   useEffect(() => {
     let raf = 0
     const ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(fit) })  // 下一個 frame 再縮放，避免 ResizeObserver loop 警告
     if (stage.current) ro.observe(stage.current)
-    if (inner.current) ro.observe(inner.current)  // 圖片載入後高度會變；內容區每頁重建（key={i}），換頁要重新監看
+    if (inner.current) ro.observe(inner.current)
+    for (const k of measure.current?.children ?? []) ro.observe(k)  // 量尺寸區的圖片載入後也要重縮  // 圖片載入後高度會變；內容區每頁重建（key={i}），換頁要重新監看
     return () => { ro.disconnect(); cancelAnimationFrame(raf) }
   }, [fit, lesson, i])
 
@@ -237,6 +290,7 @@ export default function PresentPage() {
       </div>
       <div className="pt-stage" ref={stage}>
         <div className="pt-inner" ref={inner} key={i}>{cur.body}</div>
+        {cur.uniform && <div className="pt-measure" ref={measure} aria-hidden="true">{slides.filter(x => x.uniform === cur.uniform).map((x, k) => <div className="pt-inner" key={k}>{x.body}</div>)}</div>}
         <Annotator key={`ink${i}`} strokes={strokes} drawing={pen} color={penColor} onChange={s => setInk(m => ({ ...m, [i]: s }))} />
       </div>
       {/* 補充單字：左邊跳出的筆記，上課時直接打字；內容存在這台電腦（每課分開） */}
@@ -266,6 +320,7 @@ export default function PresentPage() {
       )}
       <div className="pt-progress" style={{ width: `${((i + 1) / n) * 100}%` }} />
       {letter && <LetterDialog char={letter.char} info={letter} onClose={() => setLetter(null)} />}
+      {vowel && <LetterDialog char={vowel.char} caption={vowel.ipa} onClose={() => setVowel(null)} />}
     </div>
   )
 }

@@ -211,7 +211,8 @@ table.tone th.group { white-space: nowrap; }
 .vpart { color: var(--accent); }
 .vbase { color: var(--muted); opacity: .75; }
 /* อ 與上下方符號黏在一起時：上方／下方（符號）用主色，中間（อ 本體）用灰色。分帶位置對應 Noto Sans Thai Looped 的字高 */
-.vmix { background: linear-gradient(to bottom, var(--accent) 0 38%, var(--muted) 38% 79%, var(--accent) 79% 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
+/* padding：上下標（ุ ู）在字身外面，背景要延伸過去才畫得到，不然會被切掉（L2 อุ อู）；inline 的 padding 不影響排版 */
+.vmix { padding: .2em 0 .35em; background: linear-gradient(to bottom, var(--accent) 0 36%, var(--muted) 36% 69%, var(--accent) 69% 100%); -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; }
 
 /* 母音頁：大字、卡片、單字格狀 */
 .vstack { display: grid; gap: 18px; }
@@ -224,6 +225,7 @@ table.tone th.group { white-space: nowrap; }
 .vform.static { cursor: default; }
 .vform.static:hover { border-color: transparent; }
 .vglyph { font-size: 4rem; line-height: 1.35; }
+.vglyph:has(.vmix) { padding-bottom: .12em; }  /* 下標母音和「短音／長音」字樣隔開 */
 .vlabel { font-size: .85rem; color: var(--muted); font-family: 'Noto Sans TC', sans-serif; }
 .vnote { margin: 12px 20px 0; font-size: .95rem; }
 .vsyl-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; padding: 14px 20px 0; }
@@ -268,6 +270,7 @@ table.tone th.group { white-space: nowrap; }
 .vtable tr:first-child td, .vtable tr:first-child th { border-top: 0; }
 .vtable .vsyl { white-space: nowrap; }
 .vword-img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; flex: none; }
+.vword:has(.vword-img) { grid-template-columns: auto auto 1fr auto; }  /* 母音例字有圖：圖放在右邊（L2 老師） */
 .speak svg { width: 18px; height: 18px; }
 table.vtable { border-collapse: separate; border-spacing: 0; margin: 16px 20px 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
 .vtable th { background: var(--accent-soft); padding: 10px 16px; text-align: center; border: 0; }
@@ -667,6 +670,7 @@ table.sktable .sk-mark { background: #fbeed3; }
 .pt-letter-info { display: grid; gap: 8px; justify-items: start; }
 .pt-name { font-size: 2.4rem; display: flex; align-items: center; gap: 12px; }
 .pt-sub { font-size: 1.4rem; }
+.pt-cwords { min-width: 320px; margin-top: 4px; }  /* 子音頁的例字（L4 起） */
 .pt-hidden { visibility: hidden; }
 .pt-img { max-width: 100%; max-height: 520px; display: block; margin: 0 auto; border-radius: 12px; }
 .pt-rail { display: flex; justify-content: center; gap: 10px; padding: 0 16px; }
@@ -854,3 +858,12 @@ table.rc-table .rc-img { display: block; width: 100%; max-width: 150px; margin: 
 .pt-chapters button.done { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--accent); }
 .pt-chapters button.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
 .recap .tablewrap { margin-top: 6px; font-weight: 400; }
+
+/* 投影片：單字頁的圖（L2 จู๋、ป้า）、補充卡一頁一張（圖不要撐太高） */
+.pt-word-text { display: grid; justify-items: center; gap: 8px; }
+.pt-word.has-img { display: flex; align-items: center; justify-content: center; gap: 56px; }
+.pt-word-img { max-height: 260px; max-width: 320px; border-radius: 12px; }
+.present .pt-meme { max-width: 760px; margin: 0 auto; }
+.present .pt-meme img { max-height: 440px; width: auto; display: block; margin: 8px auto 0; }
+/* 投影片：量同一組頁面（uniform）尺寸用，看不見 */
+.pt-measure { position: absolute; left: -10000px; top: 0; visibility: hidden; pointer-events: none; }

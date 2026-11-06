@@ -36,6 +36,7 @@ description: 把認字課的一課做成投影片模式（/reading/lesson/lesson
 - **中文預設不顯示**（整份投影片），老師按 Z 或「中文」才打開。
 - **互動練習**（`games`）不放。
 - **操作**：← → 空白鍵／翻頁筆換頁（任何視窗開著時不換頁、Esc 只關視窗），P 筆、N 補充，Z 中文、R 拼音（隱藏時用 `visibility: hidden`，版面不跳），F 全螢幕，Esc 離開。滑到畫面最左邊（或按左下 ☰）出現縮圖列，點縮圖跳頁。
+- **同一組頁面寬度一致**：`Slide.uniform` 填同一個值的頁，會在看不見的 `.pt-measure` 裡一起排版、量出最大寬高，再用這個尺寸算縮放比例，所以整組大小一樣（目前用在母音頁）。
 - **縮放**：內容先以 900px 寬排版、量尺寸（含超出的寬表格），再縮放放進舞台，最多放大 2.6 倍。內容區每頁重建，ResizeObserver 要跟著換頁重新監看（不然圖片載入後不會重縮、會出界），縮放放到 requestAnimationFrame 裡做。`.pt-inner .tablewrap` 取消內捲動，寬表格才量得到、整頁一起縮。
 
 ## 每種區塊怎麼切頁
@@ -45,12 +46,15 @@ description: 把認字課的一課做成投影片模式（/reading/lesson/lesson
 | `diagram`（基本概念） | 概念說明卡、組成圖各一頁 | L1 已做 |
 | `rules`（說明／聲調） | 每張說明卡一頁、聲調總覽兩頁、每張聲調表一頁 | L1 已做；`finalsIntro`、`vowelShifts`、`clusters` 總表還沒做 |
 | `consonants` | 標 `at: "consonants"` 的說明卡各一頁，然後一個字母一頁 | L1 已做 |
-| `vocab` | 一個單字一頁 | L1 已做 |
+| `vowels` | `vowelIntro` 總覽一頁、`vowelNotes` 各一頁；每個母音：`heading` 一頁（有的話）→ `preface` 說明卡各一頁 → 母音卡一頁（大字點了看筆順、拼讀表、例字；中文跟 Z；例字有圖的圖放在格子右邊）→ `after` 說明卡各一頁（L2 拼讀規則接在 /a/ 後面）；`vocabAfterVowel` 的單字接在那個母音後面。母音頁設 `uniform: 'vowel'`，整組用同一個縮放比例（以最高的那頁為準），每頁寬度一樣（L2 老師：/u/ 例字少、被放得比較寬） | L2 已做；`sanskritVowels` 還沒做 |
+| `vocab` | 一個單字一頁；有 `image` 的（L2 จู๋、ป้า）圖放在字的**右邊**（L2 老師） | L1、L2 已做 |
+| `practice` | 一個詞一頁，同單字頁（大字＋播放＋中文跟 Z）；有好幾組時頁首寫「區塊・組名」（L2 老師：多音節練習也要一頁一頁） | L2 已做；句型還沒做 |
+| `memes` | 一張補充卡一頁（`.pt-meme`，圖最高 440px） | L2 已做 |
 | `recap` | 小結一頁 | L1 已做 |
 | `extras` | 一張補充卡一頁 | L1 已做 |
-| `vowels`、`finals`、`unit-N`、`practice`、`memes`、`review` | 原則是一張卡一頁（一個母音、一個尾音、一組練習、一張梗圖）；複習的分頁卡一張一頁 | 還沒做，先提給老師看 |
+| `finals`、`unit-N`、`review` | 原則是一張卡一頁（一個母音、一個尾音、一組練習、一張梗圖）；複習的分頁卡一張一頁 | 還沒做，先提給老師看 |
 
-課程頁的卡片寫在 `LessonPage.tsx` 元件裡面（例 `vowelCard`、`finalCard`）。投影片要用同一張卡時，先把它抽成獨立元件、兩邊共用，不要複製一份。
+課程頁的卡片寫在 `LessonPage.tsx` 元件裡面（例 `finalCard`）。投影片要用同一張卡時，先把它抽成獨立元件、兩邊共用，不要複製一份：L2 已抽出 `src/components/LessonCards.tsx`（`VowelCard`、`VowelWords`、`PracticeItems`、`MemeCard`），新的共用卡也放這裡。
 
 ## 調整順序（課程頁和投影片一起變）
 

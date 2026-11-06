@@ -10,8 +10,7 @@ import ToneTableView from './ToneTableView'
 import WordList from './WordList'
 import LetterDialog from './LetterDialog'
 import DiagramView from './DiagramView'
-import { vowelForm, vowelSpeech } from '../strokes'
-import VowelText from './VowelText'
+import { MemeCard, PracticeItems, VowelCard, VowelWords } from './LessonCards'
 import ZoomImage from './ZoomImage'
 import ChoiceTable from './ChoiceTable'
 import Games, { vowelSyllables } from './Games'
@@ -57,9 +56,7 @@ export const RuleBody = ({ body }: { body: string }) => {
   return <ul>{items.map((it, i) => <li key={i}>{emph(it.text)}{it.subs.length > 0 && <ul>{it.subs.map((t, k) => <li key={k}>{emph(t)}</li>)}</ul>}</li>)}</ul>
 }
 // 標 homework 的練習改放在作業頁；標 unit 的練習放進那個小單元的區塊
-const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework && !g.unit)
-// 補充卡說明裡的網址（例如講義的 YouTube 影片）做成超連結，另開分頁
-const linkify = (s: string) => s.split(/(https?:\/\/\S+)/).map((t, i) => i % 2 ? <a key={i} href={t} target="_blank" rel="noopener noreferrer">{t}</a> : t)
+export const lessonPractice = (l: Lesson) => l.practice.filter(g => !g.homework && !g.unit)
 
 // 小單元（例 L13-1 複合子音、L13-2 อ นำ ย、L15 的四種 Grouping）：依組合表、說明卡、練習出現的順序，各自一個區塊
 const unitsOf = (l: Lesson) => [...new Set([l.clusters?.unit, ...(l.grouping ?? []).map(g => g.unit), ...(l.readingCases ?? []).map(t => t.unit), ...l.rules.map(r => r.unit), ...l.practice.filter(g => !g.homework).map(g => g.unit)].filter((u): u is string => !!u))]
@@ -92,7 +89,7 @@ export function lessonTabs(lesson: Lesson): [Tab, string][] {
   if (lesson.extras.length) t.push(['extras', '補充'])
   return t
 }
-const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && lessonPractice(l).length === 1 ? lessonPractice(l)[0].title : '練習・句型')
+export const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && lessonPractice(l).length === 1 ? lessonPractice(l)[0].title : '練習・句型')
 
 // printLesson：列印講義（HandoutPage）直接傳入課程資料，只排內容：不要返回連結、按鈕、目錄、互動練習，區塊全部展開
 export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {}) {
@@ -143,57 +140,7 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
 
   // 連續標了 inRow 的母音卡排在同一列（例如特殊母音四張）
   const vowelGroups = lesson.vowels.reduce<Lesson['vowels'][]>((acc, v) => { const last = acc[acc.length - 1]; if (v.inRow && last && last[0].inRow) last.push(v); else acc.push([v]); return acc }, [])
-  const vwords = (words: Lesson['vocab']) => words.length > 0 && (
-    <div className="vwords">
-      {words.map((w, i) => (
-        <div className="vword" key={w.thai + i}>
-          <span className="th vword-th">{w.star ? '＊' : ''}{w.thai}</span>
-          <SpeakButton text={w.thai} audioUrl={w.audioUrl} />
-          <span className="vword-meta">
-            {wordRoman && w.roman && <span className="muted">{w.roman}</span>}
-            {showZh && w.zh && <span>{w.zh}</span>}
-          </span>
-          {w.image && <ZoomImage className="vword-img" src={`${import.meta.env.BASE_URL}${w.image.src}`} alt={w.image.alt} />}
-        </div>
-      ))}
-    </div>
-  )
-  const vowelCard = (v: Lesson['vowels'][number]) => (
-    <article className="vcard" key={v.id}>
-      <div className="vhead">
-        <span className="vipa">{v.ipa}</span>
-        <div className="vforms">
-          {[[v.short, '短音'], [v.long, v.short ? '長音' : '']].map(([f, label], i) => f ? (
-            <div key={i} className="vform-wrap">
-              <button className="vform th" onClick={() => setOpenVowel({ char: vowelForm(f), ipa: v.ipa })} aria-label={`查看 ${vowelForm(f)} 的筆順`}>
-                <span className="vglyph"><VowelText form={f} /></span>
-                {label && <span className="vlabel">{label}</span>}
-              </button>
-              <SpeakButton text={vowelSpeech(f)} />
-            </div>
-          ) : null)}
-        </div>
-      </div>
-      {v.note && <p className="muted vnote">{v.note}</p>}
-      {(v.shortSyllables.length > 0 || (v.long && v.longSyllables.length > 0)) && (
-        <div className="tablewrap">
-          <table className="vtable">
-            <tbody>
-              {[[v.shortSyllables, '短音'], [v.long || !v.short ? v.longSyllables : [], v.short ? '長音' : '例']].map(([list, label]) => (list as string[]).length > 0 && (
-                <tr key={label as string}>
-                  <th scope="row">{label as string}</th>
-                  {Array.from({ length: Math.max(v.shortSyllables.length, v.longSyllables.length) }, (_, i) => (list as string[])[i]).map((s, i) => (
-                    <td key={i}>{s ? <span className="vsyl th">{s}<SpeakButton text={s} /></span> : <span className="muted">—</span>}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      {vwords(v.words)}
-    </article>
-  )
+  const vowelCard = (v: Lesson['vowels'][number]) => <VowelCard key={v.id} v={v} showZh={showZh} onOpen={setOpenVowel} />
   // 尾音卡：左邊是字母（尾音不用看筆順，不能點）、右邊接音標，下面口型，右邊同一列排這個尾音的單字
   const finalCard = (f: NonNullable<Lesson['finals']>[number]) => (
     <article className={f.lines ? 'vcard final rows' : 'vcard final'} key={f.id}>
@@ -218,7 +165,7 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
         </div>
         {f.mouth && <p className="fmouth"><strong>口型：</strong>{f.mouth}</p>}
       </div>
-      {vwords(lesson.vocab.filter(w => w.group === f.group))}
+      <VowelWords words={lesson.vocab.filter(w => w.group === f.group)} showZh={showZh} />
     </article>
   )
 
@@ -238,21 +185,7 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
           {hasZh && <button className="finals-toggle" aria-pressed={!zhOff.has(k)} onClick={() => setZhOff(s => { const n = new Set(s); if (n.has(k)) n.delete(k); else n.add(k); return n })}>{zhOff.has(k) ? '顯示中文' : '隱藏中文'}</button>}
         </div>
       )}
-      {g.images ? (
-        <div className={g.half ? 'picgrid half' : g.third ? 'picgrid third' : 'picgrid'}>
-          {g.items.map(i => (
-            <figure className="picword" key={i.thai}>
-              {i.image ? <ZoomImage src={`${import.meta.env.BASE_URL}${i.image.src}`} alt={i.image.alt} /> : <div className="meme-placeholder">圖片待補</div>}
-              <figcaption><span className="th big2">{i.thai}</span><SpeakButton text={i.thai} />{zh && i.zh && <span>{i.zh}</span>}</figcaption>
-            </figure>
-          ))}
-        </div>
-      ) : g.qa ? (
-        <div className="qa">
-          <WordList words={g.items.slice(0, 1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={zh} showRoman={wordRoman} />
-          <WordList words={g.items.slice(1).map(i => ({ thai: i.thai, zh: i.zh ?? '' }))} showZh={zh} showRoman={wordRoman} />
-        </div>
-      ) : <WordList compact={g.half ? 'half' : g.third ? 'third' : true} words={g.items.map(i => ({ thai: i.thai, zh: i.zh ?? '', group: i.note }))} showZh={zh} showRoman={wordRoman} tagFirst />}
+      <PracticeItems g={g} zh={zh} />
     </article>
     )
   }
@@ -378,8 +311,9 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
           {vowelGroups.map(g => (
             <Fragment key={g[0].id}>
             {g[0].heading && <h3 className="vgroup-h">{g[0].heading}</h3>}
-            {g[0].preface?.map(r => <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}{r.body && <RuleBody body={r.body} />}{r.toneTable && <ToneTableView table={r.toneTable} />}</article>)}
+            {g[0].preface?.map(r => <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}{r.body && <RuleBody body={r.body} />}<RuleExtras r={r} Body={RuleBody} /></article>)}
             {g.length > 1 ? <div className="vrow">{g.map(vowelCard)}</div> : vowelCard(g[0])}
+            {g.flatMap(v => v.after ?? []).map(ruleCard)}
             {lesson.vocabAfterVowel && g.some(v => v.id === lesson.vocabAfterVowel) && lesson.vocab.length > 0 && (
               <>
                 <h3 className="vgroup-h">單字</h3>
@@ -415,12 +349,7 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
       {cur === 'memes' && (
         <section className="memegrid">
           {lesson.memes.map(m => (
-            <article className={m.half ? 'card half' : 'card'} key={m.title || m.imageUrl}>
-              {m.title && <h3>{m.title}</h3>}
-              {m.big && <div className="th meme-big">{m.big}</div>}
-              {m.desc && <p className="muted small">{linkify(m.desc)}</p>}
-              {m.imageUrl ? <ZoomImage src={/^(https?:|data:|\/)/.test(m.imageUrl) ? m.imageUrl : `${import.meta.env.BASE_URL}${m.imageUrl}`} alt={m.title || m.big || ''} style={{ maxWidth: '100%' }} /> : m.imageUrl === undefined && <div className="meme-placeholder">圖片待補</div>}
-            </article>
+            <MemeCard key={m.title || m.imageUrl} m={m} />
           ))}
         </section>
       )}

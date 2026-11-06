@@ -19,6 +19,8 @@ export interface Vowel {
   shortSyllables: string[]; longSyllables: string[]; words: WordItem[]; note: string
   /** 顯示在這個母音卡「前面」的說明卡（例如拼讀範例） */
   preface?: Rule[]
+  /** 顯示在這張母音卡「後面」的說明卡（L2：先看第一組母音 /a/，再看拼讀規則聲調表） */
+  after?: Rule[]
   /** 顯示在這張母音卡「前面」的小標題（例如把複合母音、特殊母音分成兩組） */
   heading?: string
   /** 連續幾張標 inRow 的母音卡會排在同一列（特殊母音只有短音，卡片很小） */
