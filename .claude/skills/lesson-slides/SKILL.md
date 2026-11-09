@@ -47,11 +47,11 @@ description: 把認字課的一課做成投影片模式（/reading/lesson/lesson
 | `diagram`（基本概念） | 概念說明卡、組成圖各一頁 | L1 已做 |
 | `rules`（說明／聲調） | 每張說明卡一頁、聲調總覽兩頁、每張聲調表一頁 | L1 已做；`finalsIntro`、`vowelShifts`、`clusters` 總表還沒做 |
 | `consonants` | 標 `at: "consonants"` 的說明卡各一頁，然後一個字母一頁；`afterLetter` 的說明卡接在那個字母後面 | L1、L4 已做 |
-| `vowels` | `vowelIntro` 總覽一頁、`vowelNotes` 各一頁；每個母音：`heading` 一頁（有的話）→ `preface` 說明卡各一頁 → 母音卡一頁（大字點了看筆順、拼讀表、例字；中文跟 Z；例字有圖的圖放在格子右邊）→ `after` 說明卡各一頁（L2 拼讀規則接在 /a/ 後面）；`vocabAfterVowel` 的單字接在那個母音後面。母音頁設 `uniform: 'vowel'`，整組用同一個縮放比例（以最高的那頁為準），每頁寬度一樣（L2 老師：/u/ 例字少、被放得比較寬） | L2 已做；`sanskritVowels` 還沒做 |
+| `vowels` | `vowelIntro` 總覽一頁、`vowelNotes` 各一頁；每個母音：`heading` 一頁（有的話）→ `preface` 說明卡各一頁 → 母音卡一頁（大字點了看筆順、拼讀表、例字；中文跟 Z；例字有圖的圖放在格子右邊）→ `after` 說明卡各一頁（L2 拼讀規則接在 /a/ 後面）；`vocabAfterVowel` 的單字接在那個母音後面。母音頁設 `uniform: 'vowel'`，整組用同一個縮放比例（以最高的那頁為準），每頁寬度一樣（L2 老師：/u/ 例字少、被放得比較寬） | L2 已做；`sanskritVowels` 還沒做。每組都有 `heading` 時（L5）每組是一章（`vowels`、`vowels-1`…，見「調整順序」），不另做 heading 頁 |
 | `vocab` | 一個單字一頁；有 `image` 的（L2 จู๋、ป้า）圖放在字的**右邊**（L2 老師） | L1、L2 已做 |
 | `practice` | 一個詞一頁，同單字頁（大字＋播放＋中文跟 Z）；有好幾組時頁首寫「區塊・組名」（L2 老師：多音節練習也要一頁一頁） | L2 已做；句型還沒做 |
 | `memes` | 一張補充卡一頁（`.pt-meme`，圖最高 440px） | L2 已做 |
-| `recap` | 小結一頁 | L1 已做 |
+| `recap` | 小結一頁 | L1 已做；L3–L20 的小結第一版 2026-11-09 補上（reading-lesson） |
 | `extras` | 一張補充卡一頁 | L1 已做 |
 | `finals`、`unit-N`、`review` | 原則是一張卡一頁（一個母音、一個尾音、一組練習、一張梗圖）；複習的分頁卡一張一頁 | 還沒做，先提給老師看 |
 
@@ -63,6 +63,8 @@ description: 把認字課的一課做成投影片模式（/reading/lesson/lesson
 
 - `rules[].at: "concept"`：說明卡放進「基本概念」區塊（和音節組成圖一起，區塊排最前面）。`diagram.after` 填說明卡 id，組成圖排在那張卡後面；沒填排最前。
 - `rules[].at: "consonants"`：說明卡放在「子音」區塊最上面（例：為什麼子音要搭配母音）。
+- `vowels[].heading`：每組母音都有 heading 時（L5 複合母音、特殊母音），課程頁目錄、投影片章節分成各自的區塊（`vowelSections()`）。老師說側邊欄「母音」要分成兩種，就是這個。heading 頁拿掉了（章節列已經標出段名），頁數會少，舊筆跡要請老師清。
+- 母音組的規則卡要排在第一個母音**後面**：`preface` 改成那個母音的 `after`（L5 老師：複合母音第一組放在規則前面）。
 - `tonesAfterConsonants: true`：「說明」區塊（聲調總覽、聲調表）排到子音後面、改叫「聲調」。
 
 需要其他排法時，照這個做法在 `lessonTabs()` 加欄位，並把欄位補進這裡和 reading-lesson skill 的「分頁」段。
