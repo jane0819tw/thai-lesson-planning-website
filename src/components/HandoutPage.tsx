@@ -7,6 +7,7 @@ import LessonPage from './LessonPage'
 import MarkGlyph from './MarkGlyph'
 import BackLink from '../reservation/BackLink'
 import { ReviewSheet } from './ReviewFill'
+import LessonWorksheets from './LessonWorksheets'
 
 // 可列印講義（A4）：一個單元一份（L1–L5、L6–L10…，和學生開放的權限單位一樣），學生不用自己彙整各課。
 // 封面之後先放複習作業（ReviewSheet：鍵盤、子母音、拼讀規則填空），再來每一課：課程內容（直接用課程頁的排版，LessonPage printLesson）→ 這課的作業（聲調填空）。描字與書寫改放在課程內容裡：字母卡左邊、練字格右邊（LessonPage 的 printLesson，TraceRow）。
@@ -65,6 +66,7 @@ export default function HandoutPage() {
         <Fragment key={l.id}>
           <LessonPage printLesson={l} />
           <Worksheets l={l} />
+          <LessonWorksheets l={l} />
         </Fragment>
       ))}
     </div>

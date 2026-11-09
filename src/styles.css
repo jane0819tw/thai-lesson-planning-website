@@ -825,7 +825,7 @@ table.rc-table .rc-img { display: block; width: 100%; max-width: 150px; margin: 
   .handout h2, .handout h3 { break-after: avoid; }
   /* 一個章節盡量一頁：每個章節（子音、聲調、單字…）從新的一頁開始，標題不會留在上一頁 */
   .h-lesson .lsec + .lsec { break-before: page; }
-  .h-lesson .sec-vocab + .sec-recap { break-before: auto; }  /* 單字和小結都短，放同一頁 */
+  .h-lesson .sec-vocab + .sec-recap, .h-lesson .sec-vocab + .sec-practice, .h-lesson .sec-practice + .sec-recap { break-before: auto; }  /* 單字、練習（L2 多音節練習）、小結都短，放同一頁 */
   .h-lesson .lsec + .sec-extras, .h-lesson .lsec + .sec-memes { break-before: auto; }  /* 補充接在前一章後面，放不下的圖卡整張移到下一頁 */
   .h-lesson .lsec { break-inside: auto; }
   /* 子音卡一列 5 張（老師：6 張太小），整章盡量放進一頁 */
@@ -840,6 +840,8 @@ table.rc-table .rc-img { display: block; width: 100%; max-width: 150px; margin: 
   .h-lesson .cardgrid > .card:has(table.tone) { grid-column: 1 / -1 !important; }
   .h-lesson .cardgrid img, .h-lesson .memegrid img { max-width: 100% !important; max-height: 46mm; width: auto; display: block; margin: 0 auto; object-fit: contain; }  /* 內容部分縮小一點：組成圖一整列才放得下、頁數少一點 */
   .h-row, .h-tones tr { break-inside: avoid; }
+  .handout table.ws-table { break-inside: auto; }  /* 作業表格可以跨頁（一列一列不切開），不會整張被推到下一頁、只留下標題 */
+  .h-lesson .list.compact.wide { grid-template-columns: repeat(4, minmax(0, 1fr)); }  /* 單字一列 4 個（L5 ถั่ว 才不會一個人掉到下一頁） */
   body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 /* 投影片單字頁：一個單字一頁 */
@@ -927,11 +929,48 @@ table.tone td.tcover button:hover { background: #3a342b; }
 .fb-tones thead th:first-child { font-size: .8rem; }
 /* 列印講義：字母卡在左、練字格在右，一個字母（母音）一列 */
 .h-wlist { display: grid; gap: 6px; }
-.h-wrow { display: grid; grid-template-columns: 34% 1fr; gap: 10px; align-items: center; break-inside: avoid; }
-.h-wrow.v { grid-template-columns: 1fr 1fr; align-items: start; }
+.h-wrow { display: grid; grid-template-columns: 30% 1fr; gap: 10px; align-items: center; break-inside: avoid; }
 .h-wtrace { display: grid; gap: 6px; }
 .h-wrow .card.letter { display: grid; grid-template-columns: auto auto 1fr; column-gap: 10px; row-gap: 0; align-items: center; justify-items: start; text-align: left; padding: 4px 10px; line-height: 1.3; font-size: .9em; }
 .h-wrow .card.letter > .big { grid-column: 1; grid-row: 1 / span 8; font-size: 3.2rem; line-height: 1.1; }
 .h-wrow .card.letter > :nth-child(2) { grid-column: 2; grid-row: 1 / span 8; }
 .h-wrow .card.letter > :nth-child(n+3) { grid-column: 3; }
 .h-wrow .card.letter .cwords { margin-top: 2px; }
+/* 列印講義：子音例字放在練字格下面、橫向排（L4 老師） */
+.h-cwords { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.h-cwords .cword { padding: 3px 10px; gap: 8px; }
+.h-cwords .cword-th { font-size: 1.6rem; line-height: 1.3; }
+.h-cwords .cword-zh { font-size: 1rem; }
+/* 列印講義的母音卡：母音｜練字格同一列，下面拼讀表｜例字同一列，不留大片空白 */
+.vcard.has-aside { display: grid; grid-template-columns: auto 1fr; align-items: start; break-inside: avoid; }
+.vcard.has-aside > .vhead { grid-column: 1 / -1; flex-wrap: nowrap; padding: 8px 12px; gap: 12px; }
+.vcard.has-aside > .vnote { grid-column: 1 / -1; }
+.vcard.has-aside .vaside { flex: 1; min-width: 0; }
+.vcard.has-aside .vtable { margin: 10px 12px; }
+.vcard.has-aside .vwords { padding: 10px 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.vcard.has-aside .vword { padding: 4px 8px; }
+.vcard.has-aside .vform { padding: 4px 10px; }
+.vcard.has-aside .vipa { min-width: 0; }
+/* 列印講義：特殊母音沒有拼讀表，例字直接橫排佔滿整列 */
+.vcard.has-aside > .vhead + .vwords, .vcard.has-aside > .vnote + .vwords { grid-column: 1 / -1; }
+/* 講義作業（LessonWorksheets）：拼字表、聲調填空、判斷聲調、拆字 */
+.ws-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-top: 8px; }
+.ws-table th, .ws-table td { border: 1px solid #999; text-align: center; padding: 4px; }
+.ws-table thead th { background: #f4efe8; font-size: .9rem; }
+.ws-table td { height: 52px; font-size: 1.7rem; }
+.ws-spell thead th { font-size: 1.6rem; font-weight: 400; color: var(--accent); }
+.ws-spell tbody th, .ws-tones .ws-c { font-size: 1.8rem; color: var(--accent); width: 56px; }
+.ws-given { color: #666; }
+.ws-x { color: #aaa; background: #eee; font-size: 1.2rem !important; }
+.ws-tones .ws-kind { width: 52px; font-size: .85rem; font-weight: 400; }
+.ws-tones .ws-short .ws-kind { background: #eaf3fb; } .ws-tones .ws-long .ws-kind { background: #fdf6e3; }
+.ws-tones .ws-long td, .ws-tones .ws-long th { border-bottom-width: 2px; }
+.ws-mark { display: flex; justify-content: center; color: var(--accent); min-height: 18px; } .ws-mark small { color: var(--muted); }
+.ws-judge th:first-child, .ws-split th:first-child { width: 26%; text-align: left; padding-left: 10px; }
+.ws-word { font-size: 1.7rem; font-weight: 400; }
+.ws-judge td { font-size: 1rem; } .ws-judge .ws-circle { font-size: 1.1rem; letter-spacing: 1px; }
+.ws-split td { height: 38px; font-size: 1.4rem; }
+.ws-split .ws-word { font-size: 1.5rem; } .ws-split td:last-child, .ws-judge td:last-child { font-size: 1rem; }
+.ws-split .ws-first td, .ws-split .ws-first th { border-top-width: 2px; }
+.ws-inline-mark { display: inline-flex; color: var(--accent); }
+.ws tr { break-inside: avoid; }

@@ -2,7 +2,7 @@ import { GHOST_SCALE, getStrokes, ghostText, guideLines, STROKE_VIEWBOX as V } f
 
 // 練字格（列印講義）：四線格＋描字，和筆順播放器的底字一樣：Layiji 點虛線描字字型、同樣的字級與基線（寬的母音用筆順資料的 fs／gy 縮小，格線跟著縮）
 // L1 老師：不要筆順圖；L2 老師：描字的字要和筆順那種描寫字體一樣
-const VB = `0 25 ${V} 260`  // 格子的可視範圍：上面留給上方母音（ิ ี ึ ื）和聲調符號
+const VB = `0 0 ${V} 285`  // 格子的可視範圍：上面留給上方母音（ิ ี ึ ื）、聲調符號和 ไ ใ 的高頭（點虛線字型比較高，從 0 開始才不會被切掉）
 const Guides = ({ fs }: { fs?: number }) => <>{guideLines(fs).map((y, i) => <line key={y} x1={0} x2={V} y1={y} y2={y} className={i === 2 ? 'hg base' : 'hg'} />)}</>
 // 母音寫法比較寬（เอือะ），依「不是上下標」的字數縮小字級，才放得進一格
 const baseCount = (s: string) => [...s].filter(c => !/[ัิ-ฺ็-๎]/.test(c)).length
@@ -20,7 +20,7 @@ export function LetterCell({ of, show }: { of: string; show?: boolean }) {
 }
 
 // 一列練字：描 trace 個淡色字，再空 blank 格自己寫（字母卡在左邊，所以不再放黑字示範格）
-export default function TraceRow({ text, trace = 3, blank = 4 }: { text: string; trace?: number; blank?: number }) {
+export default function TraceRow({ text, trace = 3, blank = 7 }: { text: string; trace?: number; blank?: number }) {
   return (
     <div className="h-row" style={{ gridTemplateColumns: `repeat(${trace + blank}, 1fr)` }}>
       {Array.from({ length: trace }, (_, k) => <LetterCell key={'t' + k} of={text} show />)}

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { Lesson, Meme, PracticeGroup } from '../types'
 import SpeakButton from './SpeakButton'
 import ZoomImage from './ZoomImage'
@@ -31,9 +32,10 @@ export function VowelWords({ words, showZh, showRoman = false }: { words: Lesson
 }
 
 // 母音卡：音標＋長短音大字（點了看筆順）＋拼讀表＋例字
-export function VowelCard({ v, showZh, onOpen }: { v: Lesson['vowels'][number]; showZh: boolean; onOpen: (x: { char: string; ipa: string }) => void }) {
+// aside：列印講義放在母音右邊的練字格（有 aside 時，拼讀表和例字排成同一列，見 .vcard.has-aside）
+export function VowelCard({ v, showZh, onOpen, aside }: { v: Lesson['vowels'][number]; showZh: boolean; onOpen: (x: { char: string; ipa: string }) => void; aside?: ReactNode }) {
   return (
-    <article className="vcard">
+    <article className={aside ? 'vcard has-aside' : 'vcard'}>
       <div className="vhead">
         <span className="vipa">{v.ipa}</span>
         <div className="vforms">
@@ -47,6 +49,7 @@ export function VowelCard({ v, showZh, onOpen }: { v: Lesson['vowels'][number]; 
             </div>
           ) : null)}
         </div>
+        {aside && <div className="vaside">{aside}</div>}
       </div>
       {v.note && <p className="muted vnote">{v.note}</p>}
       {(v.shortSyllables.length > 0 || (v.long && v.longSyllables.length > 0)) && (

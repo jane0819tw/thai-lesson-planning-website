@@ -340,5 +340,48 @@
       }
     }
   ],
-  "slides": true
+  "slides": true,
+  "worksheets": [
+    {
+      "kind": "spell",
+      "consonants": [
+        "ก",
+        "จ",
+        "อ",
+        "ป",
+        "บ",
+        "ต",
+        "ด"
+      ]
+    },
+    {
+      "kind": "toneFill",
+      "pairs": [
+        {
+          "c": "ก",
+          "vowel": "v-a--ะ"
+        },
+        {
+          "c": "จ",
+          "vowel": "v-i--ิ"
+        },
+        {
+          "c": "ด",
+          "vowel": "v-u--ุ"
+        },
+        {
+          "c": "ต",
+          "vowel": "v-e-เ-ะ"
+        },
+        {
+          "c": "บ",
+          "vowel": "v-a--ะ"
+        },
+        {
+          "c": "ป",
+          "vowel": "v-i--ิ"
+        }
+      ]
+    }
+  ]
 }

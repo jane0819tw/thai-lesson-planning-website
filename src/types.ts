@@ -91,6 +91,17 @@ export interface Numeral { digit: string; arabic: string; word: string }  // 大
 
 export interface VowelIntroConfig { focus: ('single' | 'compound' | 'special' | 'sanskrit')[]; done?: ('single' | 'compound' | 'special' | 'sanskrit')[]; notes?: boolean }
 
+/** 講義作業（列印 PDF，排在這課內容後面）：
+ *  spell＝拼字表（consonants 一列一個子音，橫欄是這課的母音短音、長音；第一列示範填好）；
+ *  toneFill＝聲調填空（pairs：子音＋這課某個母音 id，短音、長音各一列；不加符號那格給好，沒有的聲調打 ✕，規則同中子音）；
+ *  toneJudge＝判斷聲調（圈中／高子音、長／短母音，寫聲調符號和念第幾聲；answer 是答案，講義不印）；
+ *  split＝拆字（一個音節一列：子音、母音、聲調符號、第幾聲；demo＝示範題，答案直接印出） */
+export type Worksheet =
+  | { kind: 'spell'; consonants: string[] }
+  | { kind: 'toneFill'; pairs: { c: string; vowel: string }[] }
+  | { kind: 'toneJudge'; words: { thai: string; zh?: string; answer: { group: 'mid' | 'high'; long: boolean; mark?: string; t: number } }[] }
+  | { kind: 'split'; words: { thai: string; zh: string; parts: Syllable[]; demo?: boolean }[] }
+
 export interface RecapPoint { point: string; items?: string[]; toneTable?: ToneTable }
 
 export interface Lesson {
@@ -123,6 +134,8 @@ export interface Lesson {
   tonesAfterConsonants?: boolean
   /** 小結（放在單字、練習之後、補充之前）：一點對一個 summary 的點（point 照抄、開頭綠色勾），items＝底下的細項（**文字**＝重點），toneTable＝直接放一小張聲調表（L1：ก 那一列） */
   recap?: RecapPoint[]
+  /** 列印講義的作業（見 Worksheet） */
+  worksheets?: Worksheet[]
   /** 開放投影片模式（課程頁出現「▶ 投影片模式」按鈕，見 lesson-slides skill） */
   slides?: boolean
   /** 作業頁聽寫取前幾個作業字，沒設＝8（L14 講義作業頁 10 個字都要放） */

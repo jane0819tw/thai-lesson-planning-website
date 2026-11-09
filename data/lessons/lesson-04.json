@@ -342,5 +342,126 @@
         ]
       }
     }
+  ],
+  "worksheets": [
+    {
+      "kind": "toneJudge",
+      "words": [
+        {
+          "thai": "ผี",
+          "zh": "鬼",
+          "answer": {
+            "group": "high",
+            "long": true,
+            "t": 5
+          }
+        },
+        {
+          "thai": "ดี",
+          "zh": "好",
+          "answer": {
+            "group": "mid",
+            "long": true,
+            "t": 1
+          }
+        },
+        {
+          "thai": "ถ้า",
+          "zh": "如果",
+          "answer": {
+            "group": "high",
+            "long": true,
+            "mark": "้",
+            "t": 3
+          }
+        },
+        {
+          "thai": "ป้า",
+          "zh": "阿姨",
+          "answer": {
+            "group": "mid",
+            "long": true,
+            "mark": "้",
+            "t": 3
+          }
+        },
+        {
+          "thai": "ข่า",
+          "zh": "南薑",
+          "answer": {
+            "group": "high",
+            "long": true,
+            "mark": "่",
+            "t": 2
+          }
+        },
+        {
+          "thai": "จะ",
+          "zh": "將要",
+          "answer": {
+            "group": "mid",
+            "long": false,
+            "t": 2
+          }
+        },
+        {
+          "thai": "สิ",
+          "zh": "（語氣詞）",
+          "answer": {
+            "group": "high",
+            "long": false,
+            "t": 2
+          }
+        },
+        {
+          "thai": "ห้า",
+          "zh": "五",
+          "answer": {
+            "group": "high",
+            "long": true,
+            "mark": "้",
+            "t": 3
+          }
+        },
+        {
+          "thai": "โต๊ะ",
+          "zh": "桌子",
+          "answer": {
+            "group": "mid",
+            "long": false,
+            "mark": "๊",
+            "t": 4
+          }
+        },
+        {
+          "thai": "หู",
+          "zh": "耳朵",
+          "answer": {
+            "group": "high",
+            "long": true,
+            "t": 5
+          }
+        },
+        {
+          "thai": "ขี่",
+          "zh": "騎",
+          "answer": {
+            "group": "high",
+            "long": true,
+            "mark": "่",
+            "t": 2
+          }
+        },
+        {
+          "thai": "ตา",
+          "zh": "眼睛",
+          "answer": {
+            "group": "mid",
+            "long": true,
+            "t": 1
+          }
+        }
+      ]
+    }
   ]
 }

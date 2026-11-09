@@ -53,7 +53,8 @@ description: 把認字課的一課做成投影片模式（/reading/lesson/lesson
 | `memes` | 一張補充卡一頁（`.pt-meme`，圖最高 440px） | L2 已做 |
 | `recap` | 小結一頁 | L1 已做；L3–L20 的小結第一版 2026-11-09 補上（reading-lesson） |
 | `extras` | 一張補充卡一頁 | L1 已做 |
-| `finals`、`unit-N`、`review` | 原則是一張卡一頁（一個母音、一個尾音、一組練習、一張梗圖）；複習的分頁卡一張一頁 | 還沒做，先提給老師看 |
+| `review`（複習） | **L2 起每課自動有**（只在投影片，課程頁沒有）：① 左邊兩個鍵盤（一般、Shift）、右邊這課之前學過的子母音填空（中子音、高子音、低子音 LCp、LCs、長母音、短母音、複合母音、特殊母音，一個字一個黑圈）。點黑圈翻開、鍵盤上亮出位置；點鍵盤上的字直接填進空格（是某個母音的一部分→綠、沒學過→紅）；點類別名稱翻開整列。② 拼讀規則填空：說明裡的 `[[答案]]` 蓋黑、聲調表格子蓋黑，點了翻開。資料：各課 JSON＋`data/reading-chart.json`（`ReviewFill`）。課程資料原本的 `review` 卡接在後面、一張一頁 | L2 已做（L2 老師 2026-11-09） |
+| `finals`、`unit-N` | 原則是一張卡一頁（一個母音、一個尾音、一組練習、一張梗圖） | 還沒做，先提給老師看 |
 
 課程頁的卡片寫在 `LessonPage.tsx` 元件裡面（例 `finalCard`）。投影片要用同一張卡時，先把它抽成獨立元件、兩邊共用，不要複製一份：L2 已抽出 `src/components/LessonCards.tsx`（`VowelCard`、`VowelWords`、`PracticeItems`、`MemeCard`），新的共用卡也放這裡。
 
