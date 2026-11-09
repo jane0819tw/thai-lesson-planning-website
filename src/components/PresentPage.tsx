@@ -13,9 +13,10 @@ import RuleExtras from './RuleExtras'
 import Annotator, { type Stroke } from './Annotator'
 import { soundLabel } from '../consonant'
 import ToneIntro from './ToneIntro'
-import { Recap, RuleBody, conceptItems, lessonPractice, lessonTabs, practiceLabel, type Tab } from './LessonPage'
+import { Recap, RuleBody, conceptItems, lessonPractice, lessonTabs, practiceLabel, vowelSections, vowelsOf, type Tab } from './LessonPage'
 import VowelIntro from './VowelIntro'
 import { MemeCard, VowelCard } from './LessonCards'
+import { ReviewSlide, RuleFillSlide, hasRulesBefore } from './ReviewFill'
 
 // 投影片模式（試做，先支援 L1 用到的區塊）：同一份課程資料，一張卡一頁，內容自動縮放到填滿螢幕
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
@@ -40,7 +41,10 @@ const points = (body: string) => {
 const SlideBody = ({ body }: { body: string }) => { const p = points(body); return p.length > 1 ? <RuleBody body={p.join('\n')} /> : <RuleBody body={p[0] ?? ''} /> }
 
 // 已經做成投影片的區塊；games（互動練習）刻意不放。其他區塊先顯示一頁「還沒做成投影片」，不會默默漏掉
-const SUPPORTED: Tab[] = ['diagram', 'rules', 'vowels', 'consonants', 'vocab', 'practice', 'recap', 'memes', 'extras', 'games']
+const SUPPORTED: Tab[] = ['review', 'diagram', 'rules', 'vowels', 'consonants', 'vocab', 'practice', 'recap', 'memes', 'extras', 'games']
+
+// 投影片的區塊＝課程頁的區塊；L2 起最前面多一個「複習」（只在投影片，課程頁沒有）
+const slideTabs = (l: Lesson): [Tab, string][] => { const t = lessonTabs(l); return l.number >= 2 && !t.some(([k]) => k === 'review') ? [['review', '複習'], ...t] : t }
 
 function buildSlides(l: Lesson, v: View): Slide[] {
   const s: Slide[] = []
@@ -69,7 +73,7 @@ function buildSlides(l: Lesson, v: View): Slide[] {
   const vocabSlides = (label: string) => wordSlides(label, l.vocab)
   // 每個區塊＝一章；記下每頁屬於第幾章，上方章節列標出目前進度
   let ci = -1
-  for (const [k, label] of lessonTabs(l)) {
+  for (const [k, label] of slideTabs(l)) {
     const start = s.length
     if (k === 'diagram' && l.diagram) {
       if (l.rules.some(r => r.at === 'concept')) for (const x of conceptItems(l).filter(x => !('noSlide' in x && x.noSlide))) s.push('tiles' in x ? { section: label, body: <DiagramView d={x} showTitle /> } : ruleSlide(x, label))
@@ -115,12 +119,15 @@ function buildSlides(l: Lesson, v: View): Slide[] {
       })
     }
     // 母音：總覽一頁、母音前的說明卡（拼讀範例、聲調表）各一頁、一個母音一頁（L2）
-    if (k === 'vowels') {
+    // 母音分段（L5 複合母音、特殊母音）時每段是一章，總覽、說明卡放第一段；章節列已經標出段名，不另做 heading 頁
+    if (k === 'vowels' || k.startsWith('vowels-')) {
+      if (k === 'vowels') {
       if (l.vowelIntro) s.push({ section: label, body: <VowelIntro config={typeof l.vowelIntro === 'object' ? l.vowelIntro : undefined} /> })
       if (l.sanskritVowels?.length) s.push({ section: label, body: <div className="pt-todo">梵文母音表還沒做成投影片</div> })
       for (const r of l.vowelNotes ?? []) s.push(ruleSlide(r, label))
-      for (const vw of l.vowels) {
-        if (vw.heading) s.push({ section: label, body: <div className="pt-title"><h1>{vw.heading}</h1></div> })
+      }
+      for (const vw of vowelsOf(l, k)) {
+        if (vw.heading && vowelSections(l).length === 1) s.push({ section: label, body: <div className="pt-title"><h1>{vw.heading}</h1></div> })
         for (const r of vw.preface ?? []) s.push(ruleSlide(r, label))
         s.push({ section: `${label} ${vw.ipa}`, uniform: 'vowel', body: <VowelCard v={vw} showZh={v.showZh} onOpen={v.openVowel} /> })
         for (const r of vw.after ?? []) s.push(ruleSlide(r, label))
@@ -135,11 +142,16 @@ function buildSlides(l: Lesson, v: View): Slide[] {
     }
     // 補充（梗圖、影片截圖）：一張卡一頁
     if (k === 'memes') for (const m of l.memes) s.push({ section: label, body: <MemeCard m={m} className="card pt-meme" /> })
-    if (!SUPPORTED.includes(k)) s.push({ section: label, body: <div className="pt-todo">「{label}」區塊還沒做成投影片</div> })
+    if (!SUPPORTED.includes(k) && !k.startsWith('vowels-')) s.push({ section: label, body: <div className="pt-todo">「{label}」區塊還沒做成投影片</div> })
     // 單字一個一頁：大字＋播放鈕＋中文（Z 開關，投影片預設不顯示）；認字課單字不顯示拼音
     if (k === 'vocab') vocabSlides(label)
     if (k === 'recap' && l.recap?.length) s.push({ section: label, body: <Recap points={l.recap} /> })
-    if (k === 'extras') for (const x of l.extras) s.push({ section: label, body: (
+    // 複習（L2 起）：鍵盤＋子母音填空一頁、拼讀規則填空一頁；課程資料原本的複習卡接在後面、一張一頁
+    if (k === 'review' && l.number >= 2) {
+      s.push({ section: `${label}・子母音`, body: <ReviewSlide upTo={l.number} /> })
+      if (hasRulesBefore(l.number)) s.push({ section: `${label}・拼讀規則`, body: <RuleFillSlide upTo={l.number} /> })
+    }
+    if (k === 'extras' || k === 'review') for (const x of (k === 'review' ? l.review ?? [] : l.extras)) s.push({ section: label, body: (
       <article className="card">
         <h3>{x.title}</h3>
         {x.lines.map((t, i) => <p className="th big2" key={i}>{t}</p>)}
@@ -152,7 +164,7 @@ function buildSlides(l: Lesson, v: View): Slide[] {
   return s
 }
 // 章節列：有投影片的區塊（互動練習不放）
-const chaptersOf = (l: Lesson) => lessonTabs(l).filter(([k]) => k !== 'games').map(([, label]) => label)
+const chaptersOf = (l: Lesson) => slideTabs(l).filter(([k]) => k !== 'games').map(([, label]) => label)
 
 // 內容先用原本大小排版、量好尺寸（含超出 900px 的表格），再縮放到剛好放進外框的內容區
 // minH／minW：同一組（uniform）裡最大的內容尺寸，讓整組用同一個比例

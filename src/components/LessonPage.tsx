@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getSession } from '../reservation/session'
 import { getRepository } from '../data/repository'
@@ -26,9 +26,11 @@ import GroupingView from './GroupingView'
 import NumeralTable from './NumeralTable'
 import SanskritVowels from './SanskritVowels'
 import ReadingCases from './ReadingCases'
+import TraceRow from './TraceRow'
+import { vowelForm } from '../strokes'
 
 const GROUP_ZH = { mid: '中子音', high: '高子音', lcp: '低子音 LCp', lcs: '低子音 LCs' } as const
-export type Tab = 'recap' | 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | 'numerals' | `unit-${number}`
+export type Tab = 'recap' | 'review' | 'finals' | 'rules' | 'games' | 'extras' | 'diagram' | 'consonants' | 'vowels' | 'vocab' | 'practice' | 'memes' | 'numerals' | `unit-${number}` | `vowels-${number}`
 
 // 沒有句型、只有一組練習時，區塊直接用那組練習的名稱（例如「多音節練習」）
 // 說明文字有換行時，每行列成一點
@@ -67,6 +69,14 @@ export const conceptItems = (l: Lesson): (Rule | Diagram)[] => {
   const k = rs.findIndex(r => r.id === l.diagram!.after)
   return [...rs.slice(0, k + 1), l.diagram, ...rs.slice(k + 1)]
 }
+// 母音分段：標了 heading 的母音開始新的一段（L5 複合母音、特殊母音）；每段都有 heading 時，課程頁目錄、投影片章節各自一個區塊
+// 第一段的 key 是 'vowels'（母音總覽、說明卡也放這段），之後是 vowels-1、vowels-2…
+export const vowelSections = (l: Lesson) => {
+  const out: { heading?: string; vowels: Lesson['vowels'] }[] = []
+  for (const v of l.vowels) { if (v.heading || !out.length) out.push({ heading: v.heading, vowels: [] }); out[out.length - 1].vowels.push(v) }
+  return out.length > 1 && out.every(x => x.heading) ? out : [{ heading: undefined, vowels: l.vowels }]
+}
+export const vowelsOf = (l: Lesson, k: Tab) => vowelSections(l)[k === 'vowels' ? 0 : Number(k.slice(7))]?.vowels ?? []
 const plainRules = (l: Lesson) => l.rules.filter(r => !r.unit && !r.at)
 // 本課的區塊與順序（課程頁的目錄、投影片模式共用）
 export function lessonTabs(lesson: Lesson): [Tab, string][] {
@@ -74,7 +84,7 @@ export function lessonTabs(lesson: Lesson): [Tab, string][] {
   const hasRules = plainRules(lesson).length || lesson.toneTables.length || lesson.finalsIntro || lesson.vowelShifts?.length || (lesson.clusters && !lesson.clusters.unit) || lesson.readingCases?.some(t => !t.unit)
   if (lesson.review?.length) t.push(['review', lesson.reviewLabel ?? '複習'])
   if (lesson.diagram) t.push(['diagram', lesson.rules.some(r => r.at === 'concept') ? '基本概念' : lesson.diagram.title])
-  if (lesson.vowels.length || lesson.sanskritVowels?.length) t.push(['vowels', '母音'])
+  if (lesson.vowels.length || lesson.sanskritVowels?.length) vowelSections(lesson).forEach((x, i) => t.push([i ? `vowels-${i}` : 'vowels', x.heading ?? '母音']))
   if (lesson.numerals?.length) t.push(['numerals', '大寫數字'])
   if (hasRules && !lesson.tonesAfterConsonants) t.push(['rules', '說明'])
   unitsOf(lesson).forEach((u, i) => t.push([`unit-${i}`, u]))
@@ -89,6 +99,13 @@ export function lessonTabs(lesson: Lesson): [Tab, string][] {
   if (lesson.extras.length) t.push(['extras', '補充'])
   return t
 }
+// 列印講義的「字母卡＋練字格」一列：on＝列印才包；trace＝要練寫的字（母音用 อ 補子音位置，短音、長音各一列）
+const Wrap = ({ on, vowel, trace, children }: { on: boolean; vowel?: boolean; trace: string[]; children: ReactNode }) => on ? (
+  <div className={vowel ? 'h-wrow v' : 'h-wrow'}>
+    {children}
+    <div className="h-wtrace">{trace.map(t => <TraceRow key={t} text={t} trace={vowel ? 2 : 3} blank={vowel ? 3 : 4} />)}</div>
+  </div>
+) : <>{children}</>
 export const practiceLabel = (l: Lesson) => (l.patterns.length === 0 && lessonPractice(l).length === 1 ? lessonPractice(l)[0].title : '練習・句型')
 
 // printLesson：列印講義（HandoutPage）直接傳入課程資料，只排內容：不要返回連結、按鈕、目錄、互動練習，區塊全部展開
@@ -139,7 +156,8 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
   }
 
   // 連續標了 inRow 的母音卡排在同一列（例如特殊母音四張）
-  const vowelGroups = lesson.vowels.reduce<Lesson['vowels'][]>((acc, v) => { const last = acc[acc.length - 1]; if (v.inRow && last && last[0].inRow) last.push(v); else acc.push([v]); return acc }, [])
+  const splitVowels = vowelSections(lesson).length > 1  // 母音分成好幾個區塊時，區塊標題就是 heading，卡片上方不再重複
+  const vowelGroups = (vs: Lesson['vowels']) => vs.reduce<Lesson['vowels'][]>((acc, v) => { const last = acc[acc.length - 1]; if (v.inRow && last && last[0].inRow) last.push(v); else acc.push([v]); return acc }, [])
   const vowelCard = (v: Lesson['vowels'][number]) => <VowelCard key={v.id} v={v} showZh={showZh} onOpen={setOpenVowel} />
   // 尾音卡：左邊是字母（尾音不用看筆順，不能點）、右邊接音標，下面口型，右邊同一列排這個尾音的單字
   const finalCard = (f: NonNullable<Lesson['finals']>[number]) => (
@@ -275,8 +293,10 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
 
       {cur === 'consonants' && lesson.rules.some(r => r.at === 'consonants' && !r.afterLetter) && <section className="stack">{lesson.rules.filter(r => r.at === 'consonants' && !r.afterLetter).map(ruleCard)}</section>}
       {cur === 'consonants' && (
-        <section className="grid">
+        // 列印講義：一個字母一列，字母卡在左邊、練字格在右邊（不另外放描字作業頁）
+        <section className={printLesson ? 'h-wlist' : 'grid'}>
           {lesson.consonants.map(c => (<Fragment key={c.id}>
+            <Wrap on={!!printLesson} trace={[c.char]}>
             <article className="card letter">
               <button className="big th clickable" onClick={() => setOpen(c)} aria-label={`查看 ${c.char} 的筆順`}>{c.char}</button>
               <WordIcon char={c.char} label={c.zh} />
@@ -296,23 +316,27 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
                 </div>
               )}
             </article>
+            </Wrap>
             {/* afterLetter：說明卡排在這個字母後面、佔滿一整列（L1 看完 ก 再解釋子音怎麼念） */}
             {lesson.rules.filter(r => r.at === 'consonants' && r.afterLetter === c.char).map(r => <div className="gridfull" key={r.id}>{ruleCard(r)}</div>)}
           </Fragment>))}
         </section>
       )}
 
-      {cur === 'vowels' && (
+      {(cur === 'vowels' || cur.startsWith('vowels-')) && (
         <>
+        {cur === 'vowels' && <>
         {lesson.vowelIntro && <VowelIntro config={typeof lesson.vowelIntro === 'object' ? lesson.vowelIntro : undefined} />}
         {lesson.sanskritVowels && <SanskritVowels vowels={lesson.sanskritVowels} vocab={lesson.vocab} showZh={showZh} />}
         {lesson.vowelNotes?.map(r => <article className="card" key={r.id}><h3>{r.title}</h3><RuleBody body={r.body} />{r.demo && <RuleDemo tiles={r.demo} />}</article>)}
+        </>}
         <section className="vstack">
-          {vowelGroups.map(g => (
+          {vowelGroups(vowelsOf(lesson, cur)).map(g => (
             <Fragment key={g[0].id}>
-            {g[0].heading && <h3 className="vgroup-h">{g[0].heading}</h3>}
+            {g[0].heading && !splitVowels && <h3 className="vgroup-h">{g[0].heading}</h3>}
             {g[0].preface?.map(r => <article className="card" key={r.id}>{r.title && <h3>{r.title}</h3>}{r.body && <RuleBody body={r.body} />}<RuleExtras r={r} Body={RuleBody} /></article>)}
-            {g.length > 1 ? <div className="vrow">{g.map(vowelCard)}</div> : vowelCard(g[0])}
+            {printLesson ? g.map(v => <Wrap key={v.id} on vowel trace={[v.short, v.long].filter(Boolean).map(vowelForm)}>{vowelCard(v)}</Wrap>)
+              : g.length > 1 ? <div className="vrow">{g.map(vowelCard)}</div> : vowelCard(g[0])}
             {g.flatMap(v => v.after ?? []).map(ruleCard)}
             {lesson.vocabAfterVowel && g.some(v => v.id === lesson.vocabAfterVowel) && lesson.vocab.length > 0 && (
               <>

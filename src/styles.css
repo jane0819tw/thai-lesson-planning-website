@@ -803,7 +803,7 @@ table.rc-table .rc-img { display: block; width: 100%; max-width: 150px; margin: 
 .hcell .hg { stroke: #c8d3e0; stroke-width: 1.5; stroke-dasharray: 6 5; }
 .hcell .hg.base { stroke: #8fa5bf; stroke-dasharray: none; }
 .hcell text { fill: #222; font-family: 'Sarabun', 'Noto Sans Thai Looped', sans-serif; }
-.hcell .htrace { fill: #cfcfcf; }
+.hcell .htrace { fill: #8a8a8a; font-family: 'LayijiTrace', 'Noto Sans Thai Looped', sans-serif; }  /* 描字：和筆順底字同一個點虛線字型 */
 
 .h-tones { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .h-tones th, .h-tones td { border: 1px solid #999; text-align: center; padding: 4px; }
@@ -871,3 +871,67 @@ table.rc-table .rc-img { display: block; width: 100%; max-width: 150px; margin: 
 /* 講義標＊的字：不放＊，改用黃色底標出（L4 老師） */
 .wstar { background: #fdf0b8 !important; border-color: #f0d870 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 @media (prefers-color-scheme: dark) { .wstar { background: #3d3414 !important; border-color: #6b5a1c !important; } }
+
+
+/* 複習（ReviewFill）：鍵盤＋子母音填空＋拼讀規則填空。類別顏色：中、高、低子音同課程頁，母音一個顏色系 */
+.rf, .fb-sheet, .rk { --c-mid: #c2410c; --c-high: #db2777; --c-low: #2563eb; --c-lcs: #0d9488; --c-v: #7c3aed; }
+.c-mid { --c: var(--c-mid); } .c-high { --c: var(--c-high); } .c-lcp { --c: var(--c-low); } .c-lcs { --c: var(--c-lcs); }
+.c-long, .c-short, .c-compound, .c-special { --c: var(--c-v); }
+.rk { display: grid; gap: 4px; }
+.rk + .rk { margin-top: 12px; }
+.rk-row { display: flex; gap: 4px; }
+.rk-key { width: 38px; height: 42px; flex: none; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 7px; background: var(--card); color: var(--fg); font-size: 1.25rem; padding: 0; font-family: inherit; }
+button.rk-key { cursor: pointer; }
+.rk-key.other { color: var(--muted); font-size: .85rem; font-family: system-ui, sans-serif; }
+.rk-key.lit { background: var(--c); border-color: var(--c); color: #fff; }
+.rk-key.ok { box-shadow: 0 0 0 3px #16a34a; } .rk-key.bad { box-shadow: 0 0 0 3px #dc2626; animation: rk-shake .3s; }
+@keyframes rk-shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+.pt-inner:has(> .rf) { width: max-content; }  /* 複習頁比 900px 寬：內容區跟著撐開，置中、整頁一起縮放 */
+.rf { display: grid; grid-template-columns: auto 470px; gap: 28px; width: max-content; align-items: start; }
+.rf-fill { padding-left: 24px; border-left: 1px dashed var(--line); }
+.rf-tools { display: flex; gap: 6px; justify-content: flex-end; margin-bottom: 8px; }
+.rf-tools button, .rf-cat { border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 99px; padding: 4px 12px; font: inherit; font-size: .85rem; cursor: pointer; }
+.rf-row { display: grid; grid-template-columns: 88px 1fr; gap: 10px; align-items: start; }
+.rf-row + .rf-row { margin-top: 12px; }
+.rf-cat { border-color: var(--c); color: var(--c); font-weight: 700; margin-top: 6px; }
+.rf-blanks { display: flex; flex-wrap: wrap; gap: 6px; }
+.rf-b { width: 44px; height: 44px; border-radius: 50%; border: 2px solid #231f1b; background: #231f1b; color: var(--c); font-size: 1.5rem; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.rf-b.v { width: auto; min-width: 44px; border-radius: 22px; padding: 0 8px; }
+.rf-b:not(.open):hover { background: #3a342b; }
+.rf-b.open { background: var(--card); border-color: var(--c); }
+.rf-rules section + section { margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.rf-rules h3 { margin: 0 0 4px; }
+.fb-body { margin: 4px 0 10px; line-height: 2; }
+.fb-cover { display: inline-block; height: 1.4em; vertical-align: middle; margin: 0 4px; border: 0; border-radius: 6px; background: #231f1b; cursor: pointer; }
+.fb-mark { display: inline-block; vertical-align: middle; margin: 0 2px; color: var(--accent); }
+.fb-blank { display: inline-block; height: 1.2em; vertical-align: bottom; margin: 0 4px; border-bottom: 1.5px solid #555; }
+table.tone td.tcover { padding: 4px; }
+table.tone td.tcover button { width: 100%; min-height: 44px; border: 0; border-radius: 8px; background: #231f1b; cursor: pointer; }
+table.tone td.tcover button:hover { background: #3a342b; }
+@media (prefers-color-scheme: dark) { .rf-b, .fb-cover, table.tone td.tcover button { background: #000; border-color: #000; } }
+/* 講義的複習作業 */
+.fb-kbs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 10px 0 14px; }
+.fb-kbs .rk + .rk { margin-top: 0; }
+.fb-kbs .rk-key { width: 24px; height: 30px; font-size: .95rem; border-radius: 5px; border-bottom-width: 2px; }
+.fb-kbs .rk-key.other { font-size: .65rem; }
+.fb-kbs .rk-row { gap: 2px; } .fb-kbs .rk { gap: 2px; }
+.fb-row { display: grid; grid-template-columns: 96px 1fr; gap: 8px; align-items: start; break-inside: avoid; }
+.fb-row + .fb-row { margin-top: 8px; }
+.fb-cat { font-weight: 700; padding-top: 10px; } .fb-cat small { font-weight: 400; color: var(--muted); }
+.fb-cells { display: grid; grid-template-columns: repeat(12, 1fr); gap: 4px; }
+.fb-cell { height: 40px; border: 1px solid #999; border-radius: 6px; }
+.fb-rule { break-inside: avoid; } .fb-rule + .fb-rule { margin-top: 14px; }
+.fb-rule h3 { margin: 0 0 2px; }
+.fb-tones td { height: 52px; }
+.h-tones.fb-tones tbody th { font-size: 1rem; width: 110px; color: var(--fg); }
+.fb-tones thead th:first-child { font-size: .8rem; }
+/* 列印講義：字母卡在左、練字格在右，一個字母（母音）一列 */
+.h-wlist { display: grid; gap: 6px; }
+.h-wrow { display: grid; grid-template-columns: 34% 1fr; gap: 10px; align-items: center; break-inside: avoid; }
+.h-wrow.v { grid-template-columns: 1fr 1fr; align-items: start; }
+.h-wtrace { display: grid; gap: 6px; }
+.h-wrow .card.letter { display: grid; grid-template-columns: auto auto 1fr; column-gap: 10px; row-gap: 0; align-items: center; justify-items: start; text-align: left; padding: 4px 10px; line-height: 1.3; font-size: .9em; }
+.h-wrow .card.letter > .big { grid-column: 1; grid-row: 1 / span 8; font-size: 3.2rem; line-height: 1.1; }
+.h-wrow .card.letter > :nth-child(2) { grid-column: 2; grid-row: 1 / span 8; }
+.h-wrow .card.letter > :nth-child(n+3) { grid-column: 3; }
+.h-wrow .card.letter .cwords { margin-top: 2px; }

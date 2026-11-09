@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { ToneTable } from '../types'
 import SpeakButton from './SpeakButton'
 import { speakSequence } from '../audio/speak'
@@ -9,7 +10,10 @@ const clean = (cell: string) => cell.replace(/\s*\(x\)/, '')
 
 const tintOf = (label: string, tint: ToneTable['tint']) => tint === 'long' || tint === 'short' ? tint : label.includes('短母音') ? 'short' : label.includes('長母音') ? 'long' : undefined
 
-export default function ToneTableView({ table }: { table: ToneTable }) {
+// cover：複習用，每一格先蓋成黑色，點了才翻開；要全部蓋回去由外層換 key 重置
+export default function ToneTableView({ table, cover = false }: { table: ToneTable; cover?: boolean }) {
+  const [opened, setOpened] = useState<Set<string>>(new Set())
+  const flip = (k: string) => setOpened(s => new Set(s).add(k))
   const grouped = table.rows.some(r => r.group)
   // 相鄰同 group 的列合併：第一列記下要跨幾列，其餘列不畫這一格
   const span = table.rows.map((r, i) => {
@@ -33,7 +37,9 @@ export default function ToneTableView({ table }: { table: ToneTable }) {
                 <button className="playall" aria-label={`依序播放 ${r.label} 第一聲到第五聲`}
                   onClick={() => void speakSequence(r.cells.filter(c => !isNote(c) && !isBlank(c)).map(clean), 0)}>▶ 一到五聲</button>
               </th>
-              {r.cells.map((cell, i) => (
+              {r.cells.map((cell, i) => cover && !isBlank(cell) && !opened.has(`${ri}-${i}`) ? (
+                <td key={i} className="tcover"><button onClick={() => flip(`${ri}-${i}`)} aria-label="翻開這一格" /></td>
+              ) : (
                 <td key={i} className={isBlank(cell) ? undefined : isNote(cell) ? 'na' : 'th big3'}>
                   {r.fill && !isNote(cell) ? <span className="fillword">{cell}</span> : cell}
                   {!isNote(cell) && !isBlank(cell) && <SpeakButton text={clean(cell)} />}
