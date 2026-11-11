@@ -4,7 +4,8 @@ import { ENDPOINT, getAdminKey, getApi, setAdminKey } from './api'
 import { CATEGORIES } from '../categories'
 import ScheduleGrid from './ScheduleGrid'
 import MonthGrid from './MonthGrid'
-import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
+import { WHOLE_COURSES, convUnits, readingUnits, unitLabel, useLessons } from './access'
+import { convLevels, levelTitle } from '../conversation/data'
 import { REVIEW_UNITS, reviewRange, reviewTitle, homeworkLessonLabel } from '../reviews'
 import type { Unit } from './access'
 import { buildDraft, paintCells, serialize, setNote, shiftDate } from './schedule'
@@ -529,7 +530,7 @@ function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDispla
       </div>
       <div className="mgr-courses">
         <span className="bk-muted">開放課程</span>
-        {[...units.map(u => ({ id: u.id, label: `認字 ${unitLabel(u)}` })), ...WHOLE_COURSES.map(c => ({ id: c.key, label: c.title }))].map(o => (
+        {[...units.map(u => ({ id: u.id, label: `認字 ${unitLabel(u)}` })), ...convLevels().flatMap(lv => convUnits(lv).map(u => ({ id: u.id, label: `${levelTitle(lv).replace('泰語', '')} ${unitLabel(u)}` }))), ...WHOLE_COURSES.map(c => ({ id: c.key, label: c.title }))].map(o => (
           <label key={o.id}><input type="checkbox" checked={courses.includes(o.id)} onChange={e => setCourses(c => (e.target.checked ? [...c, o.id] : c.filter(x => x !== o.id)))} />{o.label}</label>
         ))}
         <button disabled={sameSet(courses, s.courses)} onClick={() => onSaveCourses(courses)}>儲存</button>

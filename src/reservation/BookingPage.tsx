@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { WHOLE_COURSES, readingUnits, unitLabel, useLessons } from './access'
+import { WHOLE_COURSES, convUnits, readingUnits, unitLabel, useLessons } from './access'
+import { convLessons, convLevels, levelTitle } from '../conversation/data'
 import { setSession } from './session'
 import { getApi } from './api'
 import { REVIEW_UNITS, reviewKey, reviewTitle } from '../reviews'
@@ -158,7 +159,9 @@ export default function BookingPage() {
   const allowed = view.courses ?? []
   const myUnits = readingUnits(lessons.map(x => x.number)).filter(u => allowed.includes(u.id))
   const myWhole = WHOLE_COURSES.filter(c => allowed.includes(c.key))
-  const hasCourses = myUnits.length > 0 || myWhole.length > 0
+  // 會話課：每一級每 5 課一個單位（conversation-1:1），和認字課一樣
+  const myConv = convLevels().map(lv => ({ lv, units: convUnits(lv).filter(u => allowed.includes(u.id)) })).filter(x => x.units.length)
+  const hasCourses = myUnits.length > 0 || myWhole.length > 0 || myConv.length > 0
   // 「課程紀錄」分頁：有課後錄影（或影片整理中）才出現。平台學生沒有預約分頁，預設看課程
   const videos = view.mode === 'known' ? videoList(view.videos ?? [], view.recording ?? '') : []
   const curTab = tab === 'records' && !videos.length ? 'courses' : platform && tab === 'book' ? 'courses' : tab
@@ -226,6 +229,22 @@ export default function BookingPage() {
                   ))}
                 </div>
               )}
+              {myConv.map(({ lv, units }) => (
+                <div className="bk-unit-group" key={`conv-${lv}`}>
+                  <strong>{levelTitle(lv)}</strong>
+                  {units.map(u => (
+                    <div className="bk-unit" key={u.id}>
+                      <span className="bk-unit-h">{unitLabel(u)}</span>{' '}
+                      <Link className="bk-print" to={`/conversation/${lv}/handout/${u.n}`}>🖨 列印講義</Link>
+                      <ul className="bk-lessons">
+                        {convLessons(lv).filter(x => x.number >= u.from && x.number <= u.to).map(x => (
+                          <li key={x.id}><Link to={`/conversation/${lv}/lesson/${x.number}`}><b>L{x.number}</b> {x.title}</Link></li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ))}
               {myWhole.length > 0 && (
                 <ul className="bk-courses">
                   {myWhole.map(c => (
