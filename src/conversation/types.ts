@@ -38,7 +38,8 @@ export interface PracticeCard { name?: string; icon?: string; /** 照片（publi
 export interface Practice {
   kind: 'roleplay' | 'qa' | 'picture' | 'translate'
   title: string
-  body: string
+  /** 說明（可省略，投影片上老師口頭講就好） */
+  body?: string
   /** 角色卡、看圖卡 */
   cards?: PracticeCard[]
   /** 提示句（可以用的句型） */
@@ -74,5 +75,5 @@ export interface ConvLesson {
   practice: Practice[]
   extras?: Extra[]
   /** 句型總結：對得上 goals */
-  recap: ConvText[]
+  recap?: ConvText[]
 }

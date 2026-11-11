@@ -1,4 +1,4 @@
-import { Fragment, type ReactNode } from 'react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import SpeakButton from '../components/SpeakButton'
 import { Rom } from '../video/Rom'
 import { plain } from './data'
@@ -49,7 +49,7 @@ const Avatar = ({ who }: { who?: string }) => <span className="c-avatar" aria-hi
 /** 單字卡：圖示＋泰文＋拼音＋中文；★必學 */
 function Word({ w }: { w: ConvWord & { note?: string } }) {
   return (
-    <div className={w.star ? 'c-word star' : 'c-word'}>
+    <div className="c-word">
       {w.image ? <img className="c-icon c-icon-img" src={BASE + w.image} alt="" /> : w.icon && <span className="c-icon" aria-hidden="true">{w.icon}</span>}
       <div>
         <div className="th c-th">{w.th}<SpeakButton text={w.th} /></div>
@@ -142,7 +142,8 @@ export function TemplateCard({ b }: { b: TemplateBlock }) {
     <article className="card c-template">
       <h3>{b.title}</h3>
       {b.body && <p className="muted"><Rich text={b.body} /></p>}
-      <ol>{b.lines.map((t, i) => <li key={i}><Line t={t} /></li>)}</ol>
+      {/* 列印：分左右兩欄（前一半在左、後一半在右），中間一條線（L1 老師：省空間） */}
+      <ol style={{ ['--rows' as string]: Math.ceil(b.lines.length / 2) }}>{b.lines.map((t, i) => <li key={i}><Line t={t} /></li>)}</ol>
     </article>
   )
 }
@@ -159,17 +160,19 @@ export const TAG_LABEL: Record<ConvTag, string> = { answer: '① 回答', add: '
 export function DialogueCard({ d, from = 0, to }: { d: Dialogue; from?: number; to?: number }) {
   const speakers = [...new Set(d.lines.map(x => x.who))]
   const shown = d.lines.slice(from, to)
-  // 左右交錯、高度重疊：每則訊息佔 SPAN 列，換人說話時只往下一列（和上一則重疊大半），同一人連說才往下 SPAN 列（L1 老師：框框才不會太小）
+  // 左右交錯、高度重疊：每則訊息佔 SPAN 列，換人說話時只往下一列（和上一則重疊大半），但不能早於同一欄上一則的結尾（L1 老師：框框才不會太小；第 9 頁 Tae 兩則疊在一起）
   const rows: number[] = []
-  shown.forEach((x, i) => { rows.push(i === 0 ? 1 : rows[i - 1] + (x.who === shown[i - 1].who ? SPAN : 1)) })
+  const colEnd = [1, 1]
+  shown.forEach((x, i) => {
+    const col = speakers.indexOf(x.who) % 2
+    const r = Math.max(i === 0 ? 1 : rows[i - 1] + 1, colEnd[col])
+    rows.push(r); colEnd[col] = r + SPAN
+  })
   return (
     <article className="card c-dialogue">
       <h3>💬 對話串：{d.scene}</h3>
-      {from === 0 && <>
-        <p className="c-steps">接話三步驟：<b>① 回答</b> → <b>② 補一句</b> → <b>③ 把問題丟回去</b>{d.body && <span className="muted">　<Rich text={d.body} /></span>}</p>
-        {/* 學生大多一對一：同一段對話練三輪，最後一輪就是自由對話 */}
-        <p className="c-howto">一對一練法：<b>❶ 跟讀</b>（播放或老師念）→ <b>❷ 分角色</b>（老師、學生各演一個，再交換）→ <b>❸ 換成自己</b>（<u>底線</u>換成自己的名字、國家、喜歡的事，老師照真實情況回答）</p>
-      </>}
+      {/* 一對一練法（跟讀→分角色→換成自己）老師口頭帶，不放在畫面上（L1 老師） */}
+      {from === 0 && <p className="c-steps">接話三步驟：<b>① 回答</b> → <b>② 補一句</b> → <b>③ 把問題丟回去</b>{d.body && <span className="muted">　<Rich text={d.body} /></span>}</p>}
       <div className="c-chat">
         {shown.map((x, i) => (
           <div key={i} className={speakers.indexOf(x.who) % 2 ? 'c-msg right' : 'c-msg'} style={{ gridRow: `${rows[i]} / span ${SPAN}` }}>
@@ -195,7 +198,7 @@ export function PracticeCard({ p, print }: { p: Practice; print?: boolean }) {
   return (
     <article className="card c-practice">
       <h3><span className="c-kind">{KIND_LABEL[p.kind]}</span> {p.title}</h3>
-      <p><Rich text={p.body} /></p>
+      {p.body && <p><Rich text={p.body} /></p>}
       {p.cards?.length ? <div className="c-cards">{p.cards.map((c, i) => (
         <div className={c.image ? 'c-pcard has-img' : 'c-pcard'} key={i}>
           {c.image ? <img className="c-pcard-img" src={BASE + c.image} alt={c.name ?? ''} /> : c.icon && <div className="c-pcard-icon" aria-hidden="true">{c.icon}</div>}
@@ -230,13 +233,36 @@ export function ExtraCard({ x }: { x: Extra }) {
 
 /** 嵌入 YouTube 片段（start～end 秒）；列印時印網址 */
 function YouTubeClip({ v }: { v: NonNullable<Extra['video']> }) {
-  const q = new URLSearchParams({ rel: '0', ...(v.start ? { start: String(v.start) } : {}), ...(v.end ? { end: String(v.end) } : {}) })
+  const q = new URLSearchParams({ rel: '0', enablejsapi: '1', ...(v.start ? { start: String(v.start) } : {}), ...(v.end ? { end: String(v.end) } : {}) })
   const url = `https://www.youtube.com/watch?v=${v.id}${v.start ? `&t=${v.start}` : ''}`
+  const frame = useRef<HTMLIFrameElement>(null)
+  const [rate, setRate] = useState(1)
+  // 調速度：用 YouTube 播放器的 postMessage 指令（enablejsapi=1），不用載入 IFrame API（L1 老師）
+  const send = (msg: object) => frame.current?.contentWindow?.postMessage(JSON.stringify(msg), '*')
+  const changeRate = (r: number) => { setRate(r); send({ event: 'command', func: 'setPlaybackRate', args: [r] }) }
+  // 還沒播放前拉的速度播放器會忽略：開始播放（playerState 1）時再套一次
+  const rateRef = useRef(rate); rateRef.current = rate
+  useEffect(() => {
+    const on = (e: MessageEvent) => {
+      if (e.source !== frame.current?.contentWindow) return
+      try {
+        const d = JSON.parse(e.data)
+        const st = d.event === 'onStateChange' ? d.info : d.info?.playerState
+        if (st === 1 && rateRef.current !== 1 && d.info?.playbackRate !== rateRef.current) send({ event: 'command', func: 'setPlaybackRate', args: [rateRef.current] })
+      } catch { /* 不是播放器的訊息 */ }
+    }
+    window.addEventListener('message', on)
+    return () => window.removeEventListener('message', on)
+  }, [])
   return (
     <>
       <div className="c-video noprint">
-        <iframe src={`https://www.youtube-nocookie.com/embed/${v.id}?${q}`} title={v.label} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+        <iframe ref={frame} onLoad={() => send({ event: 'listening', id: v.id })} src={`https://www.youtube-nocookie.com/embed/${v.id}?${q}`} title={v.label} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
       </div>
+      <label className="c-rate noprint">速度
+        <input type="range" min={0.25} max={1.5} step={0.25} value={rate} onChange={e => changeRate(Number(e.target.value))} />
+        <b>{rate}×</b>
+      </label>
       <p className="printonly small muted">影片：{v.label}　{url}</p>
     </>
   )
@@ -254,7 +280,7 @@ export function RecapCard({ l }: { l: ConvLesson }) {
   return (
     <article className="card c-recap">
       <h3>📝 句型總結</h3>
-      <ol>{l.recap.map((t, i) => <li key={i}><Line t={t} /></li>)}</ol>
+      <ol>{(l.recap ?? []).map((t, i) => <li key={i}><Line t={t} /></li>)}</ol>
     </article>
   )
 }
@@ -268,6 +294,6 @@ export function sectionsOf(l: ConvLesson, print = false): Section[] {
   if (l.dialogue) s.push({ key: 'dialogue', label: '對話串', cards: [<DialogueCard d={l.dialogue} key="d" />] })
   if (l.practice.length) s.push({ key: 'practice', label: '練習', cards: l.practice.map((p, i) => <PracticeCard p={p} print={print} key={i} />) })
   if (l.extras?.length) s.push({ key: 'extras', label: '補充', cards: l.extras.map((x, i) => <ExtraCard x={x} key={i} />) })
-  s.push({ key: 'recap', label: '總結', cards: [<RecapCard l={l} key="c" />] })
+  if (l.recap?.length) s.push({ key: 'recap', label: '總結', cards: [<RecapCard l={l} key="c" />] })
   return s
 }

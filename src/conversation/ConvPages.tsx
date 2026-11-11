@@ -114,7 +114,7 @@ function buildSlides(l: ConvLesson): { slides: Slide[]; chapters: string[] } {
   }
   add('練習', l.practice.map((p, i) => <PracticeCard p={p} key={i} />))
   add('補充', (l.extras ?? []).map((x, i) => <ExtraCard x={x} key={i} />))
-  add('總結', [<RecapCard l={l} key="c" />])
+  if (l.recap?.length) add('總結', [<RecapCard l={l} key="c" />])
   return { slides, chapters }
 }
 

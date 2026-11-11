@@ -23,11 +23,17 @@
 
 /* 開關：課程頁、投影片、講義都保留位置（visibility），關掉拼音時中文不會跑上來（L1 老師） */
 .c-hide-rom .c-rom, .c-hide-zh .c-zh, .c-hide-speak .speak { visibility: hidden; }
+/* 投影片例外：關掉拼音就整行拿掉、不留空白（L1 老師），版面重新縮放放大 */
+.c-slides.c-hide-rom .c-rom { display: none; }
 
 /* 今日目標、總結 */
 .c-goals h3, .c-recap h3 { color: var(--accent); }
 .c-goals ul { margin: 0; padding-left: 1.4em; font-size: 1.15rem; line-height: 1.8; }
 .c-recap ol, .c-template ol, .c-review { margin: 0; padding-left: 1.6em; display: grid; gap: 10px; }
+/* 模板分左右兩欄（前一半左、後一半右），中間一條線（L1 老師：投影片、講義都省空間）；手機太窄才變一欄 */
+.c-template ol { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(var(--rows), auto); grid-auto-flow: column; column-gap: 3.2em; padding-left: 0; background: linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat; }
+.c-template li { margin-left: 1.4em; }
+@media (max-width: 640px) { .c-template ol { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; background: none; } }
 .c-ans { margin: 4px 0 0 1em; padding-left: 10px; border-left: 3px solid var(--line); }
 .c-cover .c-goals { text-align: left; display: inline-block; min-width: 60%; }
 
@@ -38,9 +44,9 @@
 .c-word { display: grid; justify-items: center; text-align: center; gap: 2px; border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; background: var(--card); }
 .c-word .c-th { justify-content: center; }
 .c-word .c-th { font-size: 1.15rem; flex-wrap: nowrap; white-space: nowrap; }
-.c-word .speak { flex: none; }
-.c-word.star { border-color: #f59e0b; box-shadow: inset 0 4px 0 #f59e0b; }
-.c-word.star .c-th::after { content: '★'; color: #f59e0b; font-size: .8rem; order: -1; }
+/* 喇叭放卡片右上角，不跟泰文排在一起，泰文才會真的置中（L1 老師：泰文偏左） */
+.c-word { position: relative; }
+.c-word .speak { position: absolute; top: 5px; right: 5px; width: 28px; height: 28px; font-size: .8rem; }
 .c-icon { font-size: 1.9rem; line-height: 1; }
 .c-icon-img { width: 2.2rem; height: 2.2rem; object-fit: contain; }
 h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
@@ -65,7 +71,6 @@ h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
 /* 對話串：LINE 對話框 */
 .c-steps { margin: 0 0 10px; }
 .c-steps b { color: var(--accent); }
-.c-howto { margin: 0 0 12px; padding: 6px 12px; background: var(--cbox); color: var(--cbox-fg); border-radius: 10px; font-size: .95rem; }
 .c-chat { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 16px; row-gap: 6px; align-items: start; }
 .c-msg { display: grid; justify-items: start; align-content: start; grid-column: 1; }
 .c-msg.right { grid-column: 2; justify-items: end; }
@@ -86,6 +91,8 @@ h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
 .c-inline .c-rom { font-size: .9em; }
 .c-video { position: relative; width: 100%; max-width: 640px; aspect-ratio: 16 / 9; }
 .c-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 10px; }
+.c-rate { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: .95rem; }
+.c-rate input { width: 200px; accent-color: var(--accent); }
 .c-hints { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; border-top: 1px dashed var(--line); padding-top: 8px; margin-top: 8px; }
 .c-items li { margin: 6px 0; }
 .c-blank { border-bottom: 1px solid #999; height: 2em; }
@@ -126,6 +133,10 @@ h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
   .chandout .c-cards-col, .chandout .c-chat { display: block; }
   .chandout .c-msg { grid-row: auto !important; }
   .chandout .c-cards-col > * + * { margin-top: 10px; }
+  /* 身份卡（沒有照片的練習卡）列印時一排 5 張、圖示小一點（L1 老師：讓補充擠進同一頁） */
+  .chandout .c-cards:not(:has(.has-img)) { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .chandout .c-pcard:not(.has-img) { padding: 4px 6px; gap: 0; font-size: .9rem; }
+  .chandout .c-pcard:not(.has-img) .c-pcard-icon { font-size: 1.6rem; }
   .chandout .c-sec h2 { margin: 12px 0 6px; }
   /* 對話串可以跨頁，但一則訊息不切開 */
   .chandout .c-dialogue { break-inside: auto; }
