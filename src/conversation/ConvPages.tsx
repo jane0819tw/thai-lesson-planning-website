@@ -6,7 +6,7 @@ import Annotator, { type Stroke } from '../components/Annotator'
 import { Thumb, fitInto } from '../components/PresentPage'
 import { convLesson, convLessons, convLevels, levelTitle } from './data'
 import { BlockCard, DialogueCard, ExtraCard, GoalsCard, PracticeCard, RecapCard, ReviewCard, sectionsOf } from './Parts'
-import { ToggleBar, toggleClass, useConvToggles } from './toggles'
+import { ToggleBar, toggleClass, useConvToggles, type ConvToggles } from './toggles'
 import type { ConvLesson } from './types'
 import './conv.css'
 
@@ -85,7 +85,7 @@ export function ConvLessonPage() {
 }
 
 /** 投影片：一張卡一頁（句型一個一頁、練習一個一頁），縮放、章節列、筆、補充筆記同認字課投影片 */
-interface Slide { section: string; chapter: number; body: ReactNode }
+export interface Slide { section: string; chapter: number; body: ReactNode }
 function buildSlides(l: ConvLesson): { slides: Slide[]; chapters: string[] } {
   const slides: Slide[] = []
   const chapters: string[] = []
@@ -125,14 +125,23 @@ export function ConvPresent() {
   const l = useLessonParam()
   const nav = useNavigate()
   const [t, flip] = useConvToggles()
+  if (!l) return <p>找不到這一課。<Link to="/conversation">回會話課程</Link></p>
+  const { slides, chapters } = buildSlides(l)
+  return <SlideShow slides={slides} chapters={chapters} where={`L${l.number}`} storeKey={l.id} onExit={() => nav(lessonPath(l))} t={t} flip={flip} />
+}
+
+/** 投影片外框（會話課、時事補充共用）：換頁、章節列、筆、補充筆記、縮放；筆跡和筆記依 storeKey 存在這台電腦 */
+export function SlideShow({ slides, chapters, where, storeKey, onExit, t, flip }: {
+  slides: Slide[]; chapters: string[]; where: string; storeKey: string; onExit: () => void
+  t: ConvToggles; flip: (k: keyof ConvToggles) => void
+}) {
   const [i, setI] = useState(0)
   const [side, setSide] = useState(false)
   const [pen, setPen] = useState(false)
   const [penColor, setPenColor] = useState(PEN_COLORS[0])
   const [notesOpen, setNotesOpen] = useState(false)
-  const key = l?.id ?? ''
   // 筆跡、補充筆記存在這台電腦（每課分開），同認字課投影片
-  const inkKey = `present-ink-${key}`, notesKey = `present-notes-${key}`
+  const inkKey = `present-ink-${storeKey}`, notesKey = `present-notes-${storeKey}`
   const [ink, setInkState] = useState<Record<number, Stroke[]>>({})
   const [notes, setNotes] = useState('')
   useEffect(() => { try { setInkState(JSON.parse(localStorage.getItem(inkKey) ?? '{}')) } catch { setInkState({}) } setNotes(localStorage.getItem(notesKey) ?? '') }, [inkKey, notesKey])
@@ -143,10 +152,9 @@ export function ConvPresent() {
     return next
   })
   const saveNotes = (x: string) => { setNotes(x); localStorage.setItem(notesKey, x) }
-  const { slides, chapters } = l ? buildSlides(l) : { slides: [], chapters: [] }
   const n = slides.length
   const go = useCallback((d: number) => setI(k => Math.min(Math.max(k + d, 0), Math.max(n - 1, 0))), [n])
-  const exit = useCallback(() => { if (document.fullscreenElement) document.exitFullscreen(); if (l) nav(lessonPath(l)) }, [l, nav])
+  const exit = useCallback(() => { if (document.fullscreenElement) document.exitFullscreen(); onExit() }, [onExit])
 
   // ← → 空白鍵／翻頁筆換頁；Z 中文、R 拼音、S 喇叭、A 藝術字、P 筆、N 補充、F 全螢幕、Esc 離開
   useEffect(() => {
@@ -185,13 +193,13 @@ export function ConvPresent() {
     return () => { ro.disconnect(); cancelAnimationFrame(raf) }
   }, [fit, i])
 
-  if (!l) return <p>找不到這一課。<Link to="/conversation">回會話課程</Link></p>
+  if (!n) return null
   const cur = slides[Math.min(i, n - 1)]
   const strokes = ink[i] ?? []
   return (
     <div className={`present c-slides ${toggleClass(t)}${notesOpen ? ' notes-open' : ''}`}>
       <div className="pt-top">
-        <span className="pt-where">L{l.number}｜{cur.section}</span>
+        <span className="pt-where">{where}｜{cur.section}</span>
         <nav className="pt-chapters" aria-label="章節">
           {chapters.map((c, j) => (
             <button key={c} className={j === cur.chapter ? 'on' : j < cur.chapter ? 'done' : undefined} onClick={() => setI(slides.findIndex(x => x.chapter === j))}>{c}</button>

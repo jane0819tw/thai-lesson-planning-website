@@ -1,0 +1,177 @@
+{
+  "date": "2026-11-11",
+  "title": "11.11 วันคนโสด",
+  "titleZh": "雙十一・單身節",
+  "intro": [
+    "11 月 11 日是「單身節」，泰國人叫它 <<วันคนโสด|wan kon sòht>>，泰國網友很愛在社群貼 <<คำคม|kam kom>>（金句），單身的人還會用撩人的金句 <<อ่อย|òi>>（放電）。",
+    "今天就從泰國網路上流行的單身金句，學單身、撩人和購物的泰文。"
+  ],
+  "source": {
+    "url": "https://thethaiger.com/th/news/530829/",
+    "label": "The Thaiger：มัดรวม 100 คำคม 2022 กวน ๆ คนโสด จัดเต็มทุกประโยค เอาใจสายโซเชียล"
+  },
+  "image": {
+    "src": "news/2026-11-11/cover.jpg",
+    "credit": "圖片：The Thaiger",
+    "lines": [
+      {
+        "th": "มัดรวม 100 คำคม เด็ดดวง โดนใจ 2022",
+        "rom": "mát ruam nèung róy kam kom dèt duang dohn jai sŏng pan yîi sìp sŏng",
+        "zh": "一次打包：100 句超讚、說到心坎裡的金句（2022）"
+      },
+      {
+        "th": "จัดเต็มทุกประโยค เอาใจสายโซเชียล",
+        "rom": "jàt dtem túk bprà-yòhk ao jai săai soh-chian",
+        "zh": "每一句都火力全開，獻給社群控"
+      }
+    ],
+    "words": [
+      {
+        "th": "มัดรวม",
+        "rom": "mát ruam",
+        "zh": "大集合、懶人包",
+        "note": "มัด 綁＋รวม 合在一起",
+        "ex": {
+          "th": "มัดรวมร้านอร่อยในกรุงเทพฯ",
+          "rom": "mát ruam ráan à-ròi nai grung-têp",
+          "zh": "曼谷美食懶人包"
+        }
+      },
+      {
+        "th": "คำคม",
+        "rom": "kam kom",
+        "zh": "金句",
+        "note": "คำ 話＋คม 鋒利",
+        "ex": {
+          "th": "เพื่อนชอบโพสต์คำคมทุกวัน",
+          "rom": "pêuan chôrp póht kam kom túk wan",
+          "zh": "朋友每天都愛貼金句。"
+        }
+      },
+      {
+        "th": "เด็ดดวง",
+        "rom": "dèt duang",
+        "zh": "超讚、頂級的",
+        "note": "口語形容詞",
+        "ex": {
+          "th": "ร้านนี้ส้มตำเด็ดดวงมาก",
+          "rom": "ráan née sôm-dtam dèt duang mâak",
+          "zh": "這家的青木瓜沙拉超讚。"
+        }
+      },
+      {
+        "th": "โดนใจ",
+        "rom": "dohn jai",
+        "zh": "說到心坎裡",
+        "note": "โดน 被打中＋ใจ 心",
+        "ex": {
+          "th": "เพลงนี้โดนใจมาก",
+          "rom": "pleng née dohn jai mâak",
+          "zh": "這首歌說到我心坎裡。"
+        }
+      },
+      {
+        "th": "จัดเต็ม",
+        "rom": "jàt dtem",
+        "zh": "全力、滿滿的",
+        "note": "จัด 安排＋เต็ม 滿",
+        "ex": {
+          "th": "วันเกิดปีนี้จัดเต็มเลย",
+          "rom": "wan gèrt bpee née jàt dtem loie",
+          "zh": "今年生日辦得超盛大。"
+        }
+      },
+      {
+        "th": "เอาใจ",
+        "rom": "ao jai",
+        "zh": "討好、迎合",
+        "ex": {
+          "th": "เขาซื้อขนมมาเอาใจแฟน",
+          "rom": "kăo séu kà-nŏm maa ao jai faen",
+          "zh": "他買點心來討好另一半。"
+        }
+      },
+      {
+        "th": "สายโซเชียล",
+        "rom": "săai soh-chian",
+        "zh": "社群控",
+        "note": "สาย＋名詞＝「…派」的人",
+        "ex": {
+          "th": "สายโซเชียลแชร์คลิปนี้กันเยอะมาก",
+          "rom": "săai soh-chian chae klíp née gan yúh mâak",
+          "zh": "社群控們瘋狂分享這支影片。"
+        }
+      }
+    ]
+  },
+  "sentences": [
+    {
+      "th": "วันนี้วันคนโสด",
+      "rom": "wan née wan kon sòht",
+      "zh": "今天是單身節。"
+    },
+    {
+      "th": "ปีนี้ก็ยังโสดเหมือนเดิม",
+      "rom": "bpee née gôr yang sòht mĕuan derm",
+      "zh": "今年還是一樣單身。"
+    },
+    {
+      "th": "โสดแต่ไม่เหงา",
+      "rom": "sòht dtàe mâi ngăo",
+      "zh": "單身但不寂寞。"
+    },
+    {
+      "th": "ไม่มีแฟน แต่มีพัสดุ",
+      "rom": "mâi mee faen dtàe mee pát-sà-dù",
+      "zh": "沒有另一半，但有包裹。"
+    },
+    {
+      "th": "ใส่ตะกร้าไว้ก่อน",
+      "rom": "sài dtà-grâa wái gòn",
+      "zh": "先加購物車再說。"
+    },
+    {
+      "th": "ไม่ได้จะซื้อนะ แค่ดูเฉย ๆ",
+      "rom": "mâi dâai jà séu ná kâe doo chŏei chŏei",
+      "zh": "我沒有要買喔，只是看看。"
+    },
+    {
+      "th": "ช้อปจนหมดตัว",
+      "rom": "chóp jon mòt dtua",
+      "zh": "買到錢包空空。"
+    }
+  ],
+  "quotes": [
+    {
+      "tag": "泰國品牌梗",
+      "th": "ผงซักฟอกก็ไม่ใช่ ทำไมเอาแต่แอทแทคใจเราอยู่ได้",
+      "rom": "pŏng sák fôrk gôr mâi châi tam-mai ao dtàe àet-táek jai rao yòo dâai",
+      "zh": "你又不是洗衣粉，為什麼老是「攻擊」我的心？",
+      "explain": "<<แอทแทค|àet-táek>>（Attack）是泰國超市很常見的洗衣粉牌子。",
+      "image": "news/2026-11-11/attack.webp"
+    },
+    {
+      "tag": "泰國品牌梗・押韻",
+      "th": "ขัดห้องน้ำต้องใช้เป็ดโปร อยากได้เบอร์โทรต้องใช้อะไร",
+      "rom": "kàt hông náam dtông chái bpèt bproh yàak dâai ber toh dtông chái à-rai",
+      "zh": "刷廁所要用鴨子牌，想要你的電話要用什麼？",
+      "explain": "<<เป็ดโปร|bpèt bproh>>（Duck Pro）是泰國家家戶戶都有的廁所清潔劑，<<โปร|bproh>> 和 <<โทร|toh>> 押韻。",
+      "image": "news/2026-11-11/duck.jpg"
+    },
+    {
+      "tag": "泰國品牌梗・押韻",
+      "th": "สบู่เขาเรียกนกแก้ว ส่วนเธอไม่แคล้วต้องเรียกหวานใจ",
+      "rom": "sà-bòo kăo rîak nók gâew sùan ter mâi kláew dtông rîak wăan jai",
+      "zh": "肥皂叫「鸚鵡牌」，而你注定要叫「甜心」。",
+      "explain": "<<สบู่นกแก้ว|sà-bòo nók gâew>>（鸚鵡牌香皂）是泰國國民香皂，<<แก้ว|gâew>> 和 <<แคล้ว|kláew>> 押韻。<<ไม่แคล้ว|mâi kláew>>＝「逃不掉、注定」，<<หวานใจ|wăan jai>>＝甜心。",
+      "image": "news/2026-11-11/parrot.jpg"
+    },
+    {
+      "tag": "雙關・月份",
+      "th": "ถ้ากุมภายังไม่มีใคร สนใจมากุมมือกันหน่อยมั้ยเธอ",
+      "rom": "tâa gum-paa yang mâi mee krai sŏn jai maa gum meu gan nòi mái ter",
+      "zh": "如果二月還沒有人陪，要不要來牽個手？",
+      "explain": "<<กุมภา|gum-paa>> 是 <<กุมภาพันธ์|gum-paa-pan>>（二月）的簡稱，二月有情人節。<<กุม|gum>> 本身是動詞「握住」，<<กุมมือ|gum meu>>＝牽手。"
+    }
+  ]
+}

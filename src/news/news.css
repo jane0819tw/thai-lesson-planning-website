@@ -1,0 +1,33 @@
+/* 時事補充（src/news）：卡片沿用會話課 conv.css */
+.npage .n-intro p { margin: .3em 0; line-height: 1.8; }
+.npage .c-sec { margin-top: 1.4em; }
+.n-fig { margin: 0 0 12px; }
+.n-fig img { width: 100%; max-width: 640px; border-radius: 10px; display: block; }
+.n-fig figcaption { font-size: .8rem; margin-top: 4px; }
+.n-qhead { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.n-qnum { background: var(--accent); color: #fff; border-radius: 99px; width: 1.7em; height: 1.7em; display: inline-grid; place-items: center; font-size: .9rem; }
+.n-tag { font-size: .8rem; padding: 1px 10px; border-radius: 99px; background: var(--cbox); color: var(--cbox-fg); }
+.n-explain { margin-top: 10px; padding: 10px 12px; border-left: 4px solid var(--accent); background: var(--bg); border-radius: 0 8px 8px 0; line-height: 1.8; }
+.n-src { margin-top: 2em; font-size: .85rem; }
+.n-vlist { margin: 0; padding-left: 1.6em; display: grid; gap: 14px; }
+.n-vlist > li { padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+.n-vlist > li:last-child { border-bottom: 0; }
+.n-vword { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.n-vex { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0 0 4px; }
+.n-exlabel { flex: none; font-size: .75rem; padding: 1px 8px; border-radius: 99px; background: var(--cbox); color: var(--cbox-fg); margin-top: .45em; }
+.n-vex .c-th { font-size: 1.1rem; }
+.n-explain:has(.n-qimg) { display: flex; gap: 12px; align-items: flex-start; }
+.n-qimg { width: 96px; height: 96px; object-fit: contain; flex: none; border-radius: 8px; background: #fff; }
+/* 時事補充：關掉拼音、中文、喇叭時直接收起來，後面的內容往前補位（會話課是保留位置，這裡不同） */
+.npage.c-hide-rom .c-rom, .npage.c-hide-zh .c-zh, .npage.c-hide-speak .speak,
+.npage .c-hide-rom .c-rom, .npage .c-hide-zh .c-zh, .npage .c-hide-speak .speak { display: none; }
+/* 投影片：主圖不要撐太高 */
+.c-slides .n-fig img { max-height: 46vh; width: auto; max-width: 100%; }
+/* 講義：主圖、商品圖縮小，卡片不跨頁 */
+@media print {
+  .nhandout .n-fig img { max-width: 60%; }
+  .nhandout .n-vlist > li { break-inside: avoid; }
+  .nhandout .n-explain { background: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .nhandout .n-qimg { width: 70px; height: 70px; }
+  .nhandout .n-qnum, .nhandout .n-tag, .nhandout .n-exlabel { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
