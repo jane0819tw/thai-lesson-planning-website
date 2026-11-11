@@ -59,12 +59,21 @@ export function VideoPresent() {
 /** 一句底下一頁最多放幾則講解 */
 const NOTES_PER_SLIDE = 2
 
-/** 複習頁一頁固定放幾則（單字有解釋＋例句、句型有兩個例句，所以句型放少一點） */
-const REVIEW_PER = { word: 4, pattern: 2 } as const
+/**
+ * 複習頁一頁最多放幾「列」：每則算 1 列（字＋解釋）＋ 每個例句 1 列。
+ * 一個例句的單字一頁 3 則、兩個例句的句型一頁 2 則；例句多的字（例如 4 種用法）自己一頁，字才不會縮太小。
+ */
+const REVIEW_ROWS = 6
 
-function chunk(list: StudyNote[], per: number) {
+function paginate(list: StudyNote[]) {
   const out: StudyNote[][] = []
-  for (let k = 0; k < list.length; k += per) out.push(list.slice(k, k + per))
+  let used = 0
+  for (const x of list) {
+    const rows = 1 + x.examples.length
+    if (!out.length || used + rows > REVIEW_ROWS) { out.push([]); used = 0 }
+    out[out.length - 1].push(x)
+    used += rows
+  }
   return out
 }
 
@@ -146,9 +155,9 @@ function PresentView({ doc }: { doc: StudyDoc }) {
       ) }))
     })
     // 所有複習頁疊在同一格裡、只顯示目前這頁：整組高度一樣，縮放比例就一樣，每頁字和寬度都一致
-    const reviewPages = ([['單字複習', words, REVIEW_PER.word], ['句型複習', pats, REVIEW_PER.pattern]] as const)
-      .flatMap(([title, list, per]) => {
-        const pages = chunk([...list], per)
+    const reviewPages = ([['單字複習', words], ['句型複習', pats]] as const)
+      .flatMap(([title, list]) => {
+        const pages = paginate(list)
         return pages.map((part, k) => ({ title, part, label: pages.length > 1 ? `${k + 1} / ${pages.length}` : '' }))
       })
     reviewPages.forEach((_, cur) => s.push({ section: reviewPages[cur].title, body: (

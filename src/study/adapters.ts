@@ -29,7 +29,8 @@ export function fromVideo(v: VideoLesson): StudyDoc {
     words: L.words,
   }))
   const words: StudyNote[] = (v.vocab ?? []).map(w => ({
-    id: `w-${w.th}`, kind: 'word', th: w.th, rom: w.rom, zh: w.zh, explain: w.explain, examples: [w.example],
+    id: `w-${w.th}`, kind: 'word', th: w.th, rom: w.rom, zh: w.zh, explain: w.explain,
+    examples: w.examples ?? (w.example ? [w.example] : []),
   }))
   const pats: StudyNote[] = v.patterns.map(p => ({ id: p.id, kind: 'pattern', th: p.th, zh: p.zh, explain: p.cmp, examples: p.examples }))
   return {
