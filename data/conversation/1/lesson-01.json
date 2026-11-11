@@ -1,0 +1,696 @@
+{
+  "level": 1,
+  "number": 1,
+  "title": "自我介紹",
+  "status": "draft",
+  "goals": [
+    "用泰語打招呼，說出自己的名字、來自哪裡、是哪裡人、喜歡什麼",
+    "用 <<แล้วคุณล่ะ|láew kun lâ>>（那你呢？）把問題丟回去，和新朋友聊下去"
+  ],
+  "blocks": [
+    {
+      "type": "phrases",
+      "id": "phrases-1",
+      "title": "短句",
+      "items": [
+        {
+          "th": "ขอโทษ",
+          "rom": "kŏr tôht",
+          "zh": "抱歉、不好意思",
+          "star": true,
+          "icon": "🙇"
+        },
+        {
+          "th": "ไม่เป็นไร",
+          "rom": "mâi bpen rai",
+          "zh": "沒關係",
+          "star": true,
+          "icon": "👌"
+        },
+        {
+          "th": "ไม่เข้าใจ",
+          "rom": "mâi kâo jai",
+          "zh": "不明白、不理解",
+          "note": "(don't understand)",
+          "star": true,
+          "icon": "😵‍💫"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "chue",
+      "th": "ชื่อ",
+      "rom": "chêu",
+      "zh": "叫作",
+      "examples": [
+        {
+          "who": "f",
+          "th": "ขอโทษค่ะ คุณ{{ชื่อ}}อะไร",
+          "rom": "kŏr tôht kâ, kun {{chêu}} à-rai",
+          "zh": "不好意思，你{{叫作}}什麼？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ผม{{ชื่อ}}[[เต้]]",
+          "rom": "pŏm {{chêu}} [[Tae]]",
+          "zh": "我{{叫作}}[[Tae]]"
+        },
+        {
+          "who": "m",
+          "th": "ขอโทษครับ คุณ{{ชื่อ}}อะไร",
+          "rom": "kŏr tôht kráp, kun {{chêu}} à-rai",
+          "zh": "不好意思，你{{叫作}}什麼？",
+          "q": true
+        },
+        {
+          "who": "f",
+          "th": "ฉัน{{ชื่อ}}[[เจน]]",
+          "rom": "chăn {{chêu}} [[Jane]]",
+          "zh": "我{{叫作}}[[Jane]]"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "maa-jaak",
+      "th": "มาจาก",
+      "rom": "maa jàak",
+      "zh": "來自",
+      "examples": [
+        {
+          "who": "f",
+          "th": "คุณ{{มาจาก}}ไหน",
+          "rom": "kun {{maa jàak}} năi",
+          "zh": "你{{來自}}哪裡？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ผม{{มาจาก}}[[ไต้หวัน]]",
+          "rom": "pŏm {{maa jàak}} [[dtâi-wăn]]",
+          "zh": "我{{來自}}[[台灣]]"
+        },
+        {
+          "who": "f",
+          "th": "ฉัน{{มาจาก}}[[ฮ่องกง]]",
+          "rom": "chăn {{maa jàak}} [[hông-gong]]",
+          "zh": "我{{來自}}[[香港]]"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ไทย",
+          "rom": "tai",
+          "zh": "泰國",
+          "star": true,
+          "icon": "🇹🇭"
+        },
+        {
+          "th": "ไต้หวัน",
+          "rom": "dtâi-wăn",
+          "zh": "台灣",
+          "star": true,
+          "icon": "🇹🇼"
+        },
+        {
+          "th": "จีน",
+          "rom": "jeen",
+          "zh": "中國",
+          "star": true,
+          "icon": "🇨🇳"
+        },
+        {
+          "th": "ฮ่องกง",
+          "rom": "hông-gong",
+          "zh": "香港",
+          "icon": "🇭🇰"
+        },
+        {
+          "th": "มาเก๊า",
+          "rom": "maa-gáo",
+          "zh": "澳門",
+          "icon": "🇲🇴"
+        },
+        {
+          "th": "มาเลเซีย",
+          "rom": "maa-lay-siia",
+          "zh": "馬來西亞",
+          "icon": "🇲🇾"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "bpen",
+      "th": "เป็น",
+      "rom": "bpen",
+      "zh": "是＋身份",
+      "examples": [
+        {
+          "who": "f",
+          "th": "คุณ{{เป็น}}คนอะไร",
+          "rom": "kun {{bpen}} kon à-rai",
+          "zh": "你{{是}}哪裡人？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ผม{{เป็น}}[[คนไต้หวัน]]",
+          "rom": "pŏm {{bpen}} [[kon dtâi-wăn]]",
+          "zh": "我{{是}}[[台灣人]]"
+        },
+        {
+          "who": "f",
+          "th": "ฉัน{{เป็น}}[[ฝรั่ง]]",
+          "rom": "chăn {{bpen}} [[fà-ràng]]",
+          "zh": "我{{是}}[[西方白人]]"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ฝรั่ง",
+          "rom": "fà-ràng",
+          "zh": "西方白人",
+          "star": true,
+          "icon": "🧑‍🦰"
+        },
+        {
+          "th": "ต่างชาติ",
+          "rom": "dtàang châat",
+          "zh": "外國人",
+          "icon": "🌏"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "chop",
+      "th": "ชอบ",
+      "rom": "chôp",
+      "zh": "喜歡",
+      "examples": [
+        {
+          "who": "f",
+          "th": "คุณ{{ชอบ}}อะไร",
+          "rom": "kun {{chôp}} à-rai",
+          "zh": "你{{喜歡}}什麼？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ผม{{ชอบ}}[[ไปเที่ยว]]",
+          "rom": "pŏm {{chôp}} [[bpai tîieow]]",
+          "zh": "我{{喜歡}}[[去旅行]]"
+        },
+        {
+          "who": "f",
+          "th": "เขา{{ชอบ}}[[ถ่ายรูป]]",
+          "rom": "kăo {{chôp}} [[tàai rôop]]",
+          "zh": "他{{喜歡}}[[拍照]]"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ไปเที่ยว",
+          "rom": "bpai tîieow",
+          "zh": "去旅行",
+          "star": true,
+          "icon": "🧳"
+        },
+        {
+          "th": "กินข้าว",
+          "rom": "gin kâao",
+          "zh": "吃飯",
+          "star": true,
+          "icon": "🍚"
+        },
+        {
+          "th": "มวยไทย",
+          "rom": "muuay tai",
+          "zh": "泰拳",
+          "star": true,
+          "icon": "🥊"
+        },
+        {
+          "th": "กัญชา",
+          "rom": "gan-chaa",
+          "zh": "大麻",
+          "image": "conversation/1/l1-ganja.png"
+        },
+        {
+          "th": "ถ่ายรูป",
+          "rom": "tàai rôop",
+          "zh": "拍照",
+          "star": true,
+          "icon": "📷"
+        }
+      ],
+      "toolbox": [
+        {
+          "th": "แล้วคุณล่ะ",
+          "rom": "láew kun lâ",
+          "zh": "那你呢？",
+          "note": "回答完把問題丟回去"
+        }
+      ]
+    },
+    {
+      "type": "template",
+      "id": "intro",
+      "title": "自我介紹",
+      "body": "照這個順序介紹自己，最後用 <<แล้วคุณล่ะ|láew kun lâ>> 把問題丟回去。",
+      "lines": [
+        {
+          "th": "สวัสดีค่ะ／ครับ",
+          "rom": "sà-wàt-dee kâ / kráp",
+          "zh": "你好"
+        },
+        {
+          "th": "{{ชื่อ}} [名字]",
+          "rom": "{{chêu}} [名字]",
+          "zh": "{{叫作}} [名字]"
+        },
+        {
+          "th": "{{มาจาก}} [國家]",
+          "rom": "{{maa jàak}} [國家]",
+          "zh": "{{來自}} [國家]"
+        },
+        {
+          "th": "{{เป็นคน}} [國家]",
+          "rom": "{{bpen kon}} [國家]",
+          "zh": "{{是}} [國家] {{人}}"
+        },
+        {
+          "th": "{{ชอบ}} [喜歡的東西]",
+          "rom": "{{chôp}} [喜歡的東西]",
+          "zh": "{{喜歡}} [喜歡的東西]"
+        },
+        {
+          "th": "แล้วคุณล่ะ",
+          "rom": "láew kun lâ",
+          "zh": "那你呢？"
+        }
+      ]
+    },
+    {
+      "type": "phrases",
+      "id": "phrases-2",
+      "title": "短句",
+      "items": [
+        {
+          "th": "เจอกัน",
+          "rom": "jer gan",
+          "zh": "再見",
+          "star": true,
+          "icon": "👋"
+        },
+        {
+          "th": "ฝันดี",
+          "rom": "făn dee",
+          "zh": "晚安",
+          "icon": "🌙"
+        },
+        {
+          "th": "ไม่รู้",
+          "rom": "mâi róo",
+          "zh": "不知道",
+          "note": "(I don't know)",
+          "star": true,
+          "icon": "🤷"
+        },
+        {
+          "th": "ยินดีที่ได้รู้จัก",
+          "rom": "yin dee têe dâai róo jàk",
+          "zh": "很高興認識你",
+          "star": true,
+          "icon": "🤝"
+        }
+      ]
+    }
+  ],
+  "dialogue": {
+    "scene": "在曼谷的青年旅館認識新朋友",
+    "lines": [
+      {
+        "who": "Tae",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "สวัสดีครับ",
+            "rom": "sà-wàt-dee kráp",
+            "zh": "你好"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "สวัสดีค่ะ",
+            "rom": "sà-wàt-dee kâ",
+            "zh": "你好"
+          }
+        ]
+      },
+      {
+        "who": "Tae",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "ขอโทษครับ คุณชื่ออะไรครับ",
+            "rom": "kŏr tôht kráp, kun chêu à-rai kráp",
+            "zh": "不好意思，你叫什麼名字？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "ฉันชื่อ[[เจน]]ค่ะ",
+            "rom": "chăn chêu [[Jane]] kâ",
+            "zh": "我叫 [[Jane]]。",
+            "tag": "answer"
+          },
+          {
+            "th": "ฉันมาจาก[[ไต้หวัน]]",
+            "rom": "chăn maa jàak [[dtâi-wăn]]",
+            "zh": "我來自[[台灣]]。",
+            "tag": "add"
+          },
+          {
+            "th": "แล้วคุณล่ะคะ",
+            "rom": "láew kun lâ ká",
+            "zh": "那你呢？",
+            "tag": "ask"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "Tae",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "ผมชื่อ[[เต้]]ครับ",
+            "rom": "pŏm chêu [[Tae]] kráp",
+            "zh": "我叫 [[Tae]]。",
+            "tag": "answer"
+          },
+          {
+            "th": "ผมเป็น[[คนไทย]]",
+            "rom": "pŏm bpen [[kon tai]]",
+            "zh": "我是[[泰國人]]。",
+            "tag": "add"
+          },
+          {
+            "th": "ยินดีที่ได้รู้จักครับ",
+            "rom": "yin dee têe dâai róo jàk kráp",
+            "zh": "很高興認識你。",
+            "tag": "react"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "ยินดีที่ได้รู้จักค่ะ",
+            "rom": "yin dee têe dâai róo jàk kâ",
+            "zh": "很高興認識你。",
+            "tag": "react"
+          },
+          {
+            "th": "คุณชอบอะไรคะ",
+            "rom": "kun chôp à-rai ká",
+            "zh": "你喜歡什麼？",
+            "tag": "ask"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "Tae",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "ผมชอบ[[มวยไทย]]ครับ",
+            "rom": "pŏm chôp [[muuay tai]] kráp",
+            "zh": "我喜歡[[泰拳]]。",
+            "tag": "answer"
+          },
+          {
+            "th": "แล้วคุณล่ะครับ",
+            "rom": "láew kun lâ kráp",
+            "zh": "那你呢？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "ฉันชอบ[[ถ่ายรูป]]ค่ะ",
+            "rom": "chăn chôp [[tàai rôop]] kâ",
+            "zh": "我喜歡[[拍照]]。",
+            "tag": "answer"
+          },
+          {
+            "th": "เจอกันค่ะ",
+            "rom": "jer gan kâ",
+            "zh": "再見。"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "Tae",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "เจอกันครับ",
+            "rom": "jer gan kráp",
+            "zh": "再見。"
+          }
+        ]
+      }
+    ]
+  },
+  "practice": [
+    {
+      "kind": "picture",
+      "title": "看圖介紹",
+      "body": "用 <<ชื่อ|chêu>>、<<เป็นคน|bpen kon>>、<<ชอบ|chôp>> 介紹這三個人。例：<<เขาชื่อ Faye เขาเป็นคนไทย เขาชอบกินข้าว|kăo chêu Faye, kăo bpen kon tai, kăo chôp gin kâao>>",
+      "cards": [
+        {
+          "name": "Faye",
+          "icon": "🍚",
+          "lines": [
+            "🇹🇭 泰國人",
+            "喜歡：吃飯"
+          ],
+          "image": "conversation/1/l1-faye.jpg"
+        },
+        {
+          "name": "Becky",
+          "icon": "🥊",
+          "lines": [
+            "🇹🇭 泰國人、西方白人",
+            "喜歡：泰拳"
+          ],
+          "image": "conversation/1/l1-becky.jpg"
+        },
+        {
+          "name": "Tay",
+          "icon": "📷",
+          "lines": [
+            "🇹🇭 泰國人",
+            "喜歡：拍照"
+          ],
+          "image": "conversation/1/l1-tay.jpg"
+        }
+      ],
+      "hints": [
+        {
+          "th": "เขาชื่อ…",
+          "rom": "kăo chêu…",
+          "zh": "他叫…"
+        },
+        {
+          "th": "เขาเป็นคนไทย",
+          "rom": "kăo bpen kon tai",
+          "zh": "他是泰國人"
+        },
+        {
+          "th": "เขาชอบ…",
+          "rom": "kăo chôp…",
+          "zh": "他喜歡…"
+        }
+      ]
+    },
+    {
+      "kind": "roleplay",
+      "title": "新朋友身份卡（老師、學生輪流）",
+      "body": "老師抽一張身份卡當新朋友，學生用自己的身份：打招呼、自我介紹、問對方。每次回答都要多補一句，再用 <<แล้วคุณล่ะ|láew kun lâ>> 把問題丟回去，至少來回 3 次；最後用 <<ยินดีที่ได้รู้จัก|yin dee têe dâai róo jàk>>、<<เจอกัน|jer gan>> 道別。再交換：學生抽卡，老師問。",
+      "cards": [
+        {
+          "name": "Ming",
+          "icon": "🇭🇰",
+          "lines": [
+            "香港人",
+            "喜歡：拍照 📷"
+          ]
+        },
+        {
+          "name": "Mei",
+          "icon": "🇹🇼",
+          "lines": [
+            "台灣人",
+            "喜歡：吃飯 🍚"
+          ]
+        },
+        {
+          "name": "Ali",
+          "icon": "🇲🇾",
+          "lines": [
+            "馬來西亞人",
+            "喜歡：去旅行 🧳"
+          ]
+        },
+        {
+          "name": "Tom",
+          "icon": "🧑‍🦰",
+          "lines": [
+            "西方白人（<<ฝรั่ง|fà-ràng>>）",
+            "喜歡：泰拳 🥊"
+          ]
+        },
+        {
+          "name": "Lily",
+          "icon": "🇲🇴",
+          "lines": [
+            "澳門人",
+            "喜歡：去旅行 🧳"
+          ]
+        }
+      ],
+      "hints": [
+        {
+          "th": "คุณชื่ออะไร",
+          "rom": "kun chêu à-rai",
+          "zh": "你叫什麼？"
+        },
+        {
+          "th": "คุณมาจากไหน",
+          "rom": "kun maa jàak năi",
+          "zh": "你來自哪裡？"
+        },
+        {
+          "th": "คุณเป็นคนอะไร",
+          "rom": "kun bpen kon à-rai",
+          "zh": "你是哪裡人？"
+        },
+        {
+          "th": "คุณชอบอะไร",
+          "rom": "kun chôp à-rai",
+          "zh": "你喜歡什麼？"
+        },
+        {
+          "th": "แล้วคุณล่ะ",
+          "rom": "láew kun lâ",
+          "zh": "那你呢？"
+        }
+      ]
+    }
+  ],
+  "extras": [
+    {
+      "title": "泰語的人稱",
+      "table": {
+        "head": [
+          "",
+          "我",
+          "你",
+          "他"
+        ],
+        "rows": [
+          [
+            "非常有禮貌",
+            "ดิฉัน｜dì-chăn｜我（女，極度有禮貌）\nหนู｜nŏo｜對長輩的自謙詞",
+            "",
+            ""
+          ],
+          [
+            "一般",
+            "ผม｜pŏm｜我（男）\nฉัน｜chăn｜我（女）\n（直接用自己的名字）\nเรา｜rao｜我（年輕人、不對長輩）",
+            "คุณ｜kun｜您\nพี่／น้อง｜pêe / nóng｜哥姐／弟妹\nเธอ｜ter｜你（密友）\nแก｜gae｜你（密友）",
+            "เขา｜kăo｜他\nเธอ｜ter｜他\nแก｜gae｜他\nเค้า｜káo｜他"
+          ],
+          [
+            "粗俗",
+            "กู｜goo｜我（粗俗）",
+            "มึง｜meung｜你（粗俗）\nอี／ไอ้｜ee / âi｜不禮貌前綴",
+            "มัน｜man｜它、牠"
+          ]
+        ]
+      }
+    },
+    {
+      "title": "《泰國達人秀》：自我介紹、小名",
+      "body": "泰國人幾乎都有小名（<<ชื่อเล่น|chêu lên>>），自我介紹時常常說小名。",
+      "lines": [
+        {
+          "th": "แนะนำตัวครับ",
+          "rom": "náe nam dtuua kráp",
+          "zh": "自我介紹一下"
+        },
+        {
+          "th": "ชื่อเล่นชื่อ Tae ครับผม",
+          "rom": "chêu lên chêu Tae, kráp pŏm",
+          "zh": "小名叫做 Tae"
+        }
+      ],
+      "video": {
+        "id": "ZFEUjwueHyI",
+        "start": 5,
+        "end": 13,
+        "label": "《泰國達人秀》自我介紹片段"
+      }
+    }
+  ],
+  "recap": [
+    {
+      "th": "คุณ{{ชื่อ}}อะไร／ฉัน{{ชื่อ}}[[เจน]]",
+      "rom": "kun {{chêu}} à-rai / chăn {{chêu}} [[Jane]]",
+      "zh": "你{{叫作}}什麼？／我{{叫作}}[[Jane]]"
+    },
+    {
+      "th": "คุณ{{มาจาก}}ไหน／ผม{{มาจาก}}[[ไต้หวัน]]",
+      "rom": "kun {{maa jàak}} năi / pŏm {{maa jàak}} [[dtâi-wăn]]",
+      "zh": "你{{來自}}哪裡？／我{{來自}}[[台灣]]"
+    },
+    {
+      "th": "คุณ{{เป็น}}คนอะไร／ผม{{เป็น}}[[คนไต้หวัน]]",
+      "rom": "kun {{bpen}} kon à-rai / pŏm {{bpen}} [[kon dtâi-wăn]]",
+      "zh": "你{{是}}哪裡人？／我{{是}}[[台灣人]]"
+    },
+    {
+      "th": "คุณ{{ชอบ}}อะไร／ผม{{ชอบ}}[[ไปเที่ยว]]",
+      "rom": "kun {{chôp}} à-rai / pŏm {{chôp}} [[bpai tîieow]]",
+      "zh": "你{{喜歡}}什麼？／我{{喜歡}}[[去旅行]]"
+    },
+    {
+      "th": "แล้วคุณล่ะ",
+      "rom": "láew kun lâ",
+      "zh": "那你呢？（把問題丟回去）"
+    }
+  ]
+}

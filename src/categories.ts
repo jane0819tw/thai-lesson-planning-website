@@ -5,6 +5,6 @@ export const CATEGORIES: Category[] = [
   { key: 'video', title: '影片教學', desc: '跟著影片逐句精讀', to: '/video' },
   { key: 'lyrics', title: '歌詞', desc: '用歌詞學泰文', to: '/song' },
   { key: 'culture', title: '文教', desc: '泰國文化與生活' },
-  { key: 'conversation', title: '會話', desc: '日常會話' },
+  { key: 'conversation', title: '泰語會話', desc: '自我介紹、點餐、殺價、問路，每 5 課一個單元', to: '/conversation' },
   { key: 'artfont', title: '藝術字', desc: '泰文藝術字' },
 ]

@@ -168,7 +168,7 @@ const chaptersOf = (l: Lesson) => slideTabs(l).filter(([k]) => k !== 'games').ma
 
 // 內容先用原本大小排版、量好尺寸（含超出 900px 的表格），再縮放到剛好放進外框的內容區
 // minH／minW：同一組（uniform）裡最大的內容尺寸，讓整組用同一個比例
-function fitInto(box: HTMLElement, el: HTMLElement, max: number, minH = 0, minW = 0) {
+export function fitInto(box: HTMLElement, el: HTMLElement, max: number, minH = 0, minW = 0) {
   el.style.zoom = '1'
   const cs = getComputedStyle(box)
   const w = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight)
@@ -177,7 +177,7 @@ function fitInto(box: HTMLElement, el: HTMLElement, max: number, minH = 0, minW 
 }
 
 // 側邊欄的縮圖：同一頁內容縮小顯示，裡面的按鈕不能點（點縮圖＝跳到那一頁）
-function Thumb({ body }: { body: ReactNode }) {
+export function Thumb({ body }: { body: ReactNode }) {
   const box = useRef<HTMLDivElement>(null)
   const el = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {

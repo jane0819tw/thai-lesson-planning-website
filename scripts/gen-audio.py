@@ -1,5 +1,6 @@
 """批次產生課程發音 mp3（edge-tts，th-TH-PremwadeeNeural）。
 用法：python3 scripts/gen-audio.py lesson-01 [lesson-02 ...] [--only 詞1 詞2 ...]
+      會話課：python3 scripts/gen-audio.py conv1-01（＝ data/conversation/1/lesson-01.json）
       --only：只處理列出的詞，並強制重生（會覆蓋已存在的檔案）
 輸出：public/audio/<hash>.mp3 與 public/audio/manifest.json（泰文文字 → 檔名）。
 前端 speak(text) 會先查 manifest，有檔就播 mp3，否則退回瀏覽器語音。
@@ -21,7 +22,7 @@ name_text = lambda s: re.sub(r"\s+", "", s)  # 同 src/audio/speak.ts 的 nameTe
 vowel_speech = lambda f: f.replace("-", "อ") if len(f.replace("-", "")) > 1 or f.replace("-", "") in ("อ", "ไ", "ใ", "ำ") else f.replace("-", "")  # อ ไ ใ 單念會念成符號名稱，補成 ออ ไอ ใอ
 
 # 個別詞指定來源（優先於自動規則）：聽過覺得某個來源唸得不對時，在這裡換成另一個
-FORCE_GTTS = {"ข้าวเหนียว", "หมูปิ้ง", "ชอบมาก", "นิดหน่อย", "ฤๅษี", "องุ่น", "ปริมาณ", "กรุณา", "โก๋แก่", "เออเออ", "ขอ", "ผอผึ้ง", "ฃอฃวด", "พ้า", "ยอยักษ์", "ณอเณร", "นาฬิกา", "ทำไมวะ", "แฟน", "วาฬใหญ่", "กี่น", "คี่น", "คั้น", "หรดี", "กั๊บ", "ก๊าบ", "คับ", "ค้าบ", "คิด", "จังหวัดอยุธยา", "จังหวัดอยุธยาสวยมาก", "ยักษ์", "กอล์ฟ", "ภูมิ", "ตีกอล์ฟ", "โพธิ์", "กอ", "ก่อ", "ก้อ", "ก๊อ", "ก๋อ", "จอ", "จ่อ", "จ้อ", "จ๊อ", "จ๋อ", "ฎอชฎา", "สวัสดีค่ะ ฉันชื่อเจน", "ก๊า", "ปู่"}  # L1 聲調表與 ฎอ ชฎา：老師 2026-11-05 要求全部重生，改 gTTS；L2 ก๋ะ ก๊า ปู่ 老師 2026-11-07 要求重生  # 子音名稱用「連寫」當 key（กอไก่ 這種）
+FORCE_GTTS = {"ข้าวเหนียว", "หมูปิ้ง", "ชอบมาก", "นิดหน่อย", "ฤๅษี", "องุ่น", "ปริมาณ", "กรุณา", "โก๋แก่", "เออเออ", "ขอ", "ผอผึ้ง", "ฃอฃวด", "พ้า", "ยอยักษ์", "ณอเณร", "นาฬิกา", "ทำไมวะ", "แฟน", "วาฬใหญ่", "กี่น", "คี่น", "คั้น", "หรดี", "กั๊บ", "ก๊าบ", "คับ", "ค้าบ", "คิด", "จังหวัดอยุธยา", "จังหวัดอยุธยาสวยมาก", "ยักษ์", "กอล์ฟ", "ภูมิ", "ตีกอล์ฟ", "โพธิ์", "กอ", "ก่อ", "ก้อ", "ก๊อ", "ก๋อ", "จอ", "จ่อ", "จ้อ", "จ๊อ", "จ๋อ", "ฎอชฎา", "สวัสดีค่ะ ฉันชื่อเจน", "ก๊า", "ปู่", "ฉันชื่อเจนค่ะ", "ฉันมาจากไต้หวัน", "มาเลเซีย"}  # 會話 L1：edge-tts 連續三次回空音訊（2026-11-11），改 gTTS  # L1 聲調表與 ฎอ ชฎา：老師 2026-11-05 要求全部重生，改 gTTS；L2 ก๋ะ ก๊า ปู่ 老師 2026-11-07 要求重生  # 子音名稱用「連寫」當 key（กอไก่ 這種）
 # 個別詞指定合成文字：含大寫數字的句子老師說要重錄的，數字直接寫成念法（L18 ฉันกินชานม ๓ แก้ว）；ฃ 是廢字，edge-tts 讀不出單獨一個，改念「ฃอ」
 # ก๋ะ（L2）：edge-tts 單獨念會回空音訊、gTTS 念成長音；加驚嘆號 edge-tts 才念得出來，短、先降後升（2026-11-07）
 FORCE_SYNTH = {"ก๋ะ": "ก๋ะ!", "ฃ": "ฃอ", "ฃอฃวด": "ขอ ฃวด", "ฉันกินชานม ๓ แก้ว": "ฉันกินชานม สาม แก้ว"}  # ฃอ 引擎念不好，發音時偷換成 ขอ（畫面仍顯示 ฃอ ฃวด）
@@ -82,15 +83,38 @@ def collect(lesson):
             synth_override[t] = t.translate(TO_ARABIC)
     return {t.strip() for t in texts if t and t.strip()}, synth_override
 
+# 會話課（data/conversation/<級>/lesson-NN.json）：同 src/conversation/data.ts 的 plain()
+conv_plain = lambda s: re.sub(r"\s+", " ", re.sub(r"\[[^\]]*\]", "", re.sub(r"\{\{|\}\}|\[\[|\]\]", "", s)).replace("／", " ")).strip()
+
+def collect_conv(lesson):
+    """會話課有播放鈕的句子：短句、句型、例句、單字、接話小工具、模板、對話串、練習提示句、補充例句、總結、複習"""
+    texts = []
+    for b in lesson.get("blocks", []):
+        if b["type"] == "pattern": texts.append(b["th"])
+        texts += [x["th"] for k in ("items", "examples", "vocab", "toolbox", "lines") for x in b.get(k, [])]
+    texts += [s["th"] for x in (lesson.get("dialogue") or {}).get("lines", []) for s in x["segs"]]
+    texts += [x["th"] for p in lesson.get("practice", []) for x in p.get("hints", [])]
+    texts += [x["th"] for e in lesson.get("extras", []) for x in e.get("lines", [])]
+    texts += [x["th"] for x in lesson.get("recap", [])]
+    texts += [x[k]["th"] for x in lesson.get("review", []) for k in ("q", "a")]
+    texts = {conv_plain(t) for t in texts}
+    return {t for t in texts if t}, {}
+
+def lesson_file(i):
+    m = re.fullmatch(r"conv(\d+)-(\d+)", i)
+    return ROOT / "data" / "conversation" / m[1] / f"lesson-{m[2]}.json" if m else ROOT / "data" / "lessons" / f"{i}.json"
+
 BPS, FR = 6000, 144  # edge-tts 輸出 48kbps mono mp3：每秒 6000 bytes，每個 frame 144 bytes
 BARE = re.compile(r"^[ก-ฮ]อ$")  # 單獨的「子音＋อ」（กอ、จอ…）：TTS 單唸會偏低調，改取連唸三次的第一個
 
 async def stream(text, rate):
-    data, wb = b"", []
-    async for m in edge_tts.Communicate(text, VOICE, rate=rate, boundary="WordBoundary").stream():
-        if m["type"] == "audio": data += m["data"]
-        else: wb.append((m["offset"] / 1e7, m["duration"] / 1e7))
-    return data, wb
+    async def run():
+        data, wb = b"", []
+        async for m in edge_tts.Communicate(text, VOICE, rate=rate, boundary="WordBoundary").stream():
+            if m["type"] == "audio": data += m["data"]
+            else: wb.append((m["offset"] / 1e7, m["duration"] / 1e7))
+        return data, wb
+    return await asyncio.wait_for(run(), 45)  # 服務偶爾整個沒回應（2026-11-10 會話 L1 卡了半小時），逾時就重試
 
 async def gen(text, f, synth=None):
     if text in gtts_texts:
@@ -113,7 +137,7 @@ async def gen(text, f, synth=None):
             else:
                 f.write_bytes((await stream(synth or text, rate))[0])
             return f.stat().st_size > 0
-        except (edge_tts.exceptions.NoAudioReceived, aiohttp.ClientError, asyncio.TimeoutError):
+        except (edge_tts.exceptions.NoAudioReceived, aiohttp.ClientError, asyncio.TimeoutError, TimeoutError):
             f.unlink(missing_ok=True)
     return False
 
@@ -123,7 +147,7 @@ async def main(ids, only=None):
     manifest = json.loads(mf.read_text(encoding="utf-8")) if mf.exists() else {}
     texts, synth = set(), {}
     for i in ids:
-        t, o = collect(json.loads((ROOT / "data" / "lessons" / f"{i}.json").read_text(encoding="utf-8")))
+        t, o = (collect_conv if i.startswith("conv") else collect)(json.loads(lesson_file(i).read_text(encoding="utf-8")))
         texts |= t; synth.update(o)
     gtts_texts.update(FORCE_GTTS); gtts_texts.difference_update(FORCE_EDGE)
     synth.update(FORCE_SYNTH)

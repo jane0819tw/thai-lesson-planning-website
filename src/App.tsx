@@ -20,6 +20,7 @@ import VideoIndex from './components/VideoIndex'
 import VideoPage from './components/VideoPage'
 import SongPage, { SongIndex } from './components/SongPage'
 import { SongPresent, VideoPresent } from './components/StudyPresent'
+import { ConvHandout, ConvIndex, ConvLessonPage, ConvPresent } from './conversation/ConvPages'
 
 export default function App() {
   const loc = useLocation() // 換頁時重置錯誤保護
@@ -47,6 +48,10 @@ export default function App() {
           <Route path="/reading/lesson/:id/homework" element={<HomeworkPage />} />
           <Route path="/reading/lesson/:id/video" element={<VideoChallengePage />} />
           <Route path="/reading/review/:unit" element={<HomeworkPage />} />
+          <Route path="/conversation" element={<ConvIndex />} />
+          <Route path="/conversation/:level/lesson/:n" element={<ConvLessonPage />} />
+          <Route path="/conversation/:level/lesson/:n/present" element={<ConvPresent />} />
+          <Route path="/conversation/:level/handout/:unit" element={<ConvHandout />} />
           <Route path="/book" element={<BookingPage />} />
           <Route path="/admin" element={<AdminPage />} />
           <Route path="/video" element={<VideoIndex />} />

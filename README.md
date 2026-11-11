@@ -26,5 +26,6 @@ npm run inventory  # 產生 docs/curriculum-inventory.md（全部課程內容清
 ## 網站結構
 - `/`：所有課程（泰文認字課程、影片教學、歌詞、文教、會話、藝術字）；分類設定在 `src/categories.ts`，有 `to` 的才開放。
 - `/reading`：認字課程列表（L1–L10）；`/reading/chart`：子音總表對照。
+- `/conversation`：會話課程列表（每 5 課一個單元）；資料在 `data/conversation/<級>/lesson-NN.json`，程式在 `src/conversation/`，製作流程見 `.claude/skills/conversation-lesson/SKILL.md`。
 - 課程內容來源：認字講義 L1–L10（拼音、解釋、單元規劃皆依講義）。講義沒有提供拼音的單字，欄位 `roman` 留空。
 - 例字圖示：`data/icons.json` 對應 `public/icons/*.svg`，圖片為 [Twemoji](https://github.com/jdecked/twemoji)（CC-BY 4.0，需標示來源）。部分單字（如 ฉิ่ง、ปฏัก、ฐาน 等）沒有完全對應的圖，先用相近圖示，可自行替換。
