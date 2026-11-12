@@ -5,7 +5,7 @@ import { convUnits, unitLabel } from '../reservation/access'
 import Annotator, { type Stroke } from '../components/Annotator'
 import { Thumb, fitInto } from '../components/PresentPage'
 import { convLesson, convLessons, convLevels, levelTitle } from './data'
-import { BlockCard, DialogueCard, ExtraCard, GoalsCard, PracticeCard, RecapCard, ReviewCard, sectionsOf } from './Parts'
+import { BlockCard, DialogueCard, PatternCard, PatternImagesCard, ToolboxCard, ExtraCard, GoalsCard, PracticeCard, RecapCard, ReviewCard, sectionsOf } from './Parts'
 import { ToggleBar, toggleClass, useConvToggles, type ConvToggles } from './toggles'
 import type { ConvLesson } from './types'
 import './conv.css'
@@ -98,7 +98,13 @@ function buildSlides(l: ConvLesson): { slides: Slide[]; chapters: string[] } {
     </div>
   )])
   if (l.review?.length) add('複習', [<ReviewCard l={l} key="r" />])
-  add('句型', l.blocks.map(b => <BlockCard b={b} key={b.id} />))
+  // 有接話小工具的句型：句型頁不放小工具，後面另接一頁小工具（L2 老師：放在句型頁會讓那頁縮得比其他句型頁小）
+  // 句型的對照圖也自己一頁（L2 老師：甜度、冰塊圖）
+  add('句型', l.blocks.flatMap(b => b.type !== 'pattern' ? [<BlockCard b={b} key={b.id} />] : [
+    <PatternCard b={b} noToolbox noImages key={b.id} />,
+    ...(b.images?.length ? [<PatternImagesCard b={b} key={`${b.id}-img`} />] : []),
+    ...(b.toolbox?.length ? [<ToolboxCard b={b} key={`${b.id}-tool`} />] : []),
+  ]))
   // 對話串整段太長、縮得太小：資料有 newSlide 就照老師指定的分頁；沒有就一頁最多 4 段話（一則訊息不拆開）
   if (l.dialogue) {
     const d = l.dialogue, pages: [number, number][] = []
@@ -113,7 +119,13 @@ function buildSlides(l: ConvLesson): { slides: Slide[]; chapters: string[] } {
     add('對話串', pages.map(([a, b]) => <DialogueCard d={d} from={a} to={b} key={a} />))
   }
   add('練習', l.practice.map((p, i) => <PracticeCard p={p} key={i} />))
-  add('補充', (l.extras ?? []).map((x, i) => <ExtraCard x={x} key={i} />))
+  // joinNext：和下一張補充放同一頁，左右兩塊（L2 老師）
+  const ex = l.extras ?? [], exPages: ReactNode[] = []
+  for (let i = 0; i < ex.length; i++) {
+    if (ex[i].joinNext && ex[i + 1]) { exPages.push(<div className="c-extra-pair" key={i}><ExtraCard x={ex[i]} /><ExtraCard x={ex[i + 1]} /></div>); i++ }
+    else exPages.push(<ExtraCard x={ex[i]} key={i} />)
+  }
+  add('補充', exPages)
   if (l.recap?.length) add('總結', [<RecapCard l={l} key="c" />])
   return { slides, chapters }
 }

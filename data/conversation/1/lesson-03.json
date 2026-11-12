@@ -1,0 +1,534 @@
+{
+  "level": 1,
+  "number": 3,
+  "title": "數字與量詞",
+  "status": "draft",
+  "goals": [
+    "用泰語說 0–99，買東西時說出數量：<<ชาเย็นสองแก้ว|chaa yen sŏng gâew>>（兩杯泰奶）",
+    "用 <<อันนี้คืออะไร|an née keu à-rai>> 問「這是什麼？」，用 <<ใช่ไหม|châi măi>> 確認"
+  ],
+  "review": [
+    {
+      "q": {
+        "th": "คุณชอบกินอะไร",
+        "rom": "kun chôp gin à-rai",
+        "zh": "你喜歡吃什麼？"
+      },
+      "a": {
+        "th": "ผมชอบกิน[[ผัดไทย]]",
+        "rom": "pŏm chôp gin [[pàt tai]]",
+        "zh": "我喜歡吃[[泰式炒河粉]]。"
+      }
+    },
+    {
+      "q": {
+        "th": "คุณชอบดื่มอะไร",
+        "rom": "kun chôp dèum à-rai",
+        "zh": "你喜歡喝什麼？"
+      },
+      "a": {
+        "th": "ฉันชอบดื่ม[[ชาเย็น]]",
+        "rom": "chăn chôp dèum [[chaa yen]]",
+        "zh": "我喜歡喝[[泰奶]]。"
+      }
+    },
+    {
+      "q": {
+        "th": "คุณอยากซื้ออะไร",
+        "rom": "kun yàak séu à-rai",
+        "zh": "你想買什麼？"
+      },
+      "a": {
+        "th": "ฉันอยากซื้อ[[ยาดม]]",
+        "rom": "chăn yàak séu [[yaa dom]]",
+        "zh": "我想買[[鼻通]]。"
+      }
+    },
+    {
+      "q": {
+        "th": "รับอะไรดีคะ",
+        "rom": "ráp à-rai dee ká",
+        "zh": "要點什麼？"
+      },
+      "a": {
+        "th": "อยากซื้อ[[ชาเย็น]][[หวานน้อย]]ค่ะ",
+        "rom": "yàak séu [[chaa yen]] [[wăan nói]] kâ",
+        "zh": "我想買[[泰奶]][[少糖]]。"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "phrases",
+      "id": "num-10",
+      "title": "數字 0–10",
+      "items": [
+        {
+          "th": "หนึ่ง",
+          "rom": "nèung",
+          "zh": "๑",
+          "star": true,
+          "icon": "1"
+        },
+        {
+          "th": "สอง",
+          "rom": "sŏng",
+          "zh": "๒",
+          "star": true,
+          "icon": "2"
+        },
+        {
+          "th": "สาม",
+          "rom": "săam",
+          "zh": "๓",
+          "star": true,
+          "icon": "3"
+        },
+        {
+          "th": "สี่",
+          "rom": "sèe",
+          "zh": "๔",
+          "star": true,
+          "icon": "4"
+        },
+        {
+          "th": "ห้า",
+          "rom": "hâa",
+          "zh": "๕",
+          "star": true,
+          "icon": "5"
+        },
+        {
+          "th": "หก",
+          "rom": "hòk",
+          "zh": "๖",
+          "star": true,
+          "icon": "6"
+        },
+        {
+          "th": "เจ็ด",
+          "rom": "jèt",
+          "zh": "๗",
+          "star": true,
+          "icon": "7"
+        },
+        {
+          "th": "แปด",
+          "rom": "bpàet",
+          "zh": "๘",
+          "star": true,
+          "icon": "8"
+        },
+        {
+          "th": "เก้า",
+          "rom": "gâo",
+          "zh": "๙",
+          "star": true,
+          "icon": "9"
+        },
+        {
+          "th": "สิบ",
+          "rom": "sìp",
+          "zh": "๑๐",
+          "star": true,
+          "icon": "10"
+        },
+        {
+          "th": "ศูนย์",
+          "rom": "sŏon",
+          "zh": "๐",
+          "star": true,
+          "icon": "0"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "gee",
+      "th": "กี่",
+      "rom": "gèe",
+      "zh": "多少、幾（＋量詞）",
+      "examples": [
+        {
+          "who": "f",
+          "th": "คุณลูกค้า อยากซื้อ[[ชาเย็น]]{{กี่}}[[แก้ว]]",
+          "rom": "kun lôok káa, yàak séu [[chaa yen]] {{gèe}} [[gâew]]",
+          "zh": "親愛的顧客，[[泰奶]]想買{{幾}}[[杯]]？",
+          "q": true
+        },
+        {
+          "who": "f",
+          "th": "ฉันอยากซื้อ[[ชาเย็น]][[สอง]][[แก้ว]]",
+          "rom": "chăn yàak séu [[chaa yen]] [[sŏng]] [[gâew]]",
+          "zh": "我想買[[泰奶]][[2]][[杯]]。"
+        },
+        {
+          "who": "m",
+          "th": "ผมอยากซื้อ[[ผัดไทย]][[หนึ่ง]][[ที่]]",
+          "rom": "pŏm yàak séu [[pàt tai]] [[nèung]] [[têe]]",
+          "zh": "我想買[[泰式炒河粉]][[1]][[份]]。"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "แก้ว",
+          "rom": "gâew",
+          "zh": "杯（飲料）",
+          "star": true,
+          "image": "conversation/1/l2-chayen.jpg"
+        },
+        {
+          "th": "ที่",
+          "rom": "têe",
+          "zh": "份（餐點）",
+          "star": true,
+          "image": "conversation/1/l2-khaomangai.jpg"
+        },
+        {
+          "th": "ตัว",
+          "rom": "dtuua",
+          "zh": "件（衣服、褲子）",
+          "star": true,
+          "image": "conversation/1/l2-shirt.jpg"
+        },
+        {
+          "th": "ใบ",
+          "rom": "bai",
+          "zh": "個（包包、帽子…）",
+          "star": true,
+          "image": "conversation/1/l2-bag.jpg"
+        },
+        {
+          "th": "อัน",
+          "rom": "an",
+          "zh": "個（小東西）",
+          "star": true,
+          "image": "conversation/1/l2-yadom.jpg"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "keu",
+      "th": "คือ",
+      "rom": "keu",
+      "zh": "是＋東西名稱",
+      "examples": [
+        {
+          "who": "f",
+          "th": "อันนี้{{คือ}}อะไร",
+          "rom": "an née {{keu}} à-rai",
+          "zh": "這個{{是}}什麼？",
+          "q": true
+        },
+        {
+          "who": "f",
+          "th": "อันนี้{{คือ}}[[ปากกา]]",
+          "rom": "an née {{keu}} [[bpàak gaa]]",
+          "zh": "這個{{是}}[[原子筆]]。"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ปากกา",
+          "rom": "bpàak gaa",
+          "zh": "原子筆",
+          "star": true,
+          "image": "conversation/1/l3-pen.jpg"
+        },
+        {
+          "th": "ยางลบ",
+          "rom": "yaang lóp",
+          "zh": "橡皮擦",
+          "star": true,
+          "image": "conversation/1/l3-eraser.jpg"
+        },
+        {
+          "th": "ทุเรียน",
+          "rom": "tú riian",
+          "zh": "榴槤",
+          "image": "conversation/1/l3-durian.jpg"
+        },
+        {
+          "th": "มังคุด",
+          "rom": "mang-kút",
+          "zh": "山竹",
+          "image": "conversation/1/l3-mangosteen.jpg"
+        },
+        {
+          "th": "เงาะ",
+          "rom": "ngór",
+          "zh": "紅毛丹",
+          "image": "conversation/1/l3-rambutan.jpg"
+        }
+      ],
+      "toolbox": [
+        {
+          "th": "อ๋อ",
+          "rom": "ŏr",
+          "zh": "喔～原來如此",
+          "note": "聽懂對方的回答時"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "chai",
+      "th": "ใช่",
+      "rom": "châi",
+      "zh": "是（yes）",
+      "examples": [
+        {
+          "who": "f",
+          "th": "อันนี้คือ[[ปากกา]] {{ใช่ไหม}}",
+          "rom": "an née keu [[bpàak gaa]] {{châi măi}}",
+          "zh": "這個是[[原子筆]]，{{是嗎}}？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "{{ใช่}} อันนี้คือ[[ปากกา]]",
+          "rom": "{{châi}} an née keu [[bpàak gaa]]",
+          "zh": "{{是}}，這個是[[原子筆]]。"
+        },
+        {
+          "who": "m",
+          "th": "{{ไม่ใช่}} อันนี้คือ[[ยางลบ]]",
+          "rom": "{{mâi châi}} an née keu [[yaang lóp]]",
+          "zh": "{{不是}}，這個是[[橡皮擦]]。"
+        }
+      ]
+    },
+    {
+      "type": "phrases",
+      "id": "num-99",
+      "title": "數字 11–99：尾數 1 說 เอ็ด èt，二十說 ยี่ yêe",
+      "items": [
+        {
+          "th": "สิบเอ็ด",
+          "rom": "sìp èt",
+          "zh": "11",
+          "icon": "11"
+        },
+        {
+          "th": "สิบสอง",
+          "rom": "sìp sŏng",
+          "zh": "12",
+          "icon": "12"
+        },
+        {
+          "th": "ยี่สิบ",
+          "rom": "yêe sìp",
+          "zh": "20",
+          "icon": "20"
+        },
+        {
+          "th": "ยี่สิบเอ็ด",
+          "rom": "yêe sìp èt",
+          "zh": "21",
+          "icon": "21"
+        },
+        {
+          "th": "ยี่สิบสอง",
+          "rom": "yêe sìp sŏng",
+          "zh": "22",
+          "icon": "22"
+        },
+        {
+          "th": "สามสิบ",
+          "rom": "săam sìp",
+          "zh": "30",
+          "icon": "30"
+        },
+        {
+          "th": "สามสิบเอ็ด",
+          "rom": "săam sìp èt",
+          "zh": "31",
+          "icon": "31"
+        },
+        {
+          "th": "เก้าสิบเก้า",
+          "rom": "gâo sìp gâo",
+          "zh": "99",
+          "icon": "99"
+        }
+      ]
+    }
+  ],
+  "dialogue": {
+    "scene": "在飲料店幫朋友買飲料",
+    "lines": [
+      {
+        "who": "店員",
+        "avatar": "👩‍🍳",
+        "segs": [
+          {
+            "th": "สวัสดีค่ะ รับอะไรดีคะ",
+            "rom": "sà-wàt-dee kâ, ráp à-rai dee ká",
+            "zh": "歡迎光臨，要點什麼？"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "อันนี้คืออะไรคะ",
+            "rom": "an née keu à-rai ká",
+            "zh": "這個是什麼？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "店員",
+        "avatar": "👩‍🍳",
+        "segs": [
+          {
+            "th": "อันนี้คือ[[ชาเขียว]]ค่ะ",
+            "rom": "an née keu [[chaa kĭieow]] kâ",
+            "zh": "這個是[[奶綠]]。",
+            "tag": "answer"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "อ๋อ",
+            "rom": "ŏr",
+            "zh": "喔～",
+            "tag": "react"
+          },
+          {
+            "th": "อยากซื้อ[[ชาเขียว]][[สอง]]แก้วค่ะ",
+            "rom": "yàak séu [[chaa kĭieow]] [[sŏng]] gâew kâ",
+            "zh": "我想買[[奶綠]][[兩]]杯。",
+            "tag": "answer"
+          }
+        ]
+      },
+      {
+        "who": "店員",
+        "avatar": "👩‍🍳",
+        "segs": [
+          {
+            "th": "[[สอง]]แก้ว ใช่ไหมคะ",
+            "rom": "[[sŏng]] gâew châi măi ká",
+            "zh": "[[兩]]杯，對嗎？",
+            "tag": "ask"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "ใช่ค่ะ",
+            "rom": "châi kâ",
+            "zh": "對。",
+            "tag": "answer"
+          },
+          {
+            "th": "[[หวานน้อย]]",
+            "rom": "[[wăan nói]]",
+            "zh": "[[少糖]]。",
+            "tag": "add"
+          },
+          {
+            "th": "อันนี้คือ[[ชานมไข่มุก]] ใช่ไหมคะ",
+            "rom": "an née keu [[chaa nom kài múk]] châi măi ká",
+            "zh": "這個是[[珍珠奶茶]]，對嗎？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "店員",
+        "avatar": "👩‍🍳",
+        "segs": [
+          {
+            "th": "ไม่ใช่ค่ะ อันนี้คือ[[ชาเย็น]]",
+            "rom": "mâi châi kâ, an née keu [[chaa yen]]",
+            "zh": "不是，這個是[[泰奶]]。",
+            "tag": "answer"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "อ๋อ",
+            "rom": "ŏr",
+            "zh": "喔～",
+            "tag": "react"
+          },
+          {
+            "th": "[[ชาเย็น]][[หนึ่ง]]แก้วค่ะ",
+            "rom": "[[chaa yen]] [[nèung]] gâew kâ",
+            "zh": "[[泰奶]][[一]]杯。",
+            "tag": "answer"
+          }
+        ]
+      }
+    ]
+  },
+  "practice": [
+    {
+      "kind": "roleplay",
+      "title": "點餐說數量（老師當老闆）",
+      "body": "點兩樣東西，每樣都說出數量和量詞（杯、份、件、個）。"
+    },
+    {
+      "kind": "translate",
+      "title": "中翻泰",
+      "items": [
+        "顧客：我想買兩件衣服，S 號。",
+        "顧客：我想買 1 份泰式炒河粉，不加辣椒。",
+        "顧客：我想買 3 杯泰奶，少糖 30%。"
+      ]
+    }
+  ],
+  "extras": [
+    {
+      "title": "泰文數字知多少",
+      "images": [
+        "conversation/1/l3-555.jpg",
+        "conversation/1/l3-pee.jpg"
+      ],
+      "body": "網路上打 555＝哈哈哈（5 唸 <<ห้า|hâa>>）。<<๙|gâo>>（9）和 <<ก้าว|gâao>>（邁步）音近，是泰國人喜歡的數字。13 和 <<ผี|pĕe>>（鬼）這個字很像。"
+    },
+    {
+      "title": "數字歌",
+      "link": {
+        "url": "https://www.youtube.com/watch?v=mp4EUaXR954",
+        "label": "數字歌"
+      }
+    }
+  ],
+  "recap": [
+    {
+      "th": "[[ชาเย็น]]{{กี่}}[[แก้ว]]／[[ชาเย็น]][[สอง]][[แก้ว]]",
+      "rom": "[[chaa yen]] {{gèe}} [[gâew]] / [[chaa yen]] [[sŏng]] [[gâew]]",
+      "zh": "[[泰奶]]{{幾}}[[杯]]？／[[泰奶]][[2]][[杯]]"
+    },
+    {
+      "th": "อันนี้{{คือ}}อะไร／อันนี้{{คือ}}[[ปากกา]]",
+      "rom": "an née {{keu}} à-rai / an née {{keu}} [[bpàak gaa]]",
+      "zh": "這個{{是}}什麼？／這個{{是}}[[原子筆]]"
+    },
+    {
+      "th": "อันนี้คือ[[ปากกา]] {{ใช่ไหม}}／{{ใช่}}・{{ไม่ใช่}}",
+      "rom": "an née keu [[bpàak gaa]] {{châi măi}} / {{châi}} · {{mâi châi}}",
+      "zh": "這個是[[原子筆]]，{{是嗎}}？／{{是}}・{{不是}}"
+    }
+  ]
+}

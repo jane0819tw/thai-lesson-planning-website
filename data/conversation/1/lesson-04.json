@@ -1,0 +1,680 @@
+{
+  "level": 1,
+  "number": 4,
+  "title": "價錢與殺價",
+  "status": "draft",
+  "goals": [
+    "用 <<อันนี้เท่าไหร่|an née tâo rài>> 問價錢，聽懂 100 以上的價錢",
+    "用 <<ลดได้ไหม|lót dâai măi>> 殺價，完成一次購買"
+  ],
+  "review": [
+    {
+      "q": {
+        "th": "อันนี้คืออะไร",
+        "rom": "an née keu à-rai",
+        "zh": "這個是什麼？"
+      },
+      "a": {
+        "th": "อันนี้คือ[[ทุเรียน]]",
+        "rom": "an née keu [[tú riian]]",
+        "zh": "這個是[[榴槤]]。"
+      }
+    },
+    {
+      "q": {
+        "th": "อันนี้คือ[[ปากกา]] ใช่ไหม",
+        "rom": "an née keu [[bpàak gaa]] châi măi",
+        "zh": "這個是[[原子筆]]，是嗎？"
+      },
+      "a": {
+        "th": "ไม่ใช่ อันนี้คือ[[ยางลบ]]",
+        "rom": "mâi châi, an née keu [[yaang lóp]]",
+        "zh": "不是，這個是[[橡皮擦]]。"
+      }
+    },
+    {
+      "q": {
+        "th": "อยากซื้อ[[ชาเย็น]]กี่[[แก้ว]]",
+        "rom": "yàak séu [[chaa yen]] gèe [[gâew]]",
+        "zh": "[[泰奶]]想買幾[[杯]]？"
+      },
+      "a": {
+        "th": "อยากซื้อ[[ชาเย็น]][[สาม]][[แก้ว]]",
+        "rom": "yàak séu [[chaa yen]] [[săam]] [[gâew]]",
+        "zh": "想買[[泰奶]][[3]][[杯]]。"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "phrases",
+      "id": "num-100",
+      "title": "數字 100 以上",
+      "items": [
+        {
+          "th": "หนึ่งร้อย",
+          "rom": "nèung rói",
+          "zh": "100",
+          "star": true
+        },
+        {
+          "th": "หนึ่งพัน",
+          "rom": "nèung pan",
+          "zh": "1,000",
+          "star": true
+        },
+        {
+          "th": "หนึ่งหมื่น",
+          "rom": "nèung mèun",
+          "zh": "10,000",
+          "star": true
+        },
+        {
+          "th": "หนึ่งแสน",
+          "rom": "nèung săen",
+          "zh": "100,000",
+          "star": true
+        },
+        {
+          "th": "หนึ่งล้าน",
+          "rom": "nèung láan",
+          "zh": "1,000,000",
+          "star": true
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "tao-rai",
+      "th": "เท่าไหร่",
+      "rom": "tâo rài",
+      "zh": "多少錢",
+      "examples": [
+        {
+          "who": "f",
+          "th": "[[อันนี้]]{{เท่าไหร่}}",
+          "rom": "[[an née]] {{tâo rài}}",
+          "zh": "[[這個]]{{多少錢}}？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "[[อันนี้]][[ห้าสิบ]]บาท",
+          "rom": "[[an née]] [[hâa sìp]] bàat",
+          "zh": "[[這個]][[50]]泰銖。"
+        },
+        {
+          "who": "f",
+          "th": "ทั้งหมด{{เท่าไหร่}}",
+          "rom": "táng mòt {{tâo rài}}",
+          "zh": "全部{{多少錢}}？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ทั้งหมด[[เก้าสิบ]]บาท",
+          "rom": "táng mòt [[gâo sìp]] bàat",
+          "zh": "全部[[90]]泰銖。"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ราคา",
+          "rom": "raa-kaa",
+          "zh": "價格",
+          "star": true,
+          "icon": "🏷️"
+        },
+        {
+          "th": "ทั้งหมด",
+          "rom": "táng mòt",
+          "zh": "全部",
+          "star": true,
+          "icon": "🧾"
+        },
+        {
+          "th": "แพง",
+          "rom": "paeng",
+          "zh": "貴",
+          "star": true,
+          "icon": "💸"
+        },
+        {
+          "th": "ถูก",
+          "rom": "tòok",
+          "zh": "便宜",
+          "star": true,
+          "icon": "👍"
+        },
+        {
+          "th": "ตุ๊กตา",
+          "rom": "dtúk-gà-dtaa",
+          "zh": "娃娃",
+          "image": "conversation/1/l4-doll.jpg"
+        },
+        {
+          "th": "ตั๋วแฟนมีต",
+          "rom": "dtŭua faen mêet",
+          "zh": "見面會的票",
+          "image": "conversation/1/l4-ticket.jpg"
+        },
+        {
+          "th": "คอนโด",
+          "rom": "kon-doh",
+          "zh": "公寓",
+          "image": "conversation/1/l4-condo.jpg"
+        }
+      ],
+      "toolbox": [
+        {
+          "th": "จริงเหรอ",
+          "rom": "jing rĕr",
+          "zh": "真的嗎？",
+          "note": "聽到意外的價錢時"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "ao",
+      "th": "เอา",
+      "rom": "ao",
+      "zh": "要",
+      "examples": [
+        {
+          "who": "f",
+          "th": "คุณ{{เอา}}อะไร",
+          "rom": "kun {{ao}} à-rai",
+          "zh": "你{{要}}什麼？",
+          "q": true
+        },
+        {
+          "who": "f",
+          "th": "ฉัน{{เอา}}[[กล้วย]]",
+          "rom": "chăn {{ao}} [[glûuay]]",
+          "zh": "我{{要}}[[香蕉]]。"
+        },
+        {
+          "who": "f",
+          "th": "ฉัน{{ไม่เอา}}[[มะม่วง]]",
+          "rom": "chăn {{mâi ao}} [[má-mûuang]]",
+          "zh": "我{{不要}}[[芒果]]。"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "กล้วย",
+          "rom": "glûuay",
+          "zh": "香蕉",
+          "star": true,
+          "image": "conversation/1/l4-banana.jpg"
+        },
+        {
+          "th": "มะม่วง",
+          "rom": "má-mûuang",
+          "zh": "芒果",
+          "star": true,
+          "image": "conversation/1/l4-mango.jpg"
+        },
+        {
+          "th": "สับปะรด",
+          "rom": "sàp-bpà-rót",
+          "zh": "鳳梨",
+          "star": true,
+          "image": "conversation/1/l4-pineapple.jpg"
+        },
+        {
+          "th": "แตงโม",
+          "rom": "dtaeng moh",
+          "zh": "西瓜",
+          "star": true,
+          "image": "conversation/1/l4-watermelon.jpg"
+        }
+      ]
+    },
+    {
+      "type": "phrases",
+      "id": "food",
+      "title": "相關食物",
+      "items": [
+        {
+          "th": "โรตีใส่กล้วย",
+          "rom": "roh-dtee sài glûuay",
+          "zh": "香蕉煎餅",
+          "image": "conversation/1/l4-roti.jpg"
+        },
+        {
+          "th": "ข้าวเหนียวมะม่วง",
+          "rom": "kâao nĭieow má-mûuang",
+          "zh": "芒果糯米飯",
+          "image": "conversation/1/l4-mangosticky.jpg"
+        },
+        {
+          "th": "ข้าวผัดสับปะรด",
+          "rom": "kâao pàt sàp-bpà-rót",
+          "zh": "鳳梨炒飯",
+          "image": "conversation/1/l4-pineapplerice.jpg"
+        },
+        {
+          "th": "แตงโมปั่น",
+          "rom": "dtaeng moh bpàn",
+          "zh": "西瓜冰沙",
+          "image": "conversation/1/l4-watermelonshake.jpg"
+        },
+        {
+          "th": "ไอติมมะพร้าว",
+          "rom": "ai-dtim má-práao",
+          "zh": "椰子冰淇淋",
+          "image": "conversation/1/l4-coconuticecream.jpg"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "lot",
+      "th": "ลด",
+      "rom": "lót",
+      "zh": "降低（殺價）",
+      "examples": [
+        {
+          "who": "f",
+          "th": "พี่คะ {{เก็บตังค์}}／น้องคะ {{เช็คบิล}}",
+          "rom": "pêe ká {{gèp dtang}} / nóng ká {{chék bin}}",
+          "zh": "哥姊～{{買單}}／弟妹～{{買單}}",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "[[สองร้อยห้าสิบ]]บาท",
+          "rom": "[[sŏng rói hâa sìp]] bàat",
+          "zh": "[[250]] 泰銖。"
+        },
+        {
+          "who": "f",
+          "th": "{{ลด}}ได้ไหม",
+          "rom": "{{lót}} dâai măi",
+          "zh": "{{降低}}可以嗎？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "{{ลด}}ได้[[ห้า]]บาท",
+          "rom": "{{lót}} dâai [[hâa]] bàat",
+          "zh": "可以{{降低}} [[5]] 泰銖。"
+        },
+        {
+          "who": "m",
+          "th": "{{ลด}}ไม่ได้",
+          "rom": "{{lót}} mâi dâai",
+          "zh": "不能{{降低}}。"
+        },
+        {
+          "who": "f",
+          "th": "[[สองร้อย]]บาทได้ไหม",
+          "rom": "[[sŏng rói]] bàat dâai măi",
+          "zh": "[[200]] 泰銖可以嗎？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "(ไม่)ได้／ก็ได้",
+          "rom": "(mâi) dâai / gôr dâai",
+          "zh": "（不）可以／也行。"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "mee",
+      "th": "มี",
+      "rom": "mee",
+      "zh": "有",
+      "examples": [
+        {
+          "who": "f",
+          "th": "คุณ{{มี}}[[บัตรเครดิต]]ไหม",
+          "rom": "kun {{mee}} [[bàt credit]] măi",
+          "zh": "你{{有}}[[信用卡]]嗎？",
+          "q": true
+        },
+        {
+          "who": "f",
+          "th": "ฉัน{{มี}}[[บัตรเครดิต]]",
+          "rom": "chăn {{mee}} [[bàt credit]]",
+          "zh": "我{{有}}[[信用卡]]。"
+        },
+        {
+          "who": "f",
+          "th": "ฉัน{{ไม่มี}}[[บัตรเครดิต]]",
+          "rom": "chăn {{mâi mee}} [[bàt credit]]",
+          "zh": "我{{沒有}}[[信用卡]]。"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "บัตรเครดิต",
+          "rom": "bàt credit",
+          "zh": "信用卡",
+          "star": true,
+          "image": "conversation/1/l4-card.jpg"
+        },
+        {
+          "th": "หนังสือเดินทาง",
+          "rom": "năng-sĕu dern taang",
+          "zh": "護照",
+          "image": "conversation/1/l4-passport.jpg"
+        },
+        {
+          "th": "เพื่อน",
+          "rom": "pêuuan",
+          "zh": "朋友",
+          "star": true,
+          "image": "conversation/1/l4-friends.jpg"
+        },
+        {
+          "th": "มือถือ",
+          "rom": "meu tĕu",
+          "zh": "手機",
+          "star": true,
+          "image": "conversation/1/l4-phone.jpg"
+        },
+        {
+          "th": "คำถาม",
+          "rom": "kam tăam",
+          "zh": "疑問",
+          "image": "conversation/1/l4-question.jpg"
+        }
+      ]
+    }
+  ],
+  "dialogue": {
+    "scene": "在夜市水果攤殺價",
+    "lines": [
+      {
+        "who": "老闆",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "สวัสดีครับ เอาอะไรครับ",
+            "rom": "sà-wàt-dee kráp, ao à-rai kráp",
+            "zh": "你好，要什麼？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "เอา[[มังคุด]]ค่ะ",
+            "rom": "ao [[mang-kút]] kâ",
+            "zh": "要[[山竹]]。",
+            "tag": "answer"
+          },
+          {
+            "th": "ฉันชอบกิน[[มังคุด]]",
+            "rom": "chăn chôp gin [[mang-kút]]",
+            "zh": "我喜歡吃[[山竹]]。",
+            "tag": "add"
+          },
+          {
+            "th": "[[มังคุด]]เท่าไหร่คะ",
+            "rom": "[[mang-kút]] tâo rài ká",
+            "zh": "[[山竹]]多少錢？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "老闆",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "[[หนึ่งร้อยห้าสิบ]]บาทครับ",
+            "rom": "[[nèung rói hâa sìp]] bàat kráp",
+            "zh": "[[150]] 泰銖。",
+            "tag": "answer"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "จริงเหรอคะ",
+            "rom": "jing rĕr ká",
+            "zh": "真的嗎？",
+            "tag": "react"
+          },
+          {
+            "th": "แพง",
+            "rom": "paeng",
+            "zh": "好貴。",
+            "tag": "add"
+          },
+          {
+            "th": "ลดได้ไหมคะ",
+            "rom": "lót dâai măi ká",
+            "zh": "可以算便宜一點嗎？",
+            "tag": "ask"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "老闆",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "ลดได้[[สิบ]]บาทครับ",
+            "rom": "lót dâai [[sìp]] bàat kráp",
+            "zh": "可以少 [[10]] 泰銖。",
+            "tag": "answer"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "[[หนึ่งร้อย]]บาทได้ไหมคะ",
+            "rom": "[[nèung rói]] bàat dâai măi ká",
+            "zh": "[[100]] 泰銖可以嗎？",
+            "tag": "ask"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "老闆",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "ก็ได้ครับ",
+            "rom": "gôr dâai kráp",
+            "zh": "也行。",
+            "tag": "answer"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "เจอกันค่ะ",
+            "rom": "jer gan kâ",
+            "zh": "再見。"
+          }
+        ]
+      }
+    ]
+  },
+  "practice": [
+    {
+      "kind": "roleplay",
+      "title": "殺價（老師當老闆娘）",
+      "body": "當下面的客人，問價錢、殺價、完成購買，做兩次。",
+      "cards": [
+        {
+          "name": "LingLing",
+          "image": "conversation/1/l4-lingling.jpg",
+          "lines": [
+            "有香港朋友",
+            "不要鳳梨"
+          ]
+        },
+        {
+          "name": "Orm",
+          "image": "conversation/1/l4-orm.jpg",
+          "lines": [
+            "沒有手機",
+            "要西瓜"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "translate",
+      "title": "中翻泰",
+      "items": [
+        "顧客：我喜歡吃榴槤，我想買榴槤，榴槤多少錢？",
+        "老闆：榴槤 60 泰銖。",
+        "顧客：好便宜！",
+        "老闆：全部 90 泰銖。"
+      ]
+    }
+  ],
+  "extras": [
+    {
+      "title": "看價格說說看",
+      "body": "用 <<อันนี้เท่าไหร่|an née tâo rài>> 問，用「…<<บาท|bàat>>」回答。",
+      "images": [
+        "conversation/1/l3-price-greentea.jpg",
+        "conversation/1/l3-price-mangosteen.jpg",
+        "conversation/1/l3-price-lemon.jpg",
+        "conversation/1/l3-price-kaprao.jpg"
+      ]
+    },
+    {
+      "title": "大數字（一千萬以上）",
+      "table": {
+        "head": [
+          "數字",
+          "泰文"
+        ],
+        "rows": [
+          [
+            "10,000,000",
+            "สิบล้าน｜sìp láan｜一千萬"
+          ],
+          [
+            "100,000,000",
+            "หนึ่งร้อยล้าน｜nèung rói láan｜一億"
+          ],
+          [
+            "1,000,000,000",
+            "หนึ่งพันล้าน｜nèung pan láan｜十億"
+          ],
+          [
+            "10,000,000,000",
+            "หนึ่งหมื่นล้าน｜nèung mèun láan｜一百億"
+          ],
+          [
+            "100,000,000,000",
+            "หนึ่งแสนล้าน｜nèung săen láan｜一千億"
+          ],
+          [
+            "1,000,000,000,000",
+            "หนึ่งล้านล้าน｜nèung láan láan｜一兆"
+          ]
+        ]
+      }
+    },
+    {
+      "title": "香蕉＝easy",
+      "body": "泰國人說「<<กล้วย|glûuay>>」（香蕉）就是「很簡單」。",
+      "images": [
+        "conversation/1/l4-banana-easy.jpg",
+        "conversation/1/l4-piece-of-cake.jpg"
+      ],
+      "lines": [
+        {
+          "th": "กล้วย",
+          "rom": "glûuay",
+          "zh": "香蕉"
+        },
+        {
+          "th": "ง่าย",
+          "rom": "ngâai",
+          "zh": "簡單"
+        },
+        {
+          "th": "ง่ายเหมือนปอกกล้วยเข้าปาก",
+          "rom": "ngâai mĕuuan bpòk glûuay kâo bpàak",
+          "zh": "簡單得像剝香蕉放進嘴巴（易如反掌）"
+        }
+      ]
+    },
+    {
+      "title": "其他幣值",
+      "lines": [
+        {
+          "th": "ดอลลาร์",
+          "rom": "don-lâa",
+          "zh": "美金"
+        },
+        {
+          "th": "ดอลลาร์ไต้หวัน",
+          "rom": "don-lâa dtâi-wăn",
+          "zh": "台幣"
+        },
+        {
+          "th": "เยน",
+          "rom": "yen",
+          "zh": "日幣"
+        },
+        {
+          "th": "วอน",
+          "rom": "won",
+          "zh": "韓元"
+        },
+        {
+          "th": "หยวน",
+          "rom": "yŭuan",
+          "zh": "人民幣"
+        },
+        {
+          "th": "โดง",
+          "rom": "dohng",
+          "zh": "越南盾"
+        }
+      ]
+    }
+  ],
+  "recap": [
+    {
+      "th": "[[อันนี้]]{{เท่าไหร่}}／[[อันนี้]][[ห้าสิบ]]บาท",
+      "rom": "[[an née]] {{tâo rài}} / [[an née]] [[hâa sìp]] bàat",
+      "zh": "[[這個]]{{多少錢}}？／[[這個]][[50]]泰銖"
+    },
+    {
+      "th": "{{ลด}}ได้ไหม／[[สองร้อย]]บาทได้ไหม",
+      "rom": "{{lót}} dâai măi / [[sŏng rói]] bàat dâai măi",
+      "zh": "可以{{降低}}嗎？／[[200]]泰銖可以嗎？"
+    },
+    {
+      "th": "คุณ{{เอา}}อะไร／ฉัน{{เอา}}[[กล้วย]]",
+      "rom": "kun {{ao}} à-rai / chăn {{ao}} [[glûuay]]",
+      "zh": "你{{要}}什麼？／我{{要}}[[香蕉]]"
+    },
+    {
+      "th": "คุณ{{มี}}[[บัตรเครดิต]]ไหม／ฉัน{{ไม่มี}}[[บัตรเครดิต]]",
+      "rom": "kun {{mee}} [[bàt credit]] măi / chăn {{mâi mee}} [[bàt credit]]",
+      "zh": "你{{有}}[[信用卡]]嗎？／我{{沒有}}[[信用卡]]"
+    }
+  ]
+}

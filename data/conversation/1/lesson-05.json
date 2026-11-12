@@ -1,0 +1,658 @@
+{
+  "level": 1,
+  "number": 5,
+  "title": "地點方向與「怎麼樣」",
+  "status": "draft",
+  "goals": [
+    "問路：<<ห้องน้ำอยู่ที่ไหน|hông náam yòo têe năi>>（廁所在哪裡？），聽懂左轉、右轉、直走",
+    "用 <<เป็นยังไง|bpen yang ngai>> 問人、味道、天氣怎麼樣，回答「不／有點／很／真是」"
+  ],
+  "review": [
+    {
+      "q": {
+        "th": "อันนี้เท่าไหร่",
+        "rom": "an née tâo rài",
+        "zh": "這個多少錢？"
+      },
+      "a": {
+        "th": "อันนี้[[ห้าสิบ]]บาท",
+        "rom": "an née [[hâa sìp]] bàat",
+        "zh": "這個[[50]]泰銖。"
+      }
+    },
+    {
+      "q": {
+        "th": "ลดได้ไหม",
+        "rom": "lót dâai măi",
+        "zh": "可以算便宜一點嗎？"
+      },
+      "a": {
+        "th": "ลดได้[[สิบ]]บาท",
+        "rom": "lót dâai [[sìp]] bàat",
+        "zh": "可以少[[10]]泰銖。"
+      }
+    },
+    {
+      "q": {
+        "th": "คุณเอาอะไร",
+        "rom": "kun ao à-rai",
+        "zh": "你要什麼？"
+      },
+      "a": {
+        "th": "ฉันเอา[[แตงโม]]",
+        "rom": "chăn ao [[dtaeng moh]]",
+        "zh": "我要[[西瓜]]。"
+      }
+    },
+    {
+      "q": {
+        "th": "คุณมี[[บัตรเครดิต]]ไหม",
+        "rom": "kun mee [[bàt credit]] măi",
+        "zh": "你有[[信用卡]]嗎？"
+      },
+      "a": {
+        "th": "ฉันไม่มี[[บัตรเครดิต]]",
+        "rom": "chăn mâi mee [[bàt credit]]",
+        "zh": "我沒有[[信用卡]]。"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "pattern",
+      "id": "yoo-tee-nai",
+      "th": "อยู่ที่ไหน",
+      "rom": "yòo têe năi",
+      "zh": "在哪裡",
+      "examples": [
+        {
+          "who": "f",
+          "th": "[[ห้องน้ำ]]{{อยู่ที่ไหน}}",
+          "rom": "[[hông náam]] {{yòo têe năi}}",
+          "zh": "[[廁所]]{{在哪裡}}？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "[[ตรงไป]]{{แล้วก็}}[[เลี้ยวขวา]]",
+          "rom": "[[dtrong bpai]] {{láew gôr}} [[líieow kwăa]]",
+          "zh": "[[直走]]{{然後}}[[右轉]]。"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ห้องน้ำ",
+          "rom": "hông náam",
+          "zh": "廁所",
+          "star": true,
+          "image": "conversation/1/l5-toilet.jpg"
+        },
+        {
+          "th": "เลี้ยวซ้าย",
+          "rom": "líieow sáai",
+          "zh": "左轉",
+          "star": true,
+          "icon": "⬅️"
+        },
+        {
+          "th": "เลี้ยวขวา",
+          "rom": "líieow kwăa",
+          "zh": "右轉",
+          "star": true,
+          "icon": "➡️"
+        },
+        {
+          "th": "ตรงไป",
+          "rom": "dtrong bpai",
+          "zh": "直走",
+          "star": true,
+          "icon": "⬆️"
+        },
+        {
+          "th": "จอดที่นี่",
+          "rom": "jòt têe nêe",
+          "zh": "停（車）在這裡",
+          "icon": "🅿️"
+        },
+        {
+          "th": "ขึ้นทางด่วน",
+          "rom": "kêun taang dùuan",
+          "zh": "上高速公路",
+          "icon": "🛣️"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "chan",
+      "th": "ชั้น",
+      "rom": "chán",
+      "zh": "樓層",
+      "examples": [
+        {
+          "who": "f",
+          "th": "ที่นี่คือ{{ชั้น}}ไหน",
+          "rom": "têe nêe keu {{chán}} năi",
+          "zh": "這裡是哪{{樓}}？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ที่นี่คือ{{ชั้น}}[[G]]",
+          "rom": "têe nêe keu {{chán}} [[G]]",
+          "zh": "這裡是[[G]]{{樓}}。"
+        },
+        {
+          "who": "f",
+          "th": "ที่นี่คือที่ไหน",
+          "rom": "têe nêe keu têe năi",
+          "zh": "這裡是哪裡？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ที่นี่ที่[[Terminal 21]]",
+          "rom": "têe nêe têe [[Terminal 21]]",
+          "zh": "這裡在[[Terminal 21]]。"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ที่นี่",
+          "rom": "têe nêe",
+          "zh": "這裡",
+          "star": true,
+          "icon": "📍"
+        },
+        {
+          "th": "ชั้น",
+          "rom": "chán",
+          "zh": "樓層",
+          "star": true,
+          "icon": "🏢"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "people",
+      "th": "เป็นยังไง",
+      "rom": "bpen yang ngai",
+      "zh": "怎麼樣（人）",
+      "examples": [
+        {
+          "who": "f",
+          "th": "[[เขา]]{{เป็นยังไง}}",
+          "rom": "[[kăo]] {{bpen yang ngai}}",
+          "zh": "[[他]]{{怎麼樣}}？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ไม่[[หล่อ]]",
+          "rom": "mâi [[lòr]]",
+          "zh": "不[[帥]]"
+        },
+        {
+          "who": "m",
+          "th": "[[หล่อ]]นิดหน่อย",
+          "rom": "[[lòr]] nít nòi",
+          "zh": "有點[[帥]]"
+        },
+        {
+          "who": "m",
+          "th": "[[หล่อ]]มาก",
+          "rom": "[[lòr]] mâak",
+          "zh": "很[[帥]]"
+        },
+        {
+          "who": "m",
+          "th": "[[หล่อ]]จังเลย",
+          "rom": "[[lòr]] jang loiie",
+          "zh": "真是[[帥]]"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "หล่อ",
+          "rom": "lòr",
+          "zh": "帥氣",
+          "star": true,
+          "icon": "😎"
+        },
+        {
+          "th": "สวย",
+          "rom": "sŭuay",
+          "zh": "漂亮",
+          "star": true,
+          "icon": "👗"
+        },
+        {
+          "th": "เก่ง",
+          "rom": "gèng",
+          "zh": "厲害",
+          "star": true,
+          "icon": "💪"
+        },
+        {
+          "th": "น่ารัก",
+          "rom": "nâa rák",
+          "zh": "可愛",
+          "icon": "🥰"
+        },
+        {
+          "th": "นิดหน่อย",
+          "rom": "nít nòi",
+          "zh": "有點",
+          "star": true,
+          "icon": "🤏"
+        },
+        {
+          "th": "มาก",
+          "rom": "mâak",
+          "zh": "很",
+          "star": true,
+          "icon": "👍"
+        },
+        {
+          "th": "จังเลย",
+          "rom": "jang loiie",
+          "zh": "真是…",
+          "star": true,
+          "icon": "😍"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "taste",
+      "th": "เป็นยังไง",
+      "rom": "bpen yang ngai",
+      "zh": "怎麼樣（味道）",
+      "examples": [
+        {
+          "who": "f",
+          "th": "[[รสชาติ]]{{เป็นยังไง}}",
+          "rom": "[[rót châat]] {{bpen yang ngai}}",
+          "zh": "[[味道]]{{怎麼樣}}？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ไม่[[เผ็ด]]",
+          "rom": "mâi [[pèt]]",
+          "zh": "不[[辣]]"
+        },
+        {
+          "who": "m",
+          "th": "[[เผ็ด]]นิดหน่อย",
+          "rom": "[[pèt]] nít nòi",
+          "zh": "有點[[辣]]"
+        },
+        {
+          "who": "m",
+          "th": "[[เผ็ด]]มาก",
+          "rom": "[[pèt]] mâak",
+          "zh": "很[[辣]]"
+        },
+        {
+          "who": "m",
+          "th": "[[เผ็ด]]จังเลย",
+          "rom": "[[pèt]] jang loiie",
+          "zh": "真是[[辣]]"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "เผ็ด",
+          "rom": "pèt",
+          "zh": "辣",
+          "star": true,
+          "icon": "🌶️"
+        },
+        {
+          "th": "หวาน",
+          "rom": "wăan",
+          "zh": "甜",
+          "icon": "🍬"
+        },
+        {
+          "th": "เปรี้ยว",
+          "rom": "bprîieow",
+          "zh": "酸",
+          "icon": "🍋"
+        },
+        {
+          "th": "เหม็น",
+          "rom": "mĕn",
+          "zh": "臭",
+          "icon": "🤢"
+        },
+        {
+          "th": "อร่อย",
+          "rom": "à-ròi",
+          "zh": "好吃",
+          "star": true,
+          "icon": "😋"
+        },
+        {
+          "th": "ส้มตำ",
+          "rom": "sôm dtam",
+          "zh": "青木瓜沙拉",
+          "image": "conversation/1/l5-somtam.jpg"
+        },
+        {
+          "th": "ลูกชุบ",
+          "rom": "lôok chúp",
+          "zh": "露楚（水果造型的豆沙甜點）",
+          "image": "conversation/1/l5-lookchoop.jpg"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "weather",
+      "th": "เป็นยังไง",
+      "rom": "bpen yang ngai",
+      "zh": "怎麼樣（天氣）",
+      "examples": [
+        {
+          "who": "f",
+          "th": "[[อากาศ]]{{เป็นยังไง}}",
+          "rom": "[[aa-gàat]] {{bpen yang ngai}}",
+          "zh": "[[天氣]]{{怎麼樣}}？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ไม่[[ร้อน]]",
+          "rom": "mâi [[rón]]",
+          "zh": "不[[熱]]"
+        },
+        {
+          "who": "m",
+          "th": "[[ร้อน]]นิดหน่อย",
+          "rom": "[[rón]] nít nòi",
+          "zh": "有點[[熱]]"
+        },
+        {
+          "who": "m",
+          "th": "[[ร้อน]]มาก",
+          "rom": "[[rón]] mâak",
+          "zh": "很[[熱]]"
+        },
+        {
+          "who": "m",
+          "th": "[[ร้อน]]จังเลย",
+          "rom": "[[rón]] jang loiie",
+          "zh": "真是[[熱]]"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ร้อน",
+          "rom": "rón",
+          "zh": "熱",
+          "star": true,
+          "icon": "☀️"
+        },
+        {
+          "th": "เย็น",
+          "rom": "yen",
+          "zh": "涼",
+          "icon": "🍃"
+        },
+        {
+          "th": "หนาว",
+          "rom": "năao",
+          "zh": "冷",
+          "icon": "🥶"
+        },
+        {
+          "th": "ฝนตก",
+          "rom": "fŏn dtòk",
+          "zh": "下雨",
+          "icon": "🌧️"
+        },
+        {
+          "th": "มีฝุ่น",
+          "rom": "mee fùn",
+          "zh": "有灰塵（空汙）",
+          "icon": "😷"
+        },
+        {
+          "th": "วันนี้",
+          "rom": "wan née",
+          "zh": "今天",
+          "star": true,
+          "icon": "📅"
+        }
+      ]
+    }
+  ],
+  "dialogue": {
+    "scene": "和朋友逛 Terminal 21",
+    "lines": [
+      {
+        "who": "Tae",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "ที่นี่คือที่ไหนครับ",
+            "rom": "têe nêe keu têe năi kráp",
+            "zh": "這裡是哪裡？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "ที่นี่ที่[[Terminal 21]]ค่ะ",
+            "rom": "têe nêe têe [[Terminal 21]] kâ",
+            "zh": "這裡在[[Terminal 21]]。",
+            "tag": "answer"
+          },
+          {
+            "th": "ที่นี่คือชั้น[[ห้า]]",
+            "rom": "têe nêe keu chán [[hâa]]",
+            "zh": "這裡是[[5]]樓。",
+            "tag": "add"
+          },
+          {
+            "th": "คุณอยากกินอะไรคะ",
+            "rom": "kun yàak gin à-rai ká",
+            "zh": "你想吃什麼？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "Tae",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "ผมอยากกิน[[ส้มตำ]]ครับ",
+            "rom": "pŏm yàak gin [[sôm dtam]] kráp",
+            "zh": "我想吃[[青木瓜沙拉]]。",
+            "tag": "answer"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "รสชาติเป็นยังไงคะ",
+            "rom": "rót châat bpen yang ngai ká",
+            "zh": "味道怎麼樣？",
+            "tag": "ask"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "Tae",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "[[เผ็ด]]จังเลยครับ",
+            "rom": "[[pèt]] jang loiie kráp",
+            "zh": "真是[[辣]]！",
+            "tag": "answer"
+          },
+          {
+            "th": "[[อร่อย]]มาก",
+            "rom": "[[à-ròi]] mâak",
+            "zh": "很[[好吃]]。",
+            "tag": "add"
+          },
+          {
+            "th": "แล้วคุณล่ะครับ",
+            "rom": "láew kun lâ kráp",
+            "zh": "那你呢？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "ฉันก็ชอบ[[ส้มตำ]]ค่ะ",
+            "rom": "chăn gôr chôp [[sôm dtam]] kâ",
+            "zh": "我也喜歡[[青木瓜沙拉]]。",
+            "tag": "react"
+          }
+        ]
+      },
+      {
+        "who": "Tae",
+        "avatar": "👨",
+        "segs": [
+          {
+            "th": "ขอโทษครับ ห้องน้ำอยู่ที่ไหนครับ",
+            "rom": "kŏr tôht kráp, hông náam yòo têe năi kráp",
+            "zh": "不好意思，廁所在哪裡？",
+            "tag": "ask"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "ตรงไปแล้วก็เลี้ยว[[ซ้าย]]ค่ะ",
+            "rom": "dtrong bpai láew gôr líieow [[sáai]] kâ",
+            "zh": "直走然後[[左]]轉。",
+            "tag": "answer"
+          }
+        ]
+      }
+    ]
+  },
+  "practice": [
+    {
+      "kind": "picture",
+      "title": "看圖說說看",
+      "body": "用 <<เป็นยังไง|bpen yang ngai>> 問，用「不／有點／很／真是」回答。",
+      "cards": [
+        {
+          "name": "Lisa",
+          "image": "conversation/1/l5-lisa.jpg",
+          "lines": [
+            "<<เก่ง|gèng>> 厲害"
+          ]
+        },
+        {
+          "name": "榴槤",
+          "image": "conversation/1/l5-durian-smell.jpg",
+          "lines": [
+            "<<เหม็น|mĕn>> 臭"
+          ]
+        },
+        {
+          "name": "今天的天氣",
+          "image": "conversation/1/l5-hot.jpg",
+          "lines": [
+            "<<ร้อน|rón>> 熱"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "roleplay",
+      "title": "曼谷一日：逛 Terminal 21（老師當路人、店員）",
+      "body": "問這裡是哪裡、幾樓、廁所在哪裡，再點一樣吃的、問味道怎麼樣、問價錢殺價。"
+    }
+  ],
+  "extras": [
+    {
+      "title": "泰國餐桌四寶",
+      "images": [
+        "conversation/1/l5-table4.jpg"
+      ],
+      "lines": [
+        {
+          "th": "น้ำส้มสายชู",
+          "rom": "náam sôm săai choo",
+          "zh": "醋（酸）：常和辣椒泡在一起變辣椒醋"
+        },
+        {
+          "th": "น้ำตาลทราย",
+          "rom": "náam dtaan saai",
+          "zh": "砂糖（甜）"
+        },
+        {
+          "th": "น้ำปลา",
+          "rom": "náam bplaa",
+          "zh": "魚露（鹹）"
+        },
+        {
+          "th": "พริกป่น",
+          "rom": "prík bpòn",
+          "zh": "辣椒粉（辣）"
+        }
+      ]
+    },
+    {
+      "title": "諧音玩笑：ที่นี่ที่รัก",
+      "body": "<<ที่นี่|têe nêe>>（這裡）和 <<ที่รัก|têe rák>>（親愛的）聽起來很像，泰國人常拿來開玩笑。",
+      "lines": [
+        {
+          "th": "ที่นี่ฉันรักคุณ",
+          "rom": "têe nêe chăn rák kun",
+          "zh": "這裡我愛你。"
+        },
+        {
+          "th": "ที่นี่ที่รัก",
+          "rom": "têe nêe têe rák",
+          "zh": "這裡是你親愛的。"
+        }
+      ]
+    }
+  ],
+  "recap": [
+    {
+      "th": "[[ห้องน้ำ]]{{อยู่ที่ไหน}}／[[ตรงไป]]{{แล้วก็}}[[เลี้ยวขวา]]",
+      "rom": "[[hông náam]] {{yòo têe năi}} / [[dtrong bpai]] {{láew gôr}} [[líieow kwăa]]",
+      "zh": "[[廁所]]{{在哪裡}}？／[[直走]]{{然後}}[[右轉]]"
+    },
+    {
+      "th": "ที่นี่คือ{{ชั้น}}ไหน／ที่นี่คือ{{ชั้น}}[[G]]",
+      "rom": "têe nêe keu {{chán}} năi / têe nêe keu {{chán}} [[G]]",
+      "zh": "這裡是哪{{樓}}？／這裡是[[G]]{{樓}}"
+    },
+    {
+      "th": "[[รสชาติ]]{{เป็นยังไง}}／[[เผ็ด]]นิดหน่อย",
+      "rom": "[[rót châat]] {{bpen yang ngai}} / [[pèt]] nít nòi",
+      "zh": "[[味道]]{{怎麼樣}}？／有點[[辣]]"
+    }
+  ]
+}

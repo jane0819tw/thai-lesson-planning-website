@@ -20,6 +20,10 @@ export interface PatternBlock {
   th: string; rom: string; zh: string
   examples: ConvExample[]
   vocab?: ConvWord[]
+  /** 單字分好幾排（一排一類，例：L2 甜度一排、冰塊一排）。有這個時句型改成左右排：左邊句型框＋句子、右邊單字 */
+  vocabRows?: ConvWord[][]
+  /** 講義的圖（public/ 底下的路徑），左右排時放在句子下面（L2 甜度、冰塊對照圖） */
+  images?: string[]
   toolbox?: ConvText[]
 }
 
@@ -29,6 +33,7 @@ export interface TemplateBlock { type: 'template'; id: string; title: string; bo
 export type ConvBlock = PhrasesBlock | PatternBlock | TemplateBlock
 
 /** 對話串：一個人一次說的話可以分好幾段，每段標「回答／補充／反問／接話詞／聽懂就好」 */
+/** listen（聽懂就好）L2 老師拿掉了，保留型別只為相容 */
 export type ConvTag = 'answer' | 'add' | 'ask' | 'react' | 'listen'
 export interface DialogueLine { who: string; avatar?: string; segs: (ConvText & { tag?: ConvTag })[]; /** 投影片從這則訊息開新的一頁（有任何一則設了就照這個分頁，沒設就自動分） */ newSlide?: boolean }
 export interface Dialogue { scene: string; body?: string; lines: DialogueLine[] }
@@ -48,15 +53,23 @@ export interface Practice {
   items?: string[]
 }
 
-/** 補充：「有時間再上」 */
+/** 補充（畫面不加「有時間再上」標籤，L2 老師） */
 export interface Extra {
   title: string
   body?: string
   lines?: ConvText[]
   table?: { head: string[]; rows: string[][] }
+  /** 講義的圖（public/ 底下的路徑），排成一列 */
+  images?: string[]
   link?: { url: string; label: string }
   /** 嵌入 YouTube 片段：start／end 秒數 */
   video?: { id: string; start?: number; end?: number; label: string }
+  /** 投影片和下一張補充放同一頁（左右兩塊，中間一條線） */
+  joinNext?: boolean
+  /** 講義佔一整排（L1 達人秀） */
+  wide?: boolean
+  /** 放在最下面的說明（L2：和合併頁另一邊的圖對齊） */
+  footnote?: string
 }
 
 export interface ConvLesson {

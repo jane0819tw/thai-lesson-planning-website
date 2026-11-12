@@ -1,0 +1,662 @@
+{
+  "level": 1,
+  "number": 2,
+  "title": "喜好與點飲料",
+  "status": "draft",
+  "goals": [
+    "說出自己喜歡吃什麼、喜歡喝什麼、想買什麼",
+    "在飲料店點一杯 <<หวานน้อย|wăan nói>>（少糖）、<<ไม่ใส่น้ำแข็ง|mâi sài náam kăeng>>（不加冰）的泰奶"
+  ],
+  "review": [
+    {
+      "q": {
+        "th": "คุณชื่ออะไร",
+        "rom": "kun chêu à-rai",
+        "zh": "你叫什麼名字？"
+      },
+      "a": {
+        "th": "ฉันชื่อ[[เจน]]",
+        "rom": "chăn chêu [[Jane]]",
+        "zh": "我叫 [[Jane]]。"
+      }
+    },
+    {
+      "q": {
+        "th": "คุณมาจากไหน",
+        "rom": "kun maa jàak năi",
+        "zh": "你來自哪裡？"
+      },
+      "a": {
+        "th": "ฉันมาจาก[[ไต้หวัน]]",
+        "rom": "chăn maa jàak [[dtâi-wăn]]",
+        "zh": "我來自[[台灣]]。"
+      }
+    },
+    {
+      "q": {
+        "th": "คุณเป็นคนอะไร",
+        "rom": "kun bpen kon à-rai",
+        "zh": "你是哪裡人？"
+      },
+      "a": {
+        "th": "ฉันเป็น[[คนไต้หวัน]]",
+        "rom": "chăn bpen [[kon dtâi-wăn]]",
+        "zh": "我是[[台灣人]]。"
+      }
+    },
+    {
+      "q": {
+        "th": "คุณชอบอะไร",
+        "rom": "kun chôp à-rai",
+        "zh": "你喜歡什麼？"
+      },
+      "a": {
+        "th": "ฉันชอบ[[ไปเที่ยว]]",
+        "rom": "chăn chôp [[bpai tîieow]]",
+        "zh": "我喜歡[[去旅行]]。"
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "type": "pattern",
+      "id": "gin",
+      "th": "กิน",
+      "rom": "gin",
+      "zh": "吃",
+      "examples": [
+        {
+          "who": "f",
+          "th": "คุณชอบ{{กิน}}อะไร",
+          "rom": "kun chôp {{gin}} à-rai",
+          "zh": "你喜歡{{吃}}什麼？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ผมชอบ{{กิน}}[[ต้มยำกุ้ง]]",
+          "rom": "pŏm chôp {{gin}} [[dtôm yam gûng]]",
+          "zh": "我喜歡{{吃}}[[酸辣蝦湯]]"
+        },
+        {
+          "who": "f",
+          "th": "ฉันชอบ{{กิน}}[[ข้าวมันไก่]]",
+          "rom": "chăn chôp {{gin}} [[kâao man gài]]",
+          "zh": "我喜歡{{吃}}[[雞油飯]]"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ต้มยำกุ้ง",
+          "rom": "dtôm yam gûng",
+          "zh": "酸辣蝦湯",
+          "star": true,
+          "image": "conversation/1/l2-tomyum.jpg"
+        },
+        {
+          "th": "ผัดไทย",
+          "rom": "pàt tai",
+          "zh": "泰式炒河粉",
+          "star": true,
+          "image": "conversation/1/l2-padthai.jpg"
+        },
+        {
+          "th": "แกงเขียวหวาน",
+          "rom": "gaeng kĭieow wăan",
+          "zh": "綠咖哩",
+          "image": "conversation/1/l2-greencurry.jpg"
+        },
+        {
+          "th": "ข้าวมันไก่",
+          "rom": "kâao man gài",
+          "zh": "雞油飯",
+          "star": true,
+          "image": "conversation/1/l2-khaomangai.jpg"
+        },
+        {
+          "th": "ผัดกะเพรา",
+          "rom": "pàt gà prao",
+          "zh": "打拋",
+          "image": "conversation/1/l2-kaprao.jpg"
+        }
+      ],
+      "toolbox": [
+        {
+          "th": "ฉันก็…",
+          "rom": "chăn gôr…",
+          "zh": "我也…",
+          "note": "對方說的你也一樣時"
+        },
+        {
+          "th": "ฉันก็ชอบ[[ผัดไทย]]",
+          "rom": "chăn gôr chôp [[pàt tai]]",
+          "zh": "我也喜歡[[泰式炒河粉]]"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "deum",
+      "th": "ดื่ม",
+      "rom": "dèum",
+      "zh": "喝",
+      "examples": [
+        {
+          "who": "f",
+          "th": "คุณชอบ{{ดื่ม}}อะไร",
+          "rom": "kun chôp {{dèum}} à-rai",
+          "zh": "你喜歡{{喝}}什麼？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ผมชอบ{{ดื่ม}}[[ชาเย็น]]",
+          "rom": "pŏm chôp {{dèum}} [[chaa yen]]",
+          "zh": "我喜歡{{喝}}[[泰式奶茶]]"
+        },
+        {
+          "who": "f",
+          "th": "ฉันชอบ{{ดื่ม}}[[ชานมไข่มุก]]",
+          "rom": "chăn chôp {{dèum}} [[chaa nom kài múk]]",
+          "zh": "我喜歡{{喝}}[[珍珠奶茶]]"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ชาเย็น",
+          "rom": "chaa yen",
+          "zh": "泰式奶茶",
+          "star": true,
+          "image": "conversation/1/l2-chayen.jpg"
+        },
+        {
+          "th": "ชาเขียว",
+          "rom": "chaa kĭieow",
+          "zh": "奶綠",
+          "star": true,
+          "image": "conversation/1/l2-greentea.jpg"
+        },
+        {
+          "th": "ชานมไข่มุก",
+          "rom": "chaa nom kài múk",
+          "zh": "珍珠奶茶",
+          "star": true,
+          "image": "conversation/1/l2-bubbletea.jpg"
+        },
+        {
+          "th": "น้ำมะพร้าว",
+          "rom": "nám-má-práao",
+          "zh": "椰子水",
+          "star": true,
+          "image": "conversation/1/l2-coconut.jpg"
+        },
+        {
+          "th": "เบียร์ช้าง",
+          "rom": "biia cháang",
+          "zh": "象牌啤酒",
+          "image": "conversation/1/l2-beer.jpg"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "yaak-seu",
+      "th": "อยากซื้อ",
+      "rom": "yàak séu",
+      "zh": "想買",
+      "examples": [
+        {
+          "who": "f",
+          "th": "คุณ{{อยากซื้อ}}อะไร",
+          "rom": "kun {{yàak séu}} à-rai",
+          "zh": "你{{想買}}什麼？",
+          "q": true
+        },
+        {
+          "who": "m",
+          "th": "ผม{{อยากซื้อ}}[[ยาดม]]",
+          "rom": "pŏm {{yàak séu}} [[yaa dom]]",
+          "zh": "我{{想買}}[[鼻通]]"
+        },
+        {
+          "who": "f",
+          "th": "ฉัน{{อยากซื้อ}}[[เสื้อผ้า]]",
+          "rom": "chăn {{yàak séu}} [[sêuua pâa]]",
+          "zh": "我{{想買}}[[衣服]]"
+        }
+      ],
+      "vocab": [
+        {
+          "th": "ยาดม",
+          "rom": "yaa dom",
+          "zh": "鼻通",
+          "star": true,
+          "image": "conversation/1/l2-yadom.jpg"
+        },
+        {
+          "th": "กระเป๋า",
+          "rom": "grà-bpăo",
+          "zh": "包包",
+          "star": true,
+          "image": "conversation/1/l2-bag.jpg"
+        },
+        {
+          "th": "เสื้อผ้า",
+          "rom": "sêuua pâa",
+          "zh": "衣服",
+          "star": true,
+          "image": "conversation/1/l2-shirt.jpg"
+        },
+        {
+          "th": "กางเกง",
+          "rom": "gaang-geng",
+          "zh": "褲子",
+          "star": true,
+          "image": "conversation/1/l2-pants.jpg"
+        }
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "sweet",
+      "th": "อยากซื้อ",
+      "rom": "yàak séu",
+      "zh": "想買＋商品＋描述（甜度、冰塊）",
+      "examples": [
+        {
+          "who": "f",
+          "th": "ฉัน{{อยากซื้อ}}[[ชาเย็น]][[หวานน้อย]]",
+          "rom": "chăn {{yàak séu}} [[chaa yen]] [[wăan nói]]",
+          "zh": "我{{想買}}[[泰奶]][[少糖]]"
+        },
+        {
+          "who": "m",
+          "th": "ผม{{อยากซื้อ}}[[ชาเขียว]][[ใส่น้ำแข็งน้อย]]",
+          "rom": "pŏm {{yàak séu}} [[chaa kĭieow]] [[sài náam kăeng nói]]",
+          "zh": "我{{想買}}[[奶綠]][[少冰]]"
+        }
+      ],
+      "vocabRows": [
+        [
+          {
+            "th": "ไม่หวาน",
+            "rom": "mâi wăan",
+            "zh": "不甜（0%）",
+            "star": true,
+            "icon": "🚫🍬"
+          },
+          {
+            "th": "หวานน้อย",
+            "rom": "wăan nói",
+            "zh": "少糖（30%）",
+            "star": true,
+            "icon": "🍬"
+          },
+          {
+            "th": "หวานปกติ",
+            "rom": "wăan bpòk-gà-dtì",
+            "zh": "正常甜（100%）",
+            "star": true,
+            "icon": "🍬🍬"
+          },
+          {
+            "th": "เพิ่มหวาน",
+            "rom": "pêrm wăan",
+            "zh": "加甜（130%）",
+            "icon": "🍬🍬🍬"
+          }
+        ],
+        [
+          {
+            "th": "ไม่ใส่น้ำแข็ง",
+            "rom": "mâi sài náam kăeng",
+            "zh": "不加冰塊",
+            "star": true,
+            "icon": "🚫🧊"
+          },
+          {
+            "th": "ใส่น้ำแข็งน้อย",
+            "rom": "sài náam kăeng nói",
+            "zh": "少冰",
+            "star": true,
+            "icon": "🧊"
+          },
+          {
+            "th": "ใส่น้ำแข็งปกติ",
+            "rom": "sài náam kăeng bpòk-gà-dtì",
+            "zh": "正常冰",
+            "icon": "🧊🧊"
+          }
+        ]
+      ],
+      "images": [
+        "conversation/1/l2-sweet-chart.jpg",
+        "conversation/1/l2-ice-chart.jpg"
+      ]
+    },
+    {
+      "type": "pattern",
+      "id": "spicy",
+      "th": "อยากซื้อ",
+      "rom": "yàak séu",
+      "zh": "想買＋商品＋描述（辣度、大小）",
+      "examples": [
+        {
+          "who": "f",
+          "th": "ฉัน{{อยากซื้อ}}[[เสื้อผ้า]][[ไซส์ M]]",
+          "rom": "chăn {{yàak séu}} [[sêuua pâa]] [[sai M]]",
+          "zh": "我{{想買}}[[衣服]][[M 號]]"
+        },
+        {
+          "who": "m",
+          "th": "ผม{{อยากซื้อ}}[[ผัดกะเพรา]][[ไม่เผ็ด]]",
+          "rom": "pŏm {{yàak séu}} [[pàt gà prao]] [[mâi pèt]]",
+          "zh": "我{{想買}}[[打拋]][[不辣]]"
+        }
+      ],
+      "vocabRows": [
+        [
+          {
+            "th": "ไซส์ S／M／L",
+            "rom": "sai S / M / L",
+            "zh": "S／M／L 號",
+            "icon": "👕"
+          },
+          {
+            "th": "ฟรีไซส์",
+            "rom": "free sai",
+            "zh": "Free size",
+            "icon": "👚"
+          }
+        ],
+        [
+          {
+            "th": "ไม่ใส่พริก",
+            "rom": "mâi sài prík",
+            "zh": "不加辣椒",
+            "icon": "🚫🌶️"
+          },
+          {
+            "th": "ไม่เผ็ด",
+            "rom": "mâi pèt",
+            "zh": "不辣",
+            "star": true,
+            "icon": "😌"
+          },
+          {
+            "th": "เผ็ดน้อย",
+            "rom": "pèt nói",
+            "zh": "小辣",
+            "icon": "🌶️"
+          }
+        ]
+      ]
+    }
+  ],
+  "dialogue": {
+    "scene": "在飲料店點泰奶",
+    "lines": [
+      {
+        "who": "店員",
+        "avatar": "👩‍🍳",
+        "segs": [
+          {
+            "th": "สวัสดีค่ะ รับอะไรดีคะ",
+            "rom": "sà-wàt-dee kâ, ráp à-rai dee ká",
+            "zh": "歡迎光臨，要點什麼？"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "อยากซื้อ[[ชาเย็น]]ค่ะ",
+            "rom": "yàak séu [[chaa yen]] kâ",
+            "zh": "我想買[[泰奶]]。",
+            "tag": "answer"
+          }
+        ]
+      },
+      {
+        "who": "店員",
+        "avatar": "👩‍🍳",
+        "segs": [
+          {
+            "th": "หวานปกติไหมคะ",
+            "rom": "wăan bpòk-gà-dtì măi ká",
+            "zh": "正常甜嗎？"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "[[หวานน้อย]]ค่ะ",
+            "rom": "[[wăan nói]] kâ",
+            "zh": "[[少糖]]。",
+            "tag": "answer"
+          },
+          {
+            "th": "[[ไม่ใส่น้ำแข็ง]]",
+            "rom": "[[mâi sài náam kăeng]]",
+            "zh": "[[不加冰]]。",
+            "tag": "add"
+          }
+        ]
+      },
+      {
+        "who": "店員",
+        "avatar": "👩‍🍳",
+        "segs": [
+          {
+            "th": "ได้ค่ะ",
+            "rom": "dâai kâ",
+            "zh": "好的。"
+          }
+        ],
+        "newSlide": true
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "พี่ชอบดื่มอะไรคะ",
+            "rom": "pêe chôp dèum à-rai ká",
+            "zh": "姊姊喜歡喝什麼？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "店員",
+        "avatar": "👩‍🍳",
+        "segs": [
+          {
+            "th": "ชาเขียวค่ะ",
+            "rom": "chaa kĭieow kâ",
+            "zh": "奶綠。",
+            "tag": "answer"
+          },
+          {
+            "th": "แล้วน้องล่ะ",
+            "rom": "láew nóng lâ",
+            "zh": "那妳呢？",
+            "tag": "ask"
+          }
+        ]
+      },
+      {
+        "who": "Jane",
+        "avatar": "👩",
+        "segs": [
+          {
+            "th": "ฉันก็ชอบ[[ชาเขียว]]ค่ะ",
+            "rom": "chăn gôr chôp [[chaa kĭieow]] kâ",
+            "zh": "我也喜歡[[奶綠]]。",
+            "tag": "react"
+          }
+        ]
+      }
+    ]
+  },
+  "practice": [
+    {
+      "kind": "picture",
+      "title": "看圖介紹",
+      "body": "用 <<ชอบกิน|chôp gin>>、<<ชอบดื่ม|chôp dèum>>、<<อยากซื้อ|yàak séu>> 介紹這四個人。",
+      "cards": [
+        {
+          "name": "Faye",
+          "image": "conversation/1/l2-faye.jpg",
+          "lines": [
+            "❤️ 椰子水",
+            "🛒 綠咖哩"
+          ]
+        },
+        {
+          "name": "Becky",
+          "image": "conversation/1/l2-becky.jpg",
+          "lines": [
+            "❤️ 泰式炒河粉",
+            "🛒 珍珠奶茶"
+          ]
+        },
+        {
+          "name": "Tay",
+          "image": "conversation/1/l2-tay.jpg",
+          "lines": [
+            "❤️ 打拋",
+            "🛒 衣服"
+          ]
+        },
+        {
+          "name": "New",
+          "image": "conversation/1/l2-new.jpg",
+          "lines": [
+            "❤️ 象牌啤酒",
+            "🛒 包包"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "roleplay",
+      "title": "飲料店點飲料（老師當店員）",
+      "body": "點一杯飲料，說出甜度和冰塊，再問店員喜歡喝什麼。"
+    }
+  ],
+  "extras": [
+    {
+      "title": "奶茶傻傻分不清",
+      "joinNext": true,
+      "images": [
+        "conversation/1/l2-milktea.jpg"
+      ],
+      "lines": [
+        {
+          "th": "ชาเย็น",
+          "rom": "chaa yen",
+          "zh": "泰式奶茶"
+        },
+        {
+          "th": "ชานม",
+          "rom": "chaa nom",
+          "zh": "奶茶"
+        },
+        {
+          "th": "นมเย็น",
+          "rom": "nom yen",
+          "zh": "粉紅冰牛奶"
+        }
+      ]
+    },
+    {
+      "title": "เกมชาเย็น 猜字遊戲",
+      "images": [
+        "conversation/1/l2-chayen-game.jpg"
+      ],
+      "lines": [
+        {
+          "th": "เกมชาเย็น",
+          "rom": "gam chaa yen",
+          "zh": "猜字遊戲"
+        }
+      ]
+    },
+    {
+      "title": "นมเย็น 的水果糖漿",
+      "body": "粉紅色的 <<นมเย็น|nom yen>> 是加了蛇皮果口味的紅糖漿。",
+      "images": [
+        "conversation/1/l2-sala.jpg",
+        "conversation/1/l2-salasyrup.jpg"
+      ],
+      "lines": [
+        {
+          "th": "สละ",
+          "rom": "sà-là",
+          "zh": "蛇皮果"
+        }
+      ]
+    },
+    {
+      "title": "ไม่ใส่สี 不加色素",
+      "joinNext": true,
+      "images": [
+        "conversation/1/l2-no-color.jpg"
+      ],
+      "lines": [
+        {
+          "th": "ไม่ใส่สี",
+          "rom": "mâi sài sĕe",
+          "zh": "不加色素"
+        },
+        {
+          "th": "ชาไทยไม่ใส่สี",
+          "rom": "chaa tai mâi sài sĕe",
+          "zh": "不加色素的泰奶"
+        }
+      ]
+    },
+    {
+      "title": "手標泰奶的健康系列",
+      "footnote": "1 個零＝砂糖 0%，2 個低＝低卡路里、低脂肪。",
+      "images": [
+        "conversation/1/l2-1-zero-2-low.jpg"
+      ],
+      "lines": [
+        {
+          "th": "1 ศูนย์ 2 ต่ำ",
+          "rom": "nèung sŏon sŏng dtàm",
+          "zh": "1 個零、2 個低"
+        }
+      ]
+    }
+  ],
+  "recap": [
+    {
+      "th": "คุณชอบ{{กิน}}อะไร／ฉันชอบ{{กิน}}[[ผัดไทย]]",
+      "rom": "kun chôp {{gin}} à-rai / chăn chôp {{gin}} [[pàt tai]]",
+      "zh": "你喜歡{{吃}}什麼？／我喜歡{{吃}}[[泰式炒河粉]]"
+    },
+    {
+      "th": "คุณชอบ{{ดื่ม}}อะไร／ฉันชอบ{{ดื่ม}}[[ชาเย็น]]",
+      "rom": "kun chôp {{dèum}} à-rai / chăn chôp {{dèum}} [[chaa yen]]",
+      "zh": "你喜歡{{喝}}什麼？／我喜歡{{喝}}[[泰奶]]"
+    },
+    {
+      "th": "คุณ{{อยากซื้อ}}อะไร／ฉัน{{อยากซื้อ}}[[ชาเย็น]][[หวานน้อย]]",
+      "rom": "kun {{yàak séu}} à-rai / chăn {{yàak séu}} [[chaa yen]] [[wăan nói]]",
+      "zh": "你{{想買}}什麼？／我{{想買}}[[泰奶]][[少糖]]"
+    },
+    {
+      "th": "ฉันก็ชอบ[[ชาเขียว]]",
+      "rom": "chăn gôr chôp [[chaa kĭieow]]",
+      "zh": "我也喜歡[[奶綠]]"
+    }
+  ]
+}

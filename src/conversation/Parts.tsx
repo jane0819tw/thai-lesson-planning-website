@@ -74,7 +74,8 @@ export function ReviewCard({ l }: { l: ConvLesson }) {
   return (
     <article className="card">
       <h3>上一課快問快答</h3>
-      <ol className="c-review">{l.review.map((x, i) => <li key={i}><Line t={x.q} /><div className="c-ans"><Line t={x.a} /></div></li>)}</ol>
+      {/* 前一半在左、後一半在右，中間虛線（L2 老師） */}
+      <ol className="c-review" style={{ ['--rows' as string]: Math.ceil(l.review.length / 2) }}>{l.review.map((x, i) => <li key={i}><Line t={x.q} /><div className="c-ans"><Line t={x.a} /></div></li>)}</ol>
     </article>
   )
 }
@@ -102,6 +103,25 @@ export function Toolbox({ items }: { items: ConvText[] }) {
   )
 }
 
+/** 投影片：接話小工具自己一頁（放在句型頁裡會讓那頁變高、縮得比其他句型頁小，L2 老師） */
+export function ToolboxCard({ b }: { b: PatternBlock }) {
+  return (
+    <article className="card c-toolbox-slide">
+      <Toolbox items={b.toolbox ?? []} />
+    </article>
+  )
+}
+
+/** 投影片：句型的對照圖自己一頁（L2 老師：甜度、冰塊圖） */
+export function PatternImagesCard({ b }: { b: PatternBlock }) {
+  return (
+    <article className="card c-pat-imgs">
+      <h3>{b.zh}</h3>
+      <div>{(b.images ?? []).map(src => <img key={src} src={BASE + src} alt="" />)}</div>
+    </article>
+  )
+}
+
 /** 問答分組：q 的句子開新的一列（放左邊），後面的回答都放這列右邊；列跟列之間虛線分開（講義 L1 p5） */
 function qaRows(ex: ConvExample[]) {
   const rows: { q?: ConvExample; as: ConvExample[] }[] = []
@@ -113,7 +133,8 @@ function qaRows(ex: ConvExample[]) {
 }
 
 /** 句型：左邊藍底句型框，右邊一問一答（問左答右），下面一排單字（不寫單字標題）、接話小工具 */
-export function PatternCard({ b }: { b: PatternBlock }) {
+export function PatternCard({ b, noToolbox, noImages }: { b: PatternBlock; noToolbox?: boolean; noImages?: boolean }) {
+  if (b.vocabRows?.length) return <PatternSide b={b} noToolbox={noToolbox} noImages={noImages} />
   return (
     <article className="card c-pattern">
       <div className="c-pat-top">
@@ -132,7 +153,26 @@ export function PatternCard({ b }: { b: PatternBlock }) {
         </div>
       </div>
       {b.vocab?.length ? <div className="c-words c-pat-words">{b.vocab.map(w => <Word key={w.th} w={w} />)}</div> : null}
-      {b.toolbox?.length ? <Toolbox items={b.toolbox} /> : null}
+      {b.toolbox?.length && !noToolbox ? <Toolbox items={b.toolbox} /> : null}
+    </article>
+  )
+}
+
+/** 句型（左右排）：左邊句型框＋句子直排，右邊單字一排一類（L2 老師：甜度一排、冰塊一排） */
+function PatternSide({ b, noToolbox, noImages }: { b: PatternBlock; noToolbox?: boolean; noImages?: boolean }) {
+  return (
+    <article className="card c-pattern side">
+      <div className="c-side-left">
+        <div className="c-key">
+          <div className="th">{b.th}<SpeakButton text={b.th} /></div>
+          <div className="c-rom"><Rom text={b.rom} /></div>
+          <div className="c-zh">{b.zh}</div>
+        </div>
+        <div className="c-side-ex">{b.examples.map((e, k) => <Example key={k} e={e} />)}</div>
+        {b.images?.length && !noImages ? <div className="c-side-imgs">{b.images.map(src => <img key={src} src={BASE + src} alt="" />)}</div> : null}
+      </div>
+      <div className="c-side-rows">{b.vocabRows!.map((r, i) => <div className="c-words c-side-row" key={i}>{r.map(w => <Word key={w.th} w={w} />)}</div>)}</div>
+      {b.toolbox?.length && !noToolbox ? <Toolbox items={b.toolbox} /> : null}
     </article>
   )
 }
@@ -201,7 +241,7 @@ export function PracticeCard({ p, print }: { p: Practice; print?: boolean }) {
       {p.body && <p><Rich text={p.body} /></p>}
       {p.cards?.length ? <div className="c-cards">{p.cards.map((c, i) => (
         <div className={c.image ? 'c-pcard has-img' : 'c-pcard'} key={i}>
-          {c.image ? <img className="c-pcard-img" src={BASE + c.image} alt={c.name ?? ''} /> : c.icon && <div className="c-pcard-icon" aria-hidden="true">{c.icon}</div>}
+          {c.image ? <img className="c-pcard-img" src={BASE + c.image} alt={c.name ?? ''} onLoad={e => { const i = e.currentTarget; if (i.naturalWidth > i.naturalHeight) i.dataset.wide = '' }} /> : c.icon && <div className="c-pcard-icon" aria-hidden="true">{c.icon}</div>}
           {c.name && <b>{c.name}</b>}
           {c.lines.map(t => <div key={t}><Rich text={t} /></div>)}
         </div>
@@ -212,12 +252,15 @@ export function PracticeCard({ p, print }: { p: Practice; print?: boolean }) {
   )
 }
 
-export function ExtraCard({ x }: { x: Extra }) {
+/** layout：講義排法（有 joinNext 的課才給）half＝和隔壁那張各佔一半、full＝佔一整排 */
+export function ExtraCard({ x, layout }: { x: Extra; layout?: 'half' | 'full' }) {
   return (
-    <article className="card c-extra">
-      <h3>{x.title} <span className="c-later">有時間再上</span></h3>
+    <article className={layout ? `card c-extra ${layout}` : 'card c-extra'}>
+      <h3>{x.title}</h3>
       {x.body && <p><Rich text={x.body} /></p>}
-      {x.lines?.map(t => <Line key={t.th} t={t} />)}
+      {x.images?.length ? <div className="c-ex-imgs">{x.images.map(src => <img key={src} src={BASE + src} alt="" />)}</div> : null}
+      {x.lines?.length ? <div className="c-ex-lines">{x.lines.map(t => <Line key={t.th} t={t} />)}</div> : null}
+      {x.footnote && <p><Rich text={x.footnote} /></p>}
       {x.table && (
         <div className="tablewrap"><table className="c-table">
           <thead><tr>{x.table.head.map(h => <th key={h}>{h}</th>)}</tr></thead>
@@ -293,7 +336,12 @@ export function sectionsOf(l: ConvLesson, print = false): Section[] {
   s.push({ key: 'blocks', label: '句型', cards: l.blocks.map(b => <BlockCard b={b} key={b.id} />) })
   if (l.dialogue) s.push({ key: 'dialogue', label: '對話串', cards: [<DialogueCard d={l.dialogue} key="d" />] })
   if (l.practice.length) s.push({ key: 'practice', label: '練習', cards: l.practice.map((p, i) => <PracticeCard p={p} print={print} key={i} />) })
-  if (l.extras?.length) s.push({ key: 'extras', label: '補充', cards: l.extras.map((x, i) => <ExtraCard x={x} key={i} />) })
+  if (l.extras?.length) s.push({ key: 'extras', label: '補充', cards: l.extras.map((x, i, a) => {
+    // 有 joinNext 的課：講義也照投影片的合併方式排，合併的兩張各 50%、其他 100%（L2 老師）
+    const join = a.some(e => e.joinNext)
+    const layout = x.wide ? 'full' : !join ? undefined : x.joinNext || a[i - 1]?.joinNext ? 'half' : 'full'
+    return <ExtraCard x={x} layout={layout} key={i} />
+  }) })
   if (l.recap?.length) s.push({ key: 'recap', label: '總結', cards: [<RecapCard l={l} key="c" />] })
   return s
 }

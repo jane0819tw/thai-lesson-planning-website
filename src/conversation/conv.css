@@ -15,14 +15,18 @@
 .c-line { line-height: 1.45; }
 .c-th { font-size: 1.3rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .c-line.big .c-th { font-size: 1.7rem; }
-.c-rom { color: var(--muted); font-size: 1.02rem; }
+/* 拼音和泰文差不多大（L2 老師：有些學生只看得懂拼音），比泰文小一號才和諧 */
+.c-rom { color: var(--muted); font-size: 1.15rem; }
+.c-line.big .c-rom { font-size: 1.45rem; }
 .c-zh { font-size: .95rem; }
 .ck { color: var(--ck); font-weight: 700; }  /* 關鍵字：和句型框同色的深藍（L1 老師：紅色太紅） */
 .ck .rom span { color: inherit !important; }
 .cs { text-decoration-thickness: 1.5px; text-underline-offset: 4px; }
 
 /* 開關：課程頁、投影片、講義都保留位置（visibility），關掉拼音時中文不會跑上來（L1 老師） */
-.c-hide-rom .c-rom, .c-hide-zh .c-zh, .c-hide-speak .speak { visibility: hidden; }
+.c-hide-rom .c-rom, .c-hide-speak .speak { visibility: hidden; }
+/* 中文關掉就整行拿掉、不留空白（L2 老師）；中文在最下面，拿掉不會讓別的行跑位 */
+.c-hide-zh .c-zh { display: none; }
 /* 投影片例外：關掉拼音就整行拿掉、不留空白（L1 老師），版面重新縮放放大 */
 .c-slides.c-hide-rom .c-rom { display: none; }
 
@@ -30,6 +34,13 @@
 .c-goals h3, .c-recap h3 { color: var(--accent); }
 .c-goals ul { margin: 0; padding-left: 1.4em; font-size: 1.15rem; line-height: 1.8; }
 .c-recap ol, .c-template ol, .c-review { margin: 0; padding-left: 1.6em; display: grid; gap: 10px; }
+/* 快問快答：前一半左、後一半右，中間虛線（L2 老師） */
+.c-review { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(var(--rows), auto); grid-auto-flow: column; column-gap: 3.2em; padding-left: 0; background: linear-gradient(var(--line) 50%, transparent 50%) center top / 1px 10px repeat-y; }
+.c-review li { margin-left: 1.4em; }
+@media (max-width: 640px) { .c-review { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; background: none; } }
+/* 投影片：句型的對照圖一頁 */
+.c-pat-imgs > div { display: flex; gap: 16px; justify-content: center; }
+.c-pat-imgs img { flex: 1 1 0; min-width: 0; max-height: 520px; object-fit: contain; border-radius: 10px; }
 /* 模板分左右兩欄（前一半左、後一半右），中間一條線（L1 老師：投影片、講義都省空間）；手機太窄才變一欄 */
 .c-template ol { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(var(--rows), auto); grid-auto-flow: column; column-gap: 3.2em; padding-left: 0; background: linear-gradient(var(--line), var(--line)) center / 1px 100% no-repeat; }
 .c-template li { margin-left: 1.4em; }
@@ -44,18 +55,19 @@
 .c-word { display: grid; justify-items: center; text-align: center; gap: 2px; border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; background: var(--card); }
 .c-word .c-th { justify-content: center; }
 .c-word .c-th { font-size: 1.15rem; flex-wrap: nowrap; white-space: nowrap; }
+.c-word .c-rom { font-size: 1rem; }
 /* 喇叭放卡片右上角，不跟泰文排在一起，泰文才會真的置中（L1 老師：泰文偏左） */
 .c-word { position: relative; }
 .c-word .speak { position: absolute; top: 5px; right: 5px; width: 28px; height: 28px; font-size: .8rem; }
 .c-icon { font-size: 1.9rem; line-height: 1; }
-.c-icon-img { width: 2.2rem; height: 2.2rem; object-fit: contain; }
+.c-icon-img { width: 3.4rem; height: 3.4rem; object-fit: contain; border-radius: 6px; }
 h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
 
 /* 句型：左邊藍底句型框（講義樣式），右邊一問一答（問左答右，列與列之間虛線），下面一排單字 */
 .c-pat-top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 24px; align-items: start; }
 .c-key { background: var(--cbox); color: var(--cbox-fg); border-radius: 16px; padding: 8px 18px; line-height: 1.3; }
 .c-key .th { font-size: 1.6rem; font-weight: 700; display: flex; gap: 6px; align-items: center; }
-.c-key .c-rom { color: var(--cbox-fg); font-size: 1.1rem; }
+.c-key .c-rom { color: var(--cbox-fg); font-size: 1.35rem; }
 .c-key .c-zh { font-weight: 700; font-size: 1.15rem; }
 .c-qa-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; padding: 12px 0; }
 .c-qa-row:first-child { padding-top: 0; }
@@ -66,6 +78,27 @@ h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
 .c-pat-words { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 .c-toolbox { border: 2px dashed #16a34a; border-radius: 12px; padding: 8px 12px; display: grid; gap: 6px; margin-top: 12px; }
 .c-toolbox > b { color: #16a34a; }
+/* 投影片：接話小工具自己一頁 */
+.c-toolbox-slide { display: grid; }
+.c-toolbox-slide .c-toolbox { margin-top: 0; }
+.c-toolbox-slide .c-toolbox .c-th { font-size: 1.7rem; }
+.c-toolbox-slide .c-toolbox .c-rom { font-size: 1.45rem; }
+/* 句型左右排（vocabRows）：左邊句型框＋句子，右邊單字一排一類 */
+.c-pattern.side { display: grid; grid-template-columns: minmax(max-content, 2fr) minmax(0, 3fr); gap: 20px 24px; align-items: start; }
+.c-pattern.side > .c-toolbox { grid-column: 1 / -1; }
+.c-side-left { display: grid; gap: 14px; justify-items: start; }
+.c-side-ex { display: grid; gap: 12px; }
+.c-side-rows { display: grid; gap: 10px; }
+.c-side-imgs { display: flex; gap: 8px; contain: inline-size; width: 100%; }  /* 圖不撐寬左欄，跟著左欄寬度縮放 */
+.c-side-imgs img { flex: 1 1 0; min-width: 0; height: auto; max-height: 190px; object-fit: contain; object-position: left; border-radius: 8px; }
+.c-side-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 640px) { .c-pattern.side { grid-template-columns: 1fr; } .c-side-row { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); } }
+/* 補充的例句橫排（L2 老師：三種奶茶橫向） */
+/* 投影片：兩張補充並排一頁，中間一條線（L2 老師） */
+.c-extra-pair { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; }
+.c-extra-pair > .card { border: 0; box-shadow: none; align-content: start; }
+.c-extra-pair > .card + .card { border-left: 2px dashed var(--line); border-radius: 0; }
+.c-ex-lines { display: flex; flex-wrap: wrap; gap: 8px 36px; }  /* 靠左排、間距固定（L2 老師：三個名稱拉太開） */
 @media (max-width: 760px) { .c-pat-top, .c-qa-row { grid-template-columns: 1fr; } }
 
 /* 對話串：LINE 對話框 */
@@ -88,6 +121,8 @@ h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
 .c-pcard { border: 1px solid var(--line); border-radius: 12px; padding: 10px; text-align: center; display: grid; gap: 2px; background: var(--card); }
 .c-pcard-icon { font-size: 2.4rem; line-height: 1.2; }
 .c-pcard-img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 8px; margin-bottom: 4px; }
+/* 橫的組合圖（L5 看圖說說看：照片＋圖示）不裁成直式，整張顯示 */
+.c-pcard-img[data-wide] { aspect-ratio: auto; object-fit: contain; }
 .c-inline .c-rom { font-size: .9em; }
 .c-video { position: relative; width: 100%; max-width: 640px; aspect-ratio: 16 / 9; }
 .c-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; border-radius: 10px; }
@@ -98,9 +133,10 @@ h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
 .c-blank { border-bottom: 1px solid #999; height: 2em; }
 
 /* 補充 */
-.c-later { font-size: .72rem; font-weight: 400; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 1px 8px; vertical-align: middle; }
 .c-extra { display: grid; gap: 8px; }
 .c-extra p { margin: 0; }
+.c-ex-imgs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.c-ex-imgs img { max-height: 220px; max-width: 100%; border-radius: 8px; }
 .c-table { border-collapse: collapse; width: 100%; }
 .c-table th, .c-table td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
 .c-table th { background: var(--accent-soft); }
@@ -127,6 +163,7 @@ h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
   .chandout .c-words, .chandout .c-words.phrases { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
   .chandout .c-word { padding: 3px 8px; }
   .chandout .c-icon { font-size: 1.4rem; }
+  .chandout .c-ex-imgs img { max-height: 140px; }
   .chandout .c-pat-top { grid-template-columns: auto minmax(0, 1fr); }
   .chandout .c-qa-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); padding: 6px 0; }
   /* grid 裡的卡片放不下會整張推到下一頁、留一大片空白：列印改用一般排版 */
@@ -137,6 +174,40 @@ h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
   .chandout .c-cards:not(:has(.has-img)) { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
   .chandout .c-pcard:not(.has-img) { padding: 4px 6px; gap: 0; font-size: .9rem; }
   .chandout .c-pcard:not(.has-img) .c-pcard-icon { font-size: 1.6rem; }
+  /* 有照片的看圖卡排成一排（L2 四張時第四張不會自己掉到下一排） */
+  .chandout .c-cards:has(.has-img) { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  /* 補充的單字一排三個（直排一個一行會佔掉半頁：L4 其他幣值、L5 餐桌四寶） */
+  .chandout .c-ex-lines { gap: 4px 28px; }
+  .chandout .c-side-imgs { contain: none; }
+  .chandout .c-side-imgs img { flex: none; height: 110px; width: auto; }
+  /* 單字 7 個以內排成一列（L2 老師：第二列只剩一個字很浪費） */
+  .chandout .c-words:not(:has(> :nth-child(8))) { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  /* 補充卡一排三張、圖小一點（L2 老師：練習和補充要在同一頁）；有表格的佔整排 */
+  .chandout .sec-extras .c-cards-col { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: start; }
+  .chandout .sec-extras .c-extra { padding: 8px 10px; gap: 4px; font-size: .92em; }
+  .chandout .sec-extras .c-extra .c-th { font-size: 1.05rem; }
+  .chandout .sec-extras .c-extra .c-rom { font-size: .92rem; }
+  .chandout .sec-extras .c-ex-imgs img { max-height: 64px; }
+
+  /* 看圖卡：照片在左、名字和說明在右，練習區塊矮一半（L2 老師：練習和補充同一頁） */
+  .chandout .c-pcard.has-img { grid-template-columns: auto minmax(0, 1fr); column-gap: 8px; text-align: left; align-content: start; padding: 6px; }
+  .chandout .c-pcard.has-img .c-pcard-img { grid-row: 1 / span 4; width: 60px; margin: 0; object-position: top; }
+  .chandout .c-pcard.has-img > div { white-space: nowrap; font-size: .85rem; }  /* 說明不斷行（L2 老師：象／牌啤酒） */
+  .chandout .c-pcard-img[data-wide] { width: 120px; }
+  .chandout .sec-extras .c-cards-col > * + * { margin-top: 0; }
+  .chandout .sec-extras .c-extra:has(table) { grid-column: 1 / -1; }
+  /* 有 joinNext 的課：兩欄，合併的兩張各一半、其他整排（L2 老師） */
+  .chandout .sec-extras .c-cards-col:has(.c-extra.half, .c-extra.full) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chandout .sec-extras .c-extra.full { grid-column: 1 / -1; }  /* wide 的補充在沒有 joinNext 的課也佔整排 */
+  /* 句型和句型之間用虛線分開（L2 老師）：句型區塊列印時不畫卡片外框 */
+  .chandout .sec-blocks .c-cards-col > .card { border: 0; border-radius: 0; padding-left: 0; padding-right: 0; }
+  .chandout .sec-blocks .c-cards-col > .card + .card { border-top: 1.5px solid #9ca3af; margin-top: 8px; padding-top: 12px; }  /* 實線：句型內問答列是虛線，句型之間用實線才分得出層次 */
+  /* 不要只剩一個音節／一個字掉到下一行（L2 老師：chaa nom kài｜múk、象牌啤｜酒） */
+  .chandout .c-word .c-rom, .chandout .c-word .c-zh, .chandout .c-pcard > div, .chandout .c-line > div { text-wrap: balance; }
+  /* 句型左右排：A4 太窄，講義改成上下排（句型框＋句子在上、單字一排一類在下） */
+  .chandout .c-pattern.side { grid-template-columns: minmax(0, 1fr); }
+  .chandout .c-side-left { grid-template-columns: auto minmax(0, 1fr); align-items: start; }
+  .chandout .c-side-imgs { grid-column: 1 / -1; }
   .chandout .c-sec h2 { margin: 12px 0 6px; }
   /* 對話串可以跨頁，但一則訊息不切開 */
   .chandout .c-dialogue { break-inside: auto; }
@@ -146,5 +217,7 @@ h4 { margin: 0 0 6px; font-size: .9rem; color: var(--muted); }
   .chandout .c-bubble, .chandout .c-msg.right .c-bubble { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, max-content); justify-content: start; column-gap: 22px; border-radius: 8px; padding: 4px 10px; }
   .chandout .c-avatar { font-size: 1.4rem; width: 2rem; height: 2rem; }
   .chandout .c-th { font-size: 1.15rem; }
+  .chandout .c-rom { font-size: 1rem; }
+  .chandout .c-word .c-rom { font-size: .9rem; }
 }
 .c-hints > h4 { grid-column: 1 / -1; margin: 0; }
