@@ -5,6 +5,7 @@ export const CATEGORIES: Category[] = [
   { key: 'video', title: '影片教學', desc: '跟著影片逐句精讀', to: '/video' },
   { key: 'lyrics', title: '歌詞', desc: '用歌詞學泰文', to: '/song' },
   { key: 'news', title: '時事補充', desc: '節日與時事：單字、簡單句子、泰國網路金句', to: '/news' },
+  { key: 'news-reading', title: '短文時事閱讀', desc: '讀真實的泰文短文：貼文、廣告、短新聞', to: '/news-reading' },
   { key: 'culture', title: '文教', desc: '泰國文化與生活' },
   { key: 'conversation', title: '泰語會話', desc: '自我介紹、點餐、殺價、問路，每 5 課一個單元', to: '/conversation' },
   { key: 'artfont', title: '藝術字', desc: '泰文藝術字' },

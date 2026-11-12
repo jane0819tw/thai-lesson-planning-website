@@ -21,6 +21,7 @@ import VideoPage from './components/VideoPage'
 import SongPage, { SongIndex } from './components/SongPage'
 import { SongPresent, VideoPresent } from './components/StudyPresent'
 import { NewsHandout, NewsIndex, NewsPage, NewsPresent } from './news/NewsPages'
+import { ReadHandout, ReadIndex, ReadPage, ReadPresent } from './newsreading/ReadPages'
 import { ConvHandout, ConvIndex, ConvLessonPage, ConvPresent } from './conversation/ConvPages'
 
 export default function App() {
@@ -65,6 +66,10 @@ export default function App() {
           <Route path="/news/:id" element={<NewsPage />} />
           <Route path="/news/:id/present" element={<NewsPresent />} />
           <Route path="/news/:id/handout" element={<NewsHandout />} />
+          <Route path="/news-reading" element={<ReadIndex />} />
+          <Route path="/news-reading/:id" element={<ReadPage />} />
+          <Route path="/news-reading/:id/present" element={<ReadPresent />} />
+          <Route path="/news-reading/:id/handout" element={<ReadHandout />} />
           <Route path="*" element={<p>找不到頁面。<Link to="/">回首頁</Link></p>} />
         </Routes>
         </ErrorBoundary>

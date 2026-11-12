@@ -1,0 +1,26 @@
+/* 短文時事閱讀（src/newsreading）：卡片沿用會話課 conv.css＋時事補充 news.css */
+.rpage .r-orig p { margin: .4em 0; font-size: 1.25rem; line-height: 1.9; }
+.rpage .r-lines { display: grid; gap: 12px; }
+.rpage .r-imglines { display: grid; gap: 8px; }
+.rpage .r-patth { font-size: 1.3rem; font-weight: 700; }
+.rpage .r-patsub { margin: 2px 0 0 2.4em; }
+.rpage .r-pat .r-lines { margin-top: 10px; }
+.rpage .r-qs { margin: 0; padding-left: 1.6em; display: grid; gap: 14px; line-height: 1.8; }
+.rpage .r-ans { margin-top: 4px; padding: 6px 10px; border-left: 4px solid var(--accent); background: var(--bg); border-radius: 0 8px 8px 0; }
+.rpage .r-showans { margin-top: 4px; font-size: .85rem; padding: 2px 12px; }
+.rpage .r-blank { height: 2.6em; border-bottom: 1px solid var(--line); }
+/* 圖片文字：大螢幕圖和逐句左右排 */
+@media (min-width: 900px) {
+  .rpage .n-imgcard { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .rpage .n-imgcard .n-fig { margin: 0; }
+}
+@media print {
+  /* 講義的圖片卡不用 grid（grid 一整列不能跨頁），圖靠左浮動 */
+  .nhandout.rpage .n-imgcard { display: flow-root; }
+  .nhandout.rpage .n-imgcard .n-fig { float: left; width: 42%; margin: 0 14px 6px 0; }
+  .nhandout.rpage .n-fig img { max-width: 100%; }
+  /* 長卡片（圖片逐句、逐段、單字）可以跨頁，只讓每一句、每個字不被切開，免得整頁空白 */
+  .nhandout.rpage .card { break-inside: auto; }
+  .nhandout.rpage .c-line, .nhandout.rpage .r-orig p, .nhandout.rpage .r-qs > li, .nhandout.rpage .r-pat, .nhandout.rpage .n-fig { break-inside: avoid; }
+  .nhandout.rpage .r-imglines, .nhandout.rpage .r-lines { gap: 6px; }
+}
