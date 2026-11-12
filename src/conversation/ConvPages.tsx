@@ -235,7 +235,7 @@ export function SlideShow({ slides, chapters, where, storeKey, onExit, t, flip }
       </div>
       <div className="pt-rail" />
       <div className="pt-stage" ref={stage}>
-        <div className="pt-inner" ref={inner} key={i}>{cur.body}</div>
+        <div className="pt-inner" ref={inner} key={i} onLoadCapture={fit}>{cur.body}</div>
         <Annotator key={`ink${i}`} strokes={strokes} drawing={pen} color={penColor} onChange={s => setInk(m => ({ ...m, [i]: s }))} />
       </div>
       {notesOpen && (

@@ -91,7 +91,7 @@ def collect_conv(lesson):
     texts = []
     for b in lesson.get("blocks", []):
         if b["type"] == "pattern": texts.append(b["th"])
-        texts += [x["th"] for k in ("items", "examples", "vocab", "toolbox", "lines") for x in b.get(k, [])]
+        texts += [x["th"] for k in ("items", "examples", "vocab", "sideVocab", "toolbox", "lines") for x in b.get(k, [])]
         if b["type"] == "numtable": texts += [c.split("｜")[0] for r in b["rows"] for c in r["cells"] if "｜" in c]
     texts += [s["th"] for x in (lesson.get("dialogue") or {}).get("lines", []) for s in x["segs"]]
     texts += [x["th"] for p in lesson.get("practice", []) for x in p.get("hints", [])]

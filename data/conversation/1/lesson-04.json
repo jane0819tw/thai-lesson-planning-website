@@ -145,24 +145,26 @@
           "zh": "便宜",
           "star": true,
           "icon": "👍"
-        },
+        }
+      ],
+      "sideVocab": [
         {
           "th": "ตุ๊กตา",
           "rom": "dtúk-gà-dtaa",
           "zh": "娃娃",
-          "image": "conversation/1/l4-doll.jpg"
+          "image": "conversation/1/l4-doll-price.jpg"
         },
         {
           "th": "ตั๋วแฟนมีต",
           "rom": "dtŭua faen mêet",
           "zh": "見面會的票",
-          "image": "conversation/1/l4-ticket.jpg"
+          "image": "conversation/1/l4-ticket-price.jpg"
         },
         {
           "th": "คอนโด",
           "rom": "kon-doh",
           "zh": "公寓",
-          "image": "conversation/1/l4-condo.jpg"
+          "image": "conversation/1/l4-condo-price.jpg"
         }
       ],
       "toolbox": [
@@ -521,42 +523,78 @@
   "practice": [
     {
       "kind": "roleplay",
-      "title": "殺價（老師當老闆娘）",
-      "body": "當下面的客人，問價錢、殺價、完成購買，做兩次。",
+      "title": "夜市水果攤殺價（老師當老闆）",
+      "body": "選一種水果，問價錢、殺價到目標價格再買；做完換你當老闆。",
       "cards": [
         {
-          "name": "LingLing",
-          "image": "conversation/1/l4-lingling.jpg",
+          "name": "香蕉",
+          "image": "conversation/1/l4-banana.jpg",
           "lines": [
-            "有香港朋友",
-            "不要鳳梨"
+            "標價 60 泰銖",
+            "目標 50 泰銖"
           ]
         },
         {
-          "name": "Orm",
-          "image": "conversation/1/l4-orm.jpg",
+          "name": "芒果",
+          "image": "conversation/1/l4-mango.jpg",
           "lines": [
-            "沒有手機",
-            "要西瓜"
+            "標價 150 泰銖",
+            "目標 120 泰銖"
+          ]
+        },
+        {
+          "name": "鳳梨",
+          "image": "conversation/1/l4-pineapple.jpg",
+          "lines": [
+            "標價 100 泰銖",
+            "目標 80 泰銖"
+          ]
+        },
+        {
+          "name": "西瓜",
+          "image": "conversation/1/l4-watermelon.jpg",
+          "lines": [
+            "標價 120 泰銖",
+            "目標 100 泰銖"
           ]
         }
       ]
     },
     {
-      "kind": "translate",
-      "title": "中翻泰",
-      "items": [
-        "顧客：我喜歡吃榴槤，我想買榴槤，榴槤多少錢？",
-        "老闆：榴槤 60 泰銖。",
-        "顧客：好便宜！",
-        "老闆：全部 90 泰銖。"
+      "kind": "qa",
+      "title": "猜猜多少錢",
+      "body": "老師問 <<อันนี้เท่าไหร่|an née tâo rài>>，你用泰文猜價格，聽到答案用 <<จริงเหรอ|jing rĕr>>、<<แพง|paeng>>、<<ถูก|tòok>> 回應；再交換。",
+      "cards": [
+        {
+          "icon": "🥭",
+          "lines": [
+            "<<ข้าวเหนียวมะม่วง|kâao nĭieow má-mûuang>>"
+          ]
+        },
+        {
+          "icon": "📱",
+          "lines": [
+            "<<มือถือ|meu tĕu>>（iPhone）"
+          ]
+        },
+        {
+          "icon": "✈️",
+          "lines": [
+            "台北→曼谷機票"
+          ]
+        },
+        {
+          "icon": "🏠",
+          "lines": [
+            "曼谷的<<คอนโด|kon-doh>>"
+          ]
+        }
       ]
     }
   ],
   "extras": [
     {
       "title": "看價格說說看",
-      "body": "用 <<อันนี้เท่าไหร่|an née tâo rài>> 問，用「…<<บาท|bàat>>」回答。",
       "images": [
         "conversation/1/l3-price-greentea.jpg",
         "conversation/1/l3-price-mangosteen.jpg",

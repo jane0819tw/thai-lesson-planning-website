@@ -42,6 +42,8 @@ export interface PatternBlock {
   printStack?: boolean
   /** 只有圖、不寫字的一排（public/ 底下的路徑），老師指著圖問學生（L3 ใช่ไหม：前面學過的單字） */
   quiz?: string[]
+  /** 放在左欄句型框下面的單字，圖放大、點圖再放大（L4 老師：娃娃、見面會門票、公寓的價格圖要看得到價格） */
+  sideVocab?: ConvWord[]
 }
 
 /** 模板：一行一句，直的排（例：自我介紹的順序） */

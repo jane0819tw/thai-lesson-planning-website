@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import SpeakButton from '../components/SpeakButton'
+import ZoomImage from '../components/ZoomImage'
 import { speak } from '../audio/speak'
 import { Rom } from '../video/Rom'
 import { plain } from './data'
@@ -137,6 +138,20 @@ export function Toolbox({ items }: { items: ConvText[] }) {
 }
 
 /** 投影片：接話小工具自己一頁（放在句型頁裡會讓那頁變高、縮得比其他句型頁小，L2 老師） */
+/** 大圖單字（句型框下面）：圖要看得清楚上面的價格，點圖放大 */
+function BigWord({ w }: { w: ConvWord }) {
+  return (
+    <div className="c-word c-big-word">
+      {w.image && <ZoomImage className="c-big-img" src={BASE + w.image} alt={w.zh} />}
+      <div>
+        <div className="th c-th">{w.th}<SpeakButton text={w.th} /></div>
+        <div className="c-rom"><Rom text={w.rom} /></div>
+        <div className="c-zh">{w.zh}</div>
+      </div>
+    </div>
+  )
+}
+
 export function ToolboxCard({ b }: { b: PatternBlock }) {
   return (
     <article className="card c-toolbox-slide">
@@ -171,10 +186,13 @@ export function PatternCard({ b, noToolbox, noImages }: { b: PatternBlock; noToo
   return (
     <article className={b.printStack ? 'card c-pattern print-stack' : 'card c-pattern'}>
       <div className="c-pat-top">
-        <div className="c-key">
-          <div className="th">{b.th}<SpeakButton text={b.th} /></div>
-          <div className="c-rom"><Rom text={b.rom} /></div>
-          <div className="c-zh">{b.zh}</div>
+        <div className="c-pat-left">
+          <div className="c-key">
+            <div className="th">{b.th}<SpeakButton text={b.th} /></div>
+            <div className="c-rom"><Rom text={b.rom} /></div>
+            <div className="c-zh">{b.zh}</div>
+          </div>
+          {b.sideVocab?.length ? <div className="c-big-words">{b.sideVocab.map(w => <BigWord key={w.th} w={w} />)}</div> : null}
         </div>
         <div className="c-qa">
           {qaRows(b.examples).map((r, i) => (
