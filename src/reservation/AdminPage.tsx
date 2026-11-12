@@ -422,8 +422,8 @@ export default function AdminPage() {
                 {CATEGORIES.map(c => (
                   <li key={c.key}>
                     {c.to
-                      ? <a className="bk-course" href={`#${c.to}`} target="_blank" rel="noopener noreferrer"><strong>{c.title}</strong><small>{c.desc}</small><span className="bk-go">開啟 →</span></a>
-                      : <div className="bk-course off"><strong>{c.title}</strong><small>{c.desc}</small><span className="bk-muted">即將推出</span></div>}
+                      ? <a className="bk-course" href={`#${c.to}`} target="_blank" rel="noopener noreferrer"><strong>{c.title}</strong>{c.skills && <small className="bk-skill">skill：{c.skills.join('、')}</small>}<span className="bk-go">開啟 →</span></a>
+                      : <div className="bk-course off"><strong>{c.title}</strong><span className="bk-muted">即將推出</span></div>}
                   </li>
                 ))}
               </ul>
