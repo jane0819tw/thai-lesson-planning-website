@@ -660,6 +660,7 @@ table.sktable .sk-mark { background: #fbeed3; }
 .pt-bottom button:disabled { opacity: .3; cursor: default; }
 .pt-stage { min-height: 0; display: grid; place-items: center; overflow: hidden; padding: 8px 3vw; }
 .pt-inner { width: 900px; max-width: none; }
+.pt-hide-speak .speak { display: none; }  /* 認字課投影片「喇叭」關掉：整個拿掉，版面跟著移動、重新縮放（2026-11-13 老師） */
 .pt-progress { position: fixed; left: 0; bottom: 0; height: 3px; background: var(--accent); transition: width .2s; }
 .pt-title { text-align: center; padding: 24px; }
 .pt-title h1 { margin: 8px 0 16px; }

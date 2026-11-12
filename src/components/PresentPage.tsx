@@ -197,6 +197,7 @@ export default function PresentPage() {
   const [i, setI] = useState(0)
   const [showZh, setShowZh] = useState(false)  // 投影片預設不顯示中文（L1 老師），按 Z 或「中文」打開
   const [showRoman, setShowRoman] = useState(true)
+  const [showSpeak, setShowSpeak] = useState(true)  // 喇叭（播放鈕），按 S 或「喇叭」切換
   const [letter, setLetter] = useState<Consonant | null>(null)
   const [vowel, setVowel] = useState<{ char: string; ipa: string } | null>(null)  // 母音筆順視窗
   const [side, setSide] = useState(false)  // 左側縮圖列：滑到畫面最左邊或按 ☰ 打開
@@ -226,7 +227,7 @@ export default function PresentPage() {
   const go = useCallback((d: number) => setI(k => Math.min(Math.max(k + d, 0), Math.max(n - 1, 0))), [n])
   const exit = useCallback(() => { if (document.fullscreenElement) document.exitFullscreen(); nav(`/reading/lesson/${id}`) }, [id, nav])
 
-  // 鍵盤：← → 空白鍵／翻頁筆的 PageUp PageDown 換頁，Z 中文、R 拼音，F 全螢幕，Esc 離開
+  // 鍵盤：← → 空白鍵／翻頁筆的 PageUp PageDown 換頁，Z 中文、R 拼音、S 喇叭，F 全螢幕，Esc 離開
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (letter || vowel || document.querySelector('.zoom-overlay, .overlay')) return  // 筆順視窗（含聲調符號）、放大圖片開著時不換頁、Esc 不離開
@@ -238,6 +239,7 @@ export default function PresentPage() {
       else if (e.key === 'End') setI(n - 1)
       else if (e.key === 'z' || e.key === 'Z') setShowZh(x => !x)
       else if (e.key === 'r' || e.key === 'R') setShowRoman(x => !x)
+      else if (e.key === 's' || e.key === 'S') setShowSpeak(x => !x)
       else if (e.key === 'f' || e.key === 'F') { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.() }
       else if (e.key === 'p' || e.key === 'P') setPen(x => !x)
       else if (e.key === 'n' || e.key === 'N') { e.preventDefault(); setNotesOpen(x => !x) }
@@ -257,7 +259,7 @@ export default function PresentPage() {
     const minW = Math.max(0, ...kids.map(k => Math.max(k.offsetWidth, k.scrollWidth)))
     fitInto(stage.current, inner.current, 2.6, minH, minW)
   }, [])
-  useLayoutEffect(fit, [fit, i, lesson, showZh, showRoman])
+  useLayoutEffect(fit, [fit, i, lesson, showZh, showRoman, showSpeak])
   useEffect(() => {
     let raf = 0
     const ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(fit) })  // 下一個 frame 再縮放，避免 ResizeObserver loop 警告
@@ -274,7 +276,7 @@ export default function PresentPage() {
   const jump = (k: number) => { setI(k); setSide(false) }
 
   return (
-    <div className={notesOpen ? 'present notes-open' : 'present'}>
+    <div className={`present${notesOpen ? ' notes-open' : ''}${showSpeak ? '' : ' pt-hide-speak'}`}>
       <div className="pt-top">
         <span className="pt-where">L{lesson.number}{cur.section && `｜${cur.section}`}</span>
         {/* 章節列：整課章節一排，目前這章主色、講過的變淡，點了跳到那章第一頁 */}
@@ -291,6 +293,7 @@ export default function PresentPage() {
           <button className={notesOpen ? 'on' : undefined} onClick={() => setNotesOpen(x => !x)} title="N">補充</button>
           <button className={showZh ? 'on' : undefined} onClick={() => setShowZh(x => !x)} title="Z">中文</button>
           <button className={showRoman ? 'on' : undefined} onClick={() => setShowRoman(x => !x)} title="R">拼音</button>
+          <button className={showSpeak ? 'on' : undefined} onClick={() => setShowSpeak(x => !x)} title="S">喇叭</button>
           <button onClick={() => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.()} title="F">全螢幕</button>
           <button onClick={exit} title="Esc">離開</button>
         </span>
