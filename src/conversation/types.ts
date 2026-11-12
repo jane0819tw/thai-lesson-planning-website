@@ -12,7 +12,20 @@ export interface ConvExample extends ConvText { who?: 'f' | 'm'; q?: boolean }
 export interface ConvWord { th: string; rom: string; zh: string; star?: boolean; icon?: string; /** 講義的圖（public/ 底下的路徑），有的話取代 icon */ image?: string }
 
 /** 短句卡：一組好幾張（講義開頭、中間的「短句」頁） */
-export interface PhrasesBlock { type: 'phrases'; id: string; title: string; items: (ConvWord & { note?: string })[] }
+export interface PhrasesBlock {
+  type: 'phrases'; id: string; title: string; items: (ConvWord & { note?: string })[]
+  /** 每列幾張（例：[5, 6]＝1–5 一列、6–0 一列，L3 老師）；沒寫就自動排 */
+  rows?: number[]
+}
+
+/** 數字表（講義 L3 11–99 的格子表）：橫軸個位數、直軸十位數，格子寫「泰文｜拼音」（可用 {{ }} 標關鍵字），"?" 是給學生想的空格，"" 留白 */
+export interface NumTableBlock {
+  type: 'numtable'; id: string; title: string
+  /** 規則（說明文字，可用 <<泰文|拼音>>） */
+  rules?: string[]
+  cols: string[]
+  rows: { head: string; cells: string[] }[]
+}
 
 /** 句型：講義藍底句型框（th、rom、zh＝關鍵字）＋人物 Q/A（examples）＋單字表（vocab）＋接話小工具 */
 export interface PatternBlock {
@@ -25,12 +38,16 @@ export interface PatternBlock {
   /** 講義的圖（public/ 底下的路徑），左右排時放在句子下面（L2 甜度、冰塊對照圖） */
   images?: string[]
   toolbox?: ConvText[]
+  /** 列印時問、答不並排，一句一列（L3 กี่：句子長，並排會斷行） */
+  printStack?: boolean
+  /** 只有圖、不寫字的一排（public/ 底下的路徑），老師指著圖問學生（L3 ใช่ไหม：前面學過的單字） */
+  quiz?: string[]
 }
 
 /** 模板：一行一句，直的排（例：自我介紹的順序） */
 export interface TemplateBlock { type: 'template'; id: string; title: string; body?: string; lines: ConvText[] }
 
-export type ConvBlock = PhrasesBlock | PatternBlock | TemplateBlock
+export type ConvBlock = PhrasesBlock | PatternBlock | TemplateBlock | NumTableBlock
 
 /** 對話串：一個人一次說的話可以分好幾段，每段標「回答／補充／反問／接話詞／聽懂就好」 */
 /** listen（聽懂就好）L2 老師拿掉了，保留型別只為相容 */
@@ -55,16 +72,19 @@ export interface Practice {
 
 /** 補充（畫面不加「有時間再上」標籤，L2 老師） */
 export interface Extra {
-  title: string
+  /** 標題（可省略：L3 泰文數字知多少三格只放圖和說明） */
+  title?: string
   body?: string
   lines?: ConvText[]
   table?: { head: string[]; rows: string[][] }
   /** 講義的圖（public/ 底下的路徑），排成一列 */
   images?: string[]
+  /** 放在圖的位置的大字（L3：๙、ผี，對應講義的圖） */
+  bigText?: string
   link?: { url: string; label: string }
   /** 嵌入 YouTube 片段：start／end 秒數 */
   video?: { id: string; start?: number; end?: number; label: string }
-  /** 投影片和下一張補充放同一頁（左右兩塊，中間一條線） */
+  /** 投影片和下一張補充放同一頁（左右並排，中間一條線）；連續幾張都寫就幾張並排（L3：三格） */
   joinNext?: boolean
   /** 講義佔一整排（L1 達人秀） */
   wide?: boolean

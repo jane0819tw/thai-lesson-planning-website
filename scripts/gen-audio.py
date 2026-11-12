@@ -87,11 +87,12 @@ def collect(lesson):
 conv_plain = lambda s: re.sub(r"\s+", " ", re.sub(r"\[[^\]]*\]", "", re.sub(r"\{\{|\}\}|\[\[|\]\]", "", s)).replace("／", " ")).strip()
 
 def collect_conv(lesson):
-    """會話課有播放鈕的句子：短句、句型、例句、單字、接話小工具、模板、對話串、練習提示句、補充例句、總結、複習"""
+    """會話課有播放鈕的句子：短句、數字表的格子、句型、例句、單字、接話小工具、模板、對話串、練習提示句、補充例句、總結、複習"""
     texts = []
     for b in lesson.get("blocks", []):
         if b["type"] == "pattern": texts.append(b["th"])
         texts += [x["th"] for k in ("items", "examples", "vocab", "toolbox", "lines") for x in b.get(k, [])]
+        if b["type"] == "numtable": texts += [c.split("｜")[0] for r in b["rows"] for c in r["cells"] if "｜" in c]
     texts += [s["th"] for x in (lesson.get("dialogue") or {}).get("lines", []) for s in x["segs"]]
     texts += [x["th"] for p in lesson.get("practice", []) for x in p.get("hints", [])]
     texts += [x["th"] for e in lesson.get("extras", []) for x in e.get("lines", [])]

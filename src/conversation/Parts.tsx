@@ -1,8 +1,9 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import SpeakButton from '../components/SpeakButton'
+import { speak } from '../audio/speak'
 import { Rom } from '../video/Rom'
 import { plain } from './data'
-import type { ConvBlock, ConvExample, ConvLesson, ConvTag, ConvText, ConvWord, Dialogue, Extra, PatternBlock, PhrasesBlock, Practice, TemplateBlock } from './types'
+import type { ConvBlock, ConvExample, ConvLesson, ConvTag, ConvText, ConvWord, Dialogue, Extra, NumTableBlock, PatternBlock, PhrasesBlock, Practice, TemplateBlock } from './types'
 
 // 會話課的卡片：課程頁、投影片、列印講義共用（同一份資料、同一種排法）
 
@@ -84,7 +85,39 @@ export function PhrasesCard({ b }: { b: PhrasesBlock }) {
   return (
     <article className="card">
       <h3>{b.title}</h3>
-      <div className="c-words phrases">{b.items.map(w => <Word key={w.th} w={w} />)}</div>
+      {b.rows ? (
+        // 照指定的列數分列（L3 老師：1–5 一列、6–0 一列）；欄數＝最長那列，卡片大小一致
+        <div className="c-words phrases c-rows" style={{ ['--cols' as string]: Math.max(...b.rows) }}>
+          {b.items.map((w, i) => <div key={w.th} style={b.rows!.reduce<number[]>((a, n) => [...a, a[a.length - 1] + n], [0]).includes(i) ? { gridColumnStart: 1 } : undefined} className="c-rows-cell"><Word w={w} /></div>)}
+        </div>
+      ) : <div className="c-words phrases">{b.items.map(w => <Word key={w.th} w={w} />)}</div>}
+    </article>
+  )
+}
+
+/** 數字表：照講義的格子表（L3 老師），點格子播放 */
+export function NumTableCard({ b }: { b: NumTableBlock }) {
+  return (
+    <article className="card c-numtable">
+      <h3>{b.title}</h3>
+      {b.rules?.length ? <div className="c-nt-rules">{b.rules.map(r => <div key={r}><Rich text={r} /></div>)}</div> : null}
+      <div className="tablewrap"><table className="c-nt">
+        <colgroup><col className="head" />{b.cols.map((c, k) => <col key={c} className={k < 3 ? 'wide' : undefined} />)}</colgroup>
+        <thead><tr><th />{b.cols.map(c => <th key={c}>{c}</th>)}</tr></thead>
+        <tbody>{b.rows.map(r => (
+          <tr key={r.head}><th>{r.head}</th>{b.cols.map((_, k) => {
+            const c = r.cells[k] ?? ''
+            if (!c.includes('｜')) return <td key={k} className="c-nt-q">{c}</td>
+            const [th, rom] = c.split('｜')
+            return (
+              <td key={k} className="c-nt-cell" onClick={() => speak(plain(th))} title="點一下播放">
+                <div className="c-rom"><Mk text={rom} rom /></div>
+                <div className="th"><Mk text={th} /></div>
+              </td>
+            )
+          })}</tr>
+        ))}</tbody>
+      </table></div>
     </article>
   )
 }
@@ -136,7 +169,7 @@ function qaRows(ex: ConvExample[]) {
 export function PatternCard({ b, noToolbox, noImages }: { b: PatternBlock; noToolbox?: boolean; noImages?: boolean }) {
   if (b.vocabRows?.length) return <PatternSide b={b} noToolbox={noToolbox} noImages={noImages} />
   return (
-    <article className="card c-pattern">
+    <article className={b.printStack ? 'card c-pattern print-stack' : 'card c-pattern'}>
       <div className="c-pat-top">
         <div className="c-key">
           <div className="th">{b.th}<SpeakButton text={b.th} /></div>
@@ -152,7 +185,16 @@ export function PatternCard({ b, noToolbox, noImages }: { b: PatternBlock; noToo
           ))}
         </div>
       </div>
-      {b.vocab?.length ? <div className="c-words c-pat-words">{b.vocab.map(w => <Word key={w.th} w={w} />)}</div> : null}
+      {/* 單字和只有圖的一排同時有時放同一列（L3 老師：บาท 和價格圖） */}
+      {b.vocab?.length && b.quiz?.length ? (
+        <div className="c-pat-row">
+          <div className="c-words c-pat-words">{b.vocab.map(w => <Word key={w.th} w={w} />)}</div>
+          <div className="c-quiz">{b.quiz.map(src => <img key={src} src={BASE + src} alt="" />)}</div>
+        </div>
+      ) : <>
+        {b.vocab?.length ? <div className="c-words c-pat-words">{b.vocab.map(w => <Word key={w.th} w={w} />)}</div> : null}
+        {b.quiz?.length ? <div className="c-quiz">{b.quiz.map(src => <img key={src} src={BASE + src} alt="" />)}</div> : null}
+      </>}
       {b.toolbox?.length && !noToolbox ? <Toolbox items={b.toolbox} /> : null}
     </article>
   )
@@ -189,7 +231,7 @@ export function TemplateCard({ b }: { b: TemplateBlock }) {
 }
 
 export function BlockCard({ b }: { b: ConvBlock }) {
-  return b.type === 'pattern' ? <PatternCard b={b} /> : b.type === 'phrases' ? <PhrasesCard b={b} /> : <TemplateCard b={b} />
+  return b.type === 'pattern' ? <PatternCard b={b} /> : b.type === 'phrases' ? <PhrasesCard b={b} /> : b.type === 'numtable' ? <NumTableCard b={b} /> : <TemplateCard b={b} />
 }
 
 const SPAN = 3
@@ -252,13 +294,13 @@ export function PracticeCard({ p, print }: { p: Practice; print?: boolean }) {
   )
 }
 
-/** layout：講義排法（有 joinNext 的課才給）half＝和隔壁那張各佔一半、full＝佔一整排 */
-export function ExtraCard({ x, layout }: { x: Extra; layout?: 'half' | 'full' }) {
+/** layout：講義排法（有 joinNext 的課才給）half＝兩張並排、third＝三張並排、full＝佔一整排 */
+export function ExtraCard({ x, layout }: { x: Extra; layout?: 'half' | 'third' | 'full' }) {
   return (
     <article className={layout ? `card c-extra ${layout}` : 'card c-extra'}>
-      <h3>{x.title}</h3>
+      {x.title && <h3>{x.title}</h3>}
       {x.body && <p><Rich text={x.body} /></p>}
-      {x.images?.length ? <div className="c-ex-imgs">{x.images.map(src => <img key={src} src={BASE + src} alt="" />)}</div> : null}
+      {x.images?.length || x.bigText ? <div className="c-ex-imgs">{x.bigText && <span className="th c-ex-big">{x.bigText}</span>}{x.images?.map(src => <img key={src} src={BASE + src} alt="" />)}</div> : null}
       {x.lines?.length ? <div className="c-ex-lines">{x.lines.map(t => <Line key={t.th} t={t} />)}</div> : null}
       {x.footnote && <p><Rich text={x.footnote} /></p>}
       {x.table && (
@@ -339,7 +381,12 @@ export function sectionsOf(l: ConvLesson, print = false): Section[] {
   if (l.extras?.length) s.push({ key: 'extras', label: '補充', cards: l.extras.map((x, i, a) => {
     // 有 joinNext 的課：講義也照投影片的合併方式排，合併的兩張各 50%、其他 100%（L2 老師）
     const join = a.some(e => e.joinNext)
-    const layout = x.wide ? 'full' : !join ? undefined : x.joinNext || a[i - 1]?.joinNext ? 'half' : 'full'
+    // 這張所在的合併組有幾張：往前、往後沿著 joinNext 數
+    let from = i, to = i
+    while (from > 0 && a[from - 1].joinNext) from--
+    while (to < a.length - 1 && a[to].joinNext) to++
+    const n = to - from + 1
+    const layout = x.wide ? 'full' : !join ? undefined : n === 2 ? 'half' : n >= 3 ? 'third' : 'full'
     return <ExtraCard x={x} layout={layout} key={i} />
   }) })
   if (l.recap?.length) s.push({ key: 'recap', label: '總結', cards: [<RecapCard l={l} key="c" />] })

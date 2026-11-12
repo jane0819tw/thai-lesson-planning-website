@@ -119,11 +119,14 @@ function buildSlides(l: ConvLesson): { slides: Slide[]; chapters: string[] } {
     add('對話串', pages.map(([a, b]) => <DialogueCard d={d} from={a} to={b} key={a} />))
   }
   add('練習', l.practice.map((p, i) => <PracticeCard p={p} key={i} />))
-  // joinNext：和下一張補充放同一頁，左右兩塊（L2 老師）
+  // joinNext：和下一張補充放同一頁並排，中間一條線（L2 老師兩張、L3 老師三張）
   const ex = l.extras ?? [], exPages: ReactNode[] = []
   for (let i = 0; i < ex.length; i++) {
-    if (ex[i].joinNext && ex[i + 1]) { exPages.push(<div className="c-extra-pair" key={i}><ExtraCard x={ex[i]} /><ExtraCard x={ex[i + 1]} /></div>); i++ }
-    else exPages.push(<ExtraCard x={ex[i]} key={i} />)
+    let j = i
+    while (ex[j].joinNext && ex[j + 1]) j++
+    const g = ex.slice(i, j + 1)
+    exPages.push(g.length > 1 ? <div className={g.length > 2 ? 'c-extra-pair c-extra-grid' : 'c-extra-pair'} style={{ ['--n' as string]: g.length }} key={i}>{g.map((x, k) => <ExtraCard x={x} key={k} />)}</div> : <ExtraCard x={ex[i]} key={i} />)
+    i = j
   }
   add('補充', exPages)
   if (l.recap?.length) add('總結', [<RecapCard l={l} key="c" />])
