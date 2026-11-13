@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { soundLabel } from '../consonant'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import type { Consonant } from '../types'
 import { getStrokes, isToneMark } from '../strokes'
 import MarkGlyph from './MarkGlyph'
@@ -19,9 +19,11 @@ export default function LetterDialog({ char, info, caption, onClose }: { char: s
     return () => window.removeEventListener('keydown', h)
   }, [onClose])
   const strokes = getStrokes(char)
+  // 視窗掛在 body，吃不到 main.reading 的字體：認字課頁面加上 reading，泰文字體和外面字卡一樣（Sarabun）
+  const reading = useLocation().pathname.startsWith('/reading')
   // 掛到 body：投影片的內容區有 zoom 縮放，視窗放在裡面會跟著放大、超出畫面
   return createPortal(
-    <div className="overlay" onClick={onClose} role="dialog" aria-modal="true">
+    <div className={reading ? 'overlay reading' : 'overlay'} onClick={onClose} role="dialog" aria-modal="true">
       <div className="dialog" onClick={e => e.stopPropagation()}>
         <button className="close" onClick={onClose} aria-label="關閉">✕</button>
         <div className="dhead">

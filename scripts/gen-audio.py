@@ -65,6 +65,7 @@ def collect(lesson):
     # 聲調表：獨立的 toneTables，以及放在說明卡（rules）或母音前置說明卡（preface）裡的 toneTable
     tables = list(lesson.get("toneTables", []))
     tables += [r["toneTable"] for r in lesson.get("rules", []) if r.get("toneTable")]
+    tables += [t for r in lesson.get("rules", []) for t in r.get("toneTables", [])]  # 一張說明卡放好幾張聲調表（L6）
     tables += [r["toneTable"] for v in lesson.get("vowels", []) for r in v.get("preface", []) + v.get("after", []) if r.get("toneTable")]
     tables += [t for x in lesson.get("review", []) + lesson.get("extras", []) for t in x.get("toneTables", [])]  # 複習、補充卡裡的聲調總表
     for t in tables:

@@ -7,12 +7,14 @@ export interface WordItem { thai: string; zh: string; roman?: string; star?: boo
 export interface DemoTile { th: string; sub?: string; op?: string; icon?: string; speak?: string }
 /** 例句：一個 part＝空格隔開的一段（words＝段裡的詞，下方逐詞標中文；zh＝整段的意思） */
 export interface SentencePart { words: { th: string; zh: string }[]; zh?: string }
-export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; parts?: { body: string; demo?: DemoTile[] }[]; toneTable?: ToneTable; unit?: string; at?: 'concept' | 'consonants' | 'top'; afterLetter?: string; sentence?: SentencePart[]; noSlide?: boolean }  // toneTable：說明卡內直接顯示聲調表；title 留空＝不顯示標題；unit：放進這個小單元的區塊（見 Lesson.clusters）；parts：接在 demo 後面的「說明＋圖解」段落，讓每段說明緊接著自己的圖解（L1 子音怎麼念：第 1、2 點配 ก＋อ，第 3 點配 กอ＋ไก่）；sentence：例句（L1 文字系統：สวัสดีค่ะ ฉันชื่อเจน，標出空格分句、詞與詞不空格），整句有音檔；noSlide：課程頁顯示、投影片不放；afterLetter：搭配 at:'consonants'，改排在這個字母（char）後面（L1：看完 ก 再解釋）；at：concept＝放在「基本概念」區塊（和音節組成圖一起，L1），consonants＝放在「子音」區塊最上面，top＝放在所屬小單元（unit）區塊的最上面、結構圖前面（L16-1）
+export interface Rule { id: string; title: string; body: string; demo?: DemoTile[]; parts?: { body: string; demo?: DemoTile[] }[]; toneTable?: ToneTable; toneTables?: ToneTable[]; unit?: string; at?: 'concept' | 'consonants' | 'top'; afterLetter?: string; sentence?: SentencePart[]; noSlide?: boolean }  // toneTable：說明卡內直接顯示聲調表；toneTables：好幾張聲調表放同一張說明卡（L6：LCp 表＋高子音對照表，和說明合成一頁）；title 留空＝不顯示標題；unit：放進這個小單元的區塊（見 Lesson.clusters）；parts：接在 demo 後面的「說明＋圖解」段落，讓每段說明緊接著自己的圖解（L1 子音怎麼念：第 1、2 點配 ก＋อ，第 3 點配 กอ＋ไก่）；sentence：例句（L1 文字系統：สวัสดีค่ะ ฉันชื่อเจน，標出空格分句、詞與詞不空格），整句有音檔；noSlide：課程頁顯示、投影片不放；afterLetter：搭配 at:'consonants'，改排在這個字母（char）後面（L1：看完 ก 再解釋）；at：concept＝放在「基本概念」區塊（和音節組成圖一起，L1），consonants＝放在「子音」區塊最上面，top＝放在所屬小單元（unit）區塊的最上面、結構圖前面（L16-1）
 export interface Consonant {
   id: string; char: string; name: string; roman: string; zh: string
   sound: string; group: ConsonantGroup; sameHigh: string; words: WordItem[]; audioUrl?: string | null
   /** 取代「發音 X」的說明（L1 อ：當子音不發音，當母音發 or 音） */
   soundNote?: string
+  /** 列印講義從這個字母開始換到下一頁（L6 ภ） */
+  printBreak?: boolean
 }
 export interface Vowel {
   id: string; ipa: string; short: string; long: string

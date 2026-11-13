@@ -100,8 +100,8 @@ export function lessonTabs(lesson: Lesson): [Tab, string][] {
   return t
 }
 // 列印講義的「字母卡＋練字格」一列（子音）：on＝列印才包；trace＝要練寫的字，一列 10 格（描 3、空 7）；below＝練字格下面的內容（例字）
-const Wrap = ({ on, trace, below, children }: { on: boolean; trace: string[]; below?: ReactNode; children: ReactNode }) => on ? (
-  <div className="h-wrow">
+const Wrap = ({ on, trace, below, breakBefore, children }: { on: boolean; trace: string[]; below?: ReactNode; breakBefore?: boolean; children: ReactNode }) => on ? (
+  <div className={breakBefore ? 'h-wrow h-break' : 'h-wrow'}>
     {children}
     <div className="h-wtrace">{trace.map(t => <TraceRow key={t} text={t} />)}{below}</div>
   </div>
@@ -298,7 +298,7 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
         // 列印講義：一個字母一列，字母卡在左邊、練字格在右邊（不另外放描字作業頁）
         <section className={printLesson ? 'h-wlist' : 'grid'}>
           {lesson.consonants.map(c => (<Fragment key={c.id}>
-            <Wrap on={!!printLesson} trace={[c.char]} below={c.words.length > 0 && (
+            <Wrap on={!!printLesson} trace={[c.char]} breakBefore={c.printBreak} below={c.words.length > 0 && (
               // 列印講義：例字放在練字格下面、橫向排（L4 老師）
               <div className="h-cwords">{c.words.map(w => <div key={w.thai} className={w.star ? 'cword wstar' : 'cword'}><span className="th cword-th">{w.thai}</span>{w.zh && <span className="cword-zh">{w.zh}</span>}</div>)}</div>
             )}>

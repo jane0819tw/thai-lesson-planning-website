@@ -829,6 +829,7 @@ table.rc-table .rc-img { display: block; width: 100%; max-width: 150px; margin: 
   .h-lesson .sec-vocab + .sec-recap, .h-lesson .sec-vocab + .sec-practice, .h-lesson .sec-practice + .sec-recap { break-before: auto; }  /* 單字、練習（L2 多音節練習）、小結都短，放同一頁 */
   .h-lesson .lsec + .sec-extras, .h-lesson .lsec + .sec-memes { break-before: auto; }  /* 補充接在前一章後面，放不下的圖卡整張移到下一頁 */
   .h-lesson .lsec { break-inside: auto; }
+  .h-lesson .h-break { break-before: page; }  /* 子音 printBreak：從這個字母換頁（L6 ภ） */
   /* 子音卡一列 5 張（老師：6 張太小），整章盡量放進一頁 */
   .h-lesson .grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
   .h-lesson .card.letter { padding: 8px; break-inside: avoid; font-size: .95em; line-height: 1.35; }

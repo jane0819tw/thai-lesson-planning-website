@@ -38,6 +38,7 @@ export default function RuleExtras({ r, Body }: { r: Rule; Body: (p: { body: str
       {r.demo && <RuleDemo tiles={r.demo} />}
       {r.parts?.map((x, i) => <Fragment key={i}><Body body={x.body} />{x.demo && <RuleDemo tiles={x.demo} />}</Fragment>)}
       {r.toneTable && <ToneTableView table={r.toneTable} />}
+      {r.toneTables?.map(t => <ToneTableView key={t.title} table={t} />)}
     </>
   )
 }
