@@ -6,7 +6,7 @@ import { speak } from '../audio/speak'
 import { useThaiFont } from './thaiFont'
 import LetterDialog from './LetterDialog'
 
-type Mode = 'learn' | 'kedmanee'
+type Mode = 'learn' | 'kedmanee' | 'four'
 type Section = { title: string; keys: string; cls: string }
 
 // 學習版：依講義的分類排列，顏色 = 子音類別
@@ -25,7 +25,39 @@ const KED: [string, string][][] = [
   [['ฟ', 'ฤ'], ['ห', 'ฆ'], ['ก', 'ฏ'], ['ด', 'โ'], ['เ', 'ฌ'], ['้', '็'], ['่', '๋'], ['า', 'ษ'], ['ส', 'ศ'], ['ว', 'ซ'], ['ง', '.']],
   [['ผ', '('], ['ป', ')'], ['แ', 'ฉ'], ['อ', 'ฮ'], ['ิ', 'ฺ'], ['ื', '์'], ['ท', '?'], ['ม', 'ฒ'], ['ใ', 'ฬ'], ['ฝ', 'ฦ']],
 ]
-export { SECTIONS, KED }
+// 四排（手機精簡排列）：前三排是字母 [一般, Shift]，'' = 空位；第三排左右是 ⇧ 和 ⌫；第四排是上方／下方母音與聲調符號（不分上下檔）＋空格
+const ROWS4: [string, string][][] = [
+  [['ต', 'ถ'], ['ค', 'ภ'], ['พ', 'ำ'], ['ะ', 'โ'], ['ข', 'ฦ'], ['ว', 'ฎ'], ['ร', 'ซ'], ['น', 'ณ'], ['ย', 'ญ'], ['ไ', 'ฯ'], ['ใ', '']],
+  [['ห', 'ฤ'], ['ก', 'ฟ'], ['ด', 'ฆ'], ['เ', 'ฏ'], ['จ', 'ฌ'], ['บ', 'ษ'], ['า', 'ศ'], ['ล', 'ๆ'], ['ส', 'ฬ'], ['แ', '.']],
+  [['ผ', 'ฑ'], ['ป', 'ธ'], ['อ', 'ฉ'], ['ง', 'ฐ'], ['ช', 'ฮ'], ['ท', 'ฒ'], ['ม', 'ฝ']],
+]
+const MARKS4 = 'ั ิ ี ึ ื ุ ู ็ ่ ้ ๊ ๋ ์'.split(' ')
+export { SECTIONS, KED, ROWS4, MARKS4 }
+
+// 四排鍵盤：寫成一般函式（不是元件），按鍵時才不會整排重建、手機上閃
+export function fourRows({ shift, onShift, onKey, onBack }: { shift: boolean; onShift: () => void; onKey: (ch: string) => void; onBack: () => void }) {
+  const k = (pair: [string, string], i: number) => {
+    const ch = pair[shift ? 1 : 0]
+    return ch
+      ? <button type="button" key={i} className="key th" onClick={() => onKey(ch)}>{label(ch)}</button>
+      : <span key={i} className="kspace" style={{ flexGrow: 1 }} />
+  }
+  return (
+    <div className="hw-ked k4">
+      <div className="krow">{ROWS4[0].map(k)}</div>
+      <div className="krow"><span className="kspace" style={{ flexGrow: 0.5 }} />{ROWS4[1].map(k)}<span className="kspace" style={{ flexGrow: 0.5 }} /></div>
+      <div className="krow">
+        <button type="button" className={`key act${shift ? ' on' : ''}`} style={{ flexGrow: 1.5 }} onClick={onShift}>⇧</button>
+        {ROWS4[2].map(k)}
+        <button type="button" className="key act" style={{ flexGrow: 1.5 }} onClick={onBack}>⌫</button>
+      </div>
+      <div className="krow">
+        {MARKS4.map(ch => <button type="button" key={ch} className="key th g-vowel" onClick={() => onKey(ch)}>{label(ch)}</button>)}
+        <button type="button" className="key act" style={{ flexGrow: 3 }} onClick={() => onKey(' ')}>空格</button>
+      </div>
+    </div>
+  )
+}
 export const isCombining = (ch: string) => /[ัิ-ฺ็-๎]/.test(ch)
 export const label = (ch: string) => (isCombining(ch) ? '◌' + ch : ch)
 
@@ -73,6 +105,7 @@ export default function KeyboardPage() {
       <div className="tabs" role="tablist">
         <button className={mode === 'learn' ? 'on' : ''} onClick={() => setMode('learn')}>學習版（分類）</button>
         <button className={mode === 'kedmanee' ? 'on' : ''} onClick={() => setMode('kedmanee')}>標準鍵盤 Kedmanee</button>
+        <button className={mode === 'four' ? 'on' : ''} onClick={() => setMode('four')}>四排</button>
         <button onClick={nextFont} title="切換字體">Aa 字體：{font.label}</button>
       </div>
 
@@ -91,6 +124,12 @@ export default function KeyboardPage() {
             <button className={`key act wide${shift ? ' on' : ''}`} onClick={() => setShift(s => !s)}>⇧</button>
             <button className="key wide2" onClick={() => press(' ')}>空格</button>
           </div>
+        </section>
+      )}
+      {mode === 'four' && (
+        <section className="ksec">
+          <p className="muted small">手機精簡排列：前三排是字母（按 ⇧ 切換上檔字），第四排是母音與聲調符號。</p>
+          {fourRows({ shift, onShift: () => setShift(s => !s), onKey: press, onBack: () => setText(t => Array.from(t).slice(0, -1).join('')) })}
         </section>
       )}
       {open && last && <LetterDialog char={last} info={info} onClose={() => setOpen(false)} />}

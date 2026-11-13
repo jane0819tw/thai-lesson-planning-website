@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useThaiFont } from './thaiFont'
-import { SECTIONS, KED, label as keyLabel } from './KeyboardPage'
+import { SECTIONS, KED, fourRows, label as keyLabel } from './KeyboardPage'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { getRepository } from '../data/repository'
 import type { Lesson, PracticeItem } from '../types'
@@ -239,7 +239,7 @@ function Dictation({ words, onDone }: { words: string[]; onDone: (score: number,
 
 // 作業頁內建的泰文鍵盤（同「泰文鍵盤」頁的兩種排列），不用離開作業頁
 export function Keypad({ onKey, onBack, fontLabel, onFont }: { onKey: (ch: string) => void; onBack: () => void; fontLabel: string; onFont: () => void }) {
-  const [mode, setMode] = useState<'learn' | 'ked'>('learn')
+  const [mode, setMode] = useState<'learn' | 'ked' | 'four'>('learn')
   const [shift, setShift] = useState(false)
   const press = (ch: string) => onKey(ch) // 上檔（⇧）會一直保持，要再按 ⇧ 才回到第一頁
   // 一般函式、不要寫成元件：寫成 <K /> 每按一次整排按鈕都會重建，手機上會閃兩下
@@ -249,10 +249,12 @@ export function Keypad({ onKey, onBack, fontLabel, onFont }: { onKey: (ch: strin
       <div className="tabs" role="tablist">
         <button type="button" className={mode === 'learn' ? 'on' : ''} onClick={() => setMode('learn')}>分類</button>
         <button type="button" className={mode === 'ked' ? 'on' : ''} onClick={() => setMode('ked')}>標準鍵盤</button>
+        <button type="button" className={mode === 'four' ? 'on' : ''} onClick={() => setMode('four')}>四排</button>
         <button type="button" className="act" onClick={onBack}>⌫</button>
         <button type="button" className="act" onClick={onFont} title="切換字體">Aa 字體：{fontLabel}</button>
       </div>
       {mode === 'learn' && SECTIONS.map(s => <div className="krow" key={s.title}>{s.keys.split(' ').map(key)}</div>)}
+      {mode === 'four' && fourRows({ shift, onShift: () => setShift(x => !x), onKey: press, onBack })}
       {mode === 'ked' && (
         <div className="hw-ked">
           {KED.map((r, i) => {
