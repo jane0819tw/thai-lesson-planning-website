@@ -71,7 +71,8 @@ function readStudents_() {
   const sh = getSheet_(CONFIG.SHEETS.STUDENTS, STUDENT_HEADERS);
   if (sh.getLastRow() < 2) return [];
   return sh.getRange(2, 1, sh.getLastRow() - 1, STUDENT_HEADERS.length).getValues()
-    .map(function (r, i) { return { row: i + 2, name: r[0], display: r[1], email: r[2], note: r[3], token: r[4], '課程記錄表': r[5], courses: parseCourses_(r[6]), recording: recordingSince_(r[7]) }; });
+    // 姓名一律轉文字：純數字的姓名（例如 77）getValues 會讀成數字，跟作業、預約紀錄的文字比對不到
+    .map(function (r, i) { return { row: i + 2, name: String(r[0]), display: r[1], email: r[2], note: r[3], token: r[4], '課程記錄表': r[5], courses: parseCourses_(r[6]), recording: recordingSince_(r[7]) }; });
 }
 
 /** 「課後錄影」欄 → 開始日期 'yyyy-MM-dd'；空白＝不需要錄影。手動打「是」或日期格式不對時，當成從很久以前就開始（全部的課都算） */
@@ -254,7 +255,7 @@ function readHomework_() {
 function homeworkOf_(name, rows) {
   const out = {};
   (rows || readHomework_()).forEach(function (r) {
-    if (r.name !== name) return;
+    if (r.name !== String(name)) return;
     const n = r.lesson.replace(/^L/, '');
     const prev = out[n];
     out[n] = { time: r.time, listen: r.listen, typing: r.typing, parse: r.parse, count: (prev ? prev.count : 0) + 1 };

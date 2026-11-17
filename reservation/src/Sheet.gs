@@ -43,6 +43,7 @@ function readBookings_() {
 function rowToObj_(values, rowNum) {
   const o = { _row: rowNum };
   BOOKING_HEADERS.forEach(function (h, i) { o[h] = values[i]; });
+  o['學生'] = String(o['學生']); // 純數字的姓名（例如 77）會被讀成數字，統一成文字才比得到學生表、作業紀錄
   return o;
 }
 
