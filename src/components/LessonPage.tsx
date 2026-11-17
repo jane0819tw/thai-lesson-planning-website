@@ -393,7 +393,7 @@ export default function LessonPage({ printLesson }: { printLesson?: Lesson } = {
         <RuleBody body={lesson.summary} />
       </header>
       {tabs.filter(([k]) => k !== 'games').map(([k, label]) => (
-        <section className={`lsec sec-${k}`} key={k}><h2 className="lsec-h">{label}</h2>{content(k)}</section>
+        <section className={`lsec sec-${k}${lesson.printJoin?.includes(k) ? ' h-join' : ''}`} key={k}><h2 className="lsec-h">{label}</h2>{content(k)}</section>
       ))}
     </article>
   )

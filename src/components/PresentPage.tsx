@@ -100,8 +100,8 @@ function buildSlides(l: Lesson, v: View): Slide[] {
             <div className={v.showZh ? 'pt-sub' : 'pt-sub pt-hidden'}>{c.zh}</div>
             <div className="muted">{GROUP_ZH[c.group]}｜{soundLabel(c)}{c.sameHigh && <>｜同音高子音：<span className="th">{c.sameHigh}</span></>}</div>
           </div>
-          {/* 例字排在右邊（L4 老師） */}
-          {c.words.length > 0 && (
+          {/* 例字排在右邊（L4 老師）；這課有例字時，沒有例字的字母也留空欄，版面和其他字母一樣、不置中（L7 老師） */}
+          {hasWords && (
               <div className="cwords pt-cwords">
                 {c.words.map(w => (
                   <div key={w.thai} className={w.star ? 'cword wstar' : 'cword'}>
@@ -197,7 +197,7 @@ export default function PresentPage() {
   const [i, setI] = useState(0)
   const [showZh, setShowZh] = useState(false)  // 投影片預設不顯示中文（L1 老師），按 Z 或「中文」打開
   const [showRoman, setShowRoman] = useState(true)
-  const [showSpeak, setShowSpeak] = useState(true)  // 喇叭（播放鈕），按 S 或「喇叭」切換
+  const [showSpeak, setShowSpeak] = useState(false)  // 喇叭（播放鈕），預設關（L7 老師 2026-11-17），按 S 或「喇叭」打開
   const [letter, setLetter] = useState<Consonant | null>(null)
   const [vowel, setVowel] = useState<{ char: string; ipa: string } | null>(null)  // 母音筆順視窗
   const [side, setSide] = useState(false)  // 左側縮圖列：滑到畫面最左邊或按 ☰ 打開

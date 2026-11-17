@@ -15,8 +15,12 @@ import MarkGlyph from './MarkGlyph'
 type Cat = 'mid' | 'high' | 'lcp' | 'lcs' | 'long' | 'short' | 'compound' | 'special'
 const CATS: [Cat, string][] = [['mid', '中子音'], ['high', '高子音'], ['lcp', '低子音 LCp'], ['lcs', '低子音 LCs'], ['long', '長母音'], ['short', '短母音'], ['compound', '複合母音'], ['special', '特殊母音']]
 interface Item { id: string; text: string; keys: string[]; vowel: boolean; cat: Cat; lesson: number }
-interface ChartRule { id: string; lesson: number; title: string; body: string; toneTable?: ToneTable }
+interface ChartRule { id: string; lesson: number; title: string; body: string; toneTable?: ToneTable; replaces?: string; mergedTitle?: string }
 export const RULES = chart.rules as ChartRule[]
+// 複習列出的規則：replaces 的規則和被取代的都學過時合成一條（L2 中子音＋短母音的表已含 L1 長母音），標題改 mergedTitle、不放說明，只留表格（L7 老師）
+const reviewRules = (rs: ChartRule[]) => rs
+  .filter(r => !rs.some(x => x.replaces === r.id))
+  .map(r => r.replaces && rs.some(x => x.id === r.replaces) ? { ...r, title: r.mergedTitle ?? r.title, body: '' } : r)
 
 // 母音要按哪些鍵：去掉代表子音位置的「-」，一個字一個鍵（เ-ียะ＝เ ี ย ะ）
 const vowelKeys = (form: string) => [...form.replace('-', '')]
@@ -150,10 +154,10 @@ export const hasRulesBefore = (upTo: number) => RULES.some(r => r.lesson < upTo)
 export function RuleFillSlide({ upTo }: { upTo: number }) {
   return (
     <article className="card rf-rules">
-      {RULES.filter(r => r.lesson < upTo).map(r => (
+      {reviewRules(RULES.filter(r => r.lesson < upTo)).map(r => (
         <section key={r.id}>
-          <h3>L{r.lesson}　{r.title}</h3>
-          <FillText body={r.body} mode="slide" />
+          <h3>{r.title}</h3>
+          {r.body && <FillText body={r.body} mode="slide" />}
           {r.toneTable && <ToneTableView table={r.toneTable} cover />}
         </section>
       ))}
@@ -166,7 +170,7 @@ export function ReviewSheet({ from, to, title }: { from: number; to: number; tit
   const lessons = useLessons()
   if (!lessons.length) return null
   const items = reviewItems(lessons)
-  const rules = RULES.filter(r => r.lesson >= from && r.lesson <= to)
+  const rules = reviewRules(RULES.filter(r => r.lesson >= from && r.lesson <= to))
   const blanks = (n: number): ReactNode => Array.from({ length: n }, (_, i) => <span key={i} className="fb-cell" />)
   return (
     <>
@@ -193,8 +197,8 @@ export function ReviewSheet({ from, to, title }: { from: number; to: number; tit
           <p className="small">填入空格，再把聲調表寫完整。</p>
           {rules.map(r => (
             <div key={r.id} className="fb-rule">
-              <h3>L{r.lesson}　{r.title}</h3>
-              <FillText body={r.body} mode="print" />
+              <h3>{r.title}</h3>
+              {r.body && <FillText body={r.body} mode="print" />}
               {r.toneTable && <BlankToneTable t={r.toneTable} />}
             </div>
           ))}

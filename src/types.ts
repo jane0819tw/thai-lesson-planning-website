@@ -140,6 +140,8 @@ export interface Lesson {
   worksheets?: Worksheet[]
   /** 開放投影片模式（課程頁出現「▶ 投影片模式」按鈕，見 lesson-slides skill） */
   slides?: boolean
+  /** 列印講義：這些區塊（Tab）不換頁，接在前一個區塊後面（L6：多音節練習接在子音後面） */
+  printJoin?: string[]
   /** 作業頁聽寫取前幾個作業字，沒設＝8（L14 講義作業頁 10 個字都要放） */
   homeworkCount?: number
   /** 作業頁「延伸影片挑戰」按鈕的連結（站內路徑，例如 /video/xxx）；沒設就顯示「即將開放」 */
