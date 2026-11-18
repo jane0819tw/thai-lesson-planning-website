@@ -10,6 +10,7 @@ import { speak } from '../audio/speak'
 import { fromVideo } from '../study/adapters'
 import { NoteSections } from '../study/NoteRow'
 import { PrintSheet, printDoc } from '../study/PrintSheet'
+import { QuizItem } from '../study/QuizItem'
 import '../video.css'
 import '../song.css'
 
@@ -404,8 +405,15 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
         </div>
       )}
 
-      {/* 順序同歌詞頁：單字 → 句型 */}
+      {/* 順序同歌詞頁：單字 → 句型 → 小測驗 */}
       <NoteSections notes={doc.notes} onSpeak={speak} />
+
+      {!!video.quiz?.length && (
+        <section className="sextra">
+          <h2>小測驗</h2>
+          <ol className="squiz">{video.quiz.map((q, i) => <QuizItem key={i} q={q} />)}</ol>
+        </section>
+      )}
 
 
       <p className="vnote">{video.note}</p>

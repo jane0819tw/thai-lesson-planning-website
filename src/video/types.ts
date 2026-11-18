@@ -1,3 +1,5 @@
+import type { SongQuiz } from '../song/types'
+
 // 影片教學資料型別。換影片時只要新增一個 data/videos/*.json，形狀相同即可。
 export interface VideoWord {
   th: string; rom: string; zh: string; p?: string
@@ -26,7 +28,11 @@ export interface VideoLesson {
   id: string; title: string; titleZh: string
   /** 建立日期 YYYY-MM-DD；列表依此排序（舊的在前） */
   createdAt?: string
+  /** 列表手動排序（1 最前面）；有填的排在沒填的前面，沒填的照 createdAt */
+  order?: number
   youtubeId: string; duration: number
   topic: string; level: string; note: string
   lines: VideoLine[]; vocab?: VideoVocab[]; patterns: VideoPattern[]; tips?: VideoTip[]
+  /** 小測驗（約 3 題）：q 泰文題目、qZh 中文、answer 是正確選項的索引；形狀同歌曲 */
+  quiz?: SongQuiz[]
 }

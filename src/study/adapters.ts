@@ -40,6 +40,6 @@ export function fromVideo(v: VideoLesson): StudyDoc {
     lines,
     notes: [...words, ...pats],
     noteAt: [...noteLines(lines, words), ...pats.map(p => v.lines.findIndex(L => L.patterns.includes(p.id)))],
-    tips: v.tips, pagePath: `/video/${v.id}`,
+    quiz: v.quiz, tips: v.tips, pagePath: `/video/${v.id}`,
   }
 }

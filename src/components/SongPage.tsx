@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getSong, listSongs } from '../data/songRepository'
-import type { Song, SongLine, SongQuiz, SongWord } from '../song/types'
+import type { Song, SongLine, SongWord } from '../song/types'
+import { QuizItem } from '../study/QuizItem'
 import { loadYouTubeApi, PLAYER_ERRORS, type YTPlayer } from '../video/youtube'
 import { Rom } from '../video/Rom'
 import { Volume } from '../video/Volume'
@@ -400,25 +401,5 @@ function LineEditor({ line, onLine, onWord }: { line: SongLine; onLine: (p: Part
         <input value={line.zh} onChange={e => onLine({ zh: e.target.value })} />
       </label>
     </div>
-  )
-}
-
-function QuizItem({ q }: { q: SongQuiz }) {
-  const [pick, setPick] = useState<number | null>(null)
-  return (
-    <li className="sq">
-      <p className="th sq-q">{q.q}</p>
-      <div className="sq-opts">
-        {q.options.map((o, i) => (
-          <button
-            key={i}
-            type="button"
-            className={`vtog th${pick !== null && i === q.answer ? ' sq-ok' : ''}${pick === i && i !== q.answer ? ' sq-no' : ''}`}
-            onClick={() => setPick(i)}
-          >{o}</button>
-        ))}
-      </div>
-      {pick !== null && <p className="small" role="status">{pick === q.answer ? '✓ 答對了！' : '✗ 再想想～'}{pick === q.answer && ` ${q.explain}`}</p>}
-    </li>
   )
 }

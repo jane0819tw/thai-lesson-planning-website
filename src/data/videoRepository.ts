@@ -10,7 +10,7 @@ export interface VideoRepository {
 }
 
 class StaticVideoRepository implements VideoRepository {
-  private videos = Object.values(modules).sort(byCreated)
+  private videos = Object.values(modules).sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity) || byCreated(a, b))
   async listVideos() { return this.videos }
   async getVideo(id: string) { return this.videos.find(v => v.id === id) }
 }
