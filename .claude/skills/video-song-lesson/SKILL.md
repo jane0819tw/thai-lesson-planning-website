@@ -76,6 +76,7 @@ description: 把一支 YouTube 影片做成「歌詞跟讀」頁（data/songs/<i
    - `quiz`（閱讀練習）：3 題，形狀同歌曲（`q`、`qZh`、`options`、`answer`、`explain`），問影片內容；清單類影片放一題「哪一樣沒有提到」。
    - `order`：老師指定列表順序時填（1 最前面）；沒填的照 `createdAt` 排在後面。
    - `topic`、`level`、`titleZh` 填好；`tips` 可省略。
+   - `note` 是給老師看的製作說明（字幕怎麼校對、哪些音標自己補的），頁面只在 `?edit=1` 顯示，學生看不到；內容尚未製作的空殼才會對學生顯示。
 4. **完成標準**：每一句都有 `zh`，每個字都有 `rom` 和 `zh`。`patterns` 列的 id 都有定義，`p` 也都對得上。
 
 ## 驗證並交棒

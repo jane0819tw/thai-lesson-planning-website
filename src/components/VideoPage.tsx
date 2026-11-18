@@ -416,7 +416,8 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
       )}
 
 
-      <p className="vnote">{video.note}</p>
+      {/* 製作說明（字幕怎麼校對、音標補了哪些）只給老師在校時模式看；內容還沒做的空殼照樣顯示「內容尚未製作」 */}
+      {(edit || !video.lines.length) && video.note && <p className="vnote">{video.note}</p>}
       <p className="small muted">音標寫法依 <a href="https://thai2english.com/" target="_blank" rel="noopener noreferrer">thai2english.com</a>：ป 寫 bp、ต 寫 dtaa，聲調符號 ` 低、^ 降、´ 高、˘ 升，沒有符號是平。</p>
       <p className="small muted">逐字高亮：資料裡沒有每個字的時間時，會依字長估算，可能與實際唸法差一點；用校時模式把句子起點校準後會更接近。</p>
       <PrintSheet doc={doc} showRom={showRom} showZh={showZh} art={art} />
