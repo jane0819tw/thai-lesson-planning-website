@@ -22,6 +22,7 @@ import SongPage, { SongIndex } from './components/SongPage'
 import { SongPresent, VideoPresent } from './components/StudyPresent'
 import { NewsHandout, NewsIndex, NewsPage, NewsPresent } from './news/NewsPages'
 import { ReadHandout, ReadIndex, ReadPage, ReadPresent } from './newsreading/ReadPages'
+import PostMemesIndex from './postmemes/PostMemesIndex'
 import { ConvHandout, ConvIndex, ConvLessonPage, ConvPresent } from './conversation/ConvPages'
 
 export default function App() {
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="/news-reading/:id" element={<ReadPage />} />
           <Route path="/news-reading/:id/present" element={<ReadPresent />} />
           <Route path="/news-reading/:id/handout" element={<ReadHandout />} />
+          <Route path="/post-memes" element={<PostMemesIndex />} />
           <Route path="*" element={<p>找不到頁面。<Link to="/">回首頁</Link></p>} />
         </Routes>
         </ErrorBoundary>
