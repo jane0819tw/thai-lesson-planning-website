@@ -6,6 +6,7 @@ import { setSession } from './session'
 import { getApi } from './api'
 import { REVIEW_UNITS, reviewKey, reviewTitle } from '../reviews'
 import { dictClipsOf, videoKey } from '../dictationClips'
+import { subKey, subPracticeOf } from '../subtitlePractice'
 import type { HomeworkRecord, OpenDays, StudentInfo, VideoItem } from './types'
 import { BASE_TZ, baseMs, fromBase, msIn, tzLabel, useViewTz, wdName } from './tz'
 import TzBar from './TzBar'
@@ -41,6 +42,11 @@ function VideoChallenge({ to, rec }: { to?: string; rec?: HomeworkRecord }) {
   return to
     ? <Link to={to} className="bk-video">🎬 延伸影片挑戰{rec ? <> <b>✅ 已完成 {rec.typing}</b> <u>再做一次</u></> : ' →'}<small>（題目持續更新）</small></Link>
     : <span className="bk-video off">🎬 延伸影片挑戰（即將開放）</span>
+}
+
+// 字幕聽打＋斷句解析（班級作業）：data/subtitle-practice 有這課才顯示
+function SubtitleWork({ to, rec }: { to: string; rec?: HomeworkRecord }) {
+  return <Link to={to} className="bk-video">✍️ 字幕聽打＋斷句解析{rec ? <> <b>✅ 已交</b> <u>看同學作業・老師回饋</u></> : ' →'}</Link>
 }
 
 // 「課後錄影」：記錄表有影片連結的課可以點進去看；需要錄影的學生（since 有值）從那天起還沒上傳的課顯示「影片整理中」
@@ -219,7 +225,7 @@ export default function BookingPage() {
                       <Link className="bk-print" to={`/reading/handout/${u.n}`}>🖨 列印講義</Link>
                       <ul className="bk-lessons">
                         {lessons.filter(x => x.number >= u.from && x.number <= u.to).map(x => (
-                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<HomeworkButton to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`} rec={view.homework?.[String(x.number)]} /><VideoChallenge to={x.videoChallenge ?? (dictClipsOf(x.number).length ? `/reading/lesson/${x.id}/video?t=${encodeURIComponent(token)}` : undefined)} rec={view.homework?.[videoKey(x.number)]} /></li>
+                          <li key={x.id}><Link to={`/reading/lesson/${x.id}`}><b>L{x.number}</b> {x.title}</Link>{' '}<HomeworkButton to={`/reading/lesson/${x.id}/homework?t=${encodeURIComponent(token)}`} rec={view.homework?.[String(x.number)]} /><VideoChallenge to={x.videoChallenge ?? (dictClipsOf(x.number).length ? `/reading/lesson/${x.id}/video?t=${encodeURIComponent(token)}` : undefined)} rec={view.homework?.[videoKey(x.number)]} />{subPracticeOf(x.number) && <SubtitleWork to={`/reading/lesson/${x.id}/subtitle?t=${encodeURIComponent(token)}`} rec={view.homework?.[subKey(x.number)]} />}</li>
                         ))}
                         {REVIEW_UNITS.includes(u.n) && u.to - u.from === 4 && (
                           <li key={`review-${u.n}`}><b>複習</b> {reviewTitle(u.n)}{' '}<HomeworkButton to={`/reading/review/${u.n}?t=${encodeURIComponent(token)}`} rec={view.homework?.[reviewKey(u.n)]} /></li>

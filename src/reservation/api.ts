@@ -1,4 +1,4 @@
-import type { AdminState, HomeworkRecord, HomeworkRow, Month, OpenDays, PendingVideos, RecSession, Rule, StudentInfo, StudentView, Upcoming, Week } from './types'
+import type { AdminState, ClassWorkItem, ClassWorkLine, ClassWorkView, HomeworkRecord, HomeworkRow, Month, OpenDays, PendingVideos, RecSession, Rule, StudentInfo, StudentView, Upcoming, Week } from './types'
 
 // Apps Script「網頁應用程式」網址（結尾 /exec）。這個網址本來就會公開，不是密碼。
 // 留空或網址帶 mock=1 時使用假資料，不會碰到真實試算表。
@@ -16,6 +16,16 @@ interface Api {
   getHomeworkInfo(token: string, lessonNumber: number | string): Promise<{ name: string; last: HomeworkRecord | null }>
   submitHomework(token: string, lessonNumber: number | string, result: HomeworkResult): Promise<{ ok: boolean; name: string }>
   adminGetHomework(): Promise<HomeworkRow[]>
+  /** 班級作業（字幕聽打）：key＝S<課>。送出過才會帶同班同學的作業 */
+  getClassWork(token: string, key: string): Promise<ClassWorkView>
+  submitClassWork(token: string, key: string, items: ClassWorkLine[]): Promise<ClassWorkView>
+  addClassComment(token: string, workId: string, text: string): Promise<ClassWorkView>
+  /** 寫到一半先存草稿（同學看不到），回傳儲存時間 */
+  saveClassDraft(token: string, key: string, items: ClassWorkLine[]): Promise<{ time: string }>
+  adminGetClassWork(): Promise<ClassWorkItem[]>
+  adminReplyClassWork(workId: string, text: string): Promise<boolean>
+  adminCommentClassWork(workId: string, text: string): Promise<boolean>
+  adminSetClass(name: string, cls: string): Promise<boolean>
   adminGetState(): Promise<AdminState>
   adminGetWeek(date: string): Promise<Week>
   adminGetMonth(date: string): Promise<Month>
@@ -70,6 +80,14 @@ const real: Api = {
   cancelBooking: (t, s) => call('cancelBooking', [t, s]),
   getHomeworkInfo: (t, n) => call('getHomeworkInfo', [t, n]),
   submitHomework: (t, n, r) => call('submitHomework', [t, n, r]),
+  getClassWork: (t, k) => call('getClassWork', [t, k]),
+  submitClassWork: (t, k, items) => call('submitClassWork', [t, k, items]),
+  addClassComment: (t, w, x) => call('addClassComment', [t, w, x]),
+  saveClassDraft: (t, k, items) => call('saveClassDraft', [t, k, items]),
+  adminGetClassWork: () => call('adminGetClassWork', []),
+  adminReplyClassWork: (w, x) => call('adminReplyClassWork', [w, x]),
+  adminCommentClassWork: (w, x) => call('adminCommentClassWork', [w, x]),
+  adminSetClass: (n, c) => call('adminSetClass', [n, c]),
   // 舊版後端的學生資料沒有 courses 欄位：補成空陣列（＝尚未開放任何課程）
   adminGetState: () => call<AdminState>('adminGetState', []).then(st => ({ ...st, students: st.students.map(x => ({ ...x, courses: x.courses ?? [] })) })),
   adminGetWeek: d => call('adminGetWeek', [d]),
@@ -126,7 +144,7 @@ const db: AdminState = {
   ],
   pending: [{ id: 'B0020', name: 'Amy', start: `${day(1)} 19:00`, length: 50, note: 'Email: amy@example.com' }],
   issues: [{ id: 'B0019', source: 'AmazingTalker', name: 'Jenny', start: `${day(3)} 20:00`, status: '已確認', items: ['Zoom 建立失敗：Zoom API 429：Too many requests', '記錄表：課程包已用完，沒有空白的堂數可以填'] }],
-  students: [{ name: 'Jenny', email: 'jenny@example.com', token: 'abc123', record: 'https://docs.google.com/spreadsheets/d/xxx', courses: ['reading:1', 'video'], recording: day(-10) }, { name: '王小明', display: 'Ming W.', email: '', token: 'at', courses: ['reading:1'], recording: day(-3) }],
+  students: [{ name: 'Jenny', email: 'jenny@example.com', token: 'abc123', record: 'https://docs.google.com/spreadsheets/d/xxx', courses: ['reading:1', 'video'], recording: day(-10), cls: '週三團班', clsManual: '週三團班' }, { name: '王小明', display: 'Ming W.', email: '', token: 'at', courses: ['reading:1'], recording: day(-3) }],
 }
 const week = (d: string): Week => {
   const base = d || day(0)
@@ -160,7 +178,40 @@ const mockUpcoming: Upcoming[] = [
 
 const mockHw: Record<string, HomeworkRecord> = { '1': { time: `${day(-1)} 20:15`, listen: '8/9', typing: '5/6', count: 2 } }
 
+// 假資料的團班：Jenny（abc123）和 Amy 同一班；Amy 已經交了 S20
+const mockClass: Record<string, string> = { Jenny: '週三團班', Amy: '週三團班', 王小明: '' }
+const mockWorks: ClassWorkItem[] = [{
+  id: 'W1', time: `${day(-1)} 21:00`, updated: '', name: 'Amy', cls: '週三團班', key: 'S20', feedback: 'มายด์ 的 ด์ 不發音，寫得很好！', feedbackTime: `${day(0)} 09:00`,
+  items: [{ n: 1, typed: 'สวัสดีค่ะ Vogue Thailand มายด์ 4EVE นะคะ', zh: '大家好，這裡是 Vogue Thailand，我是 4EVE 的 Mind', note: 'สวัสดี 你好\nมายด์＝ม＋า＋ย（ด์ 不念）Mind' }, { n: 2, typed: 'เสื้อกันหนาว หมวกไหมพรม ผ้าพันคอ', zh: '外套、毛線帽、圍巾', note: 'เสื้อ 衣服\nกัน＝ก＋ะ＋น 防止\nหนาว＝หน＋า＋ว 冷' }],
+  comments: [{ id: 'C1', time: `${day(-1)} 22:00`, name: '王小明', text: 'หมวกไหมพรม 我聽成 หมวกไหม 了 😂', teacher: false }],
+}]
+const mockDrafts: Record<string, { items: ClassWorkLine[]; time: string }> = {}
+const mockName = (t: string) => (t === 'at' ? '王小明' : t ? 'Jenny' : '')
+const mockView = (t: string, k: string): ClassWorkView => {
+  const name = mockName(t), cls = mockClass[name] ?? ''
+  const all = mockWorks.filter(w => w.key === k)
+  const mine = all.find(w => w.name === name) ?? null
+  const works = mine ? [mine, ...all.filter(w => w !== mine && cls && w.cls === cls)] : []
+  return structuredClone({ name, cls, mine, works, draft: mockDrafts[`${name}|${k}`] ?? null })
+}
+const now = () => `${day(0)} ${hhmm(0)}`
+
 const mock: Api = {
+  getClassWork: (t, k) => (t ? delay(mockView(t, k)) : Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))),
+  submitClassWork: (t, k, items) => {
+    const name = mockName(t)
+    if (!name) return Promise.reject(new Error('作業連結已失效，請向老師索取新的連結'))
+    const w = mockWorks.find(x => x.key === k && x.name === name)
+    delete mockDrafts[`${name}|${k}`]
+    if (w) { w.items = items; w.updated = now() } else mockWorks.push({ id: 'W' + Date.now(), time: now(), updated: '', name, cls: mockClass[name] ?? '', key: k, items, feedback: '', feedbackTime: '', comments: [] })
+    return delay(mockView(t, k))
+  },
+  addClassComment: (t, id, text) => { const w = mockWorks.find(x => x.id === id); if (!w) return Promise.reject(new Error('找不到這份作業')); w.comments.push({ id: 'C' + Date.now(), time: now(), name: mockName(t), text, teacher: false }); return delay(mockView(t, w.key)) },
+  saveClassDraft: (t, k, items) => { const name = mockName(t); if (!name) return Promise.reject(new Error('作業連結已失效，請向老師索取新的連結')); const time = now(); mockDrafts[`${name}|${k}`] = { items, time }; return delay({ time }) },
+  adminGetClassWork: () => delay(structuredClone(mockWorks)),
+  adminReplyClassWork: (id, text) => { const w = mockWorks.find(x => x.id === id); if (w) { w.feedback = text; w.feedbackTime = text ? now() : '' } return delay(true) },
+  adminCommentClassWork: (id, text) => { mockWorks.find(x => x.id === id)?.comments.push({ id: 'C' + Date.now(), time: now(), name: '老師', text, teacher: true }); return delay(true) },
+  adminSetClass: (n, c) => { mockClass[n] = c; db.students.forEach(x => { if (x.name === n) { x.cls = c; x.clsManual = c } }); return delay(true) },
   getStudentInfo: t => t === 'bad' ? delay({ mode: 'invalid' } as StudentInfo) : delay({
     homework: t ? mockHw : {},
     platform: t === 'at', // ?mock=1&t=at 可看平台學生的畫面

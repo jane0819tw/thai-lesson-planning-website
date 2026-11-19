@@ -13,9 +13,10 @@ import type { Draft } from './schedule'
 import type { AdminState, HomeworkRow, Month, PendingVideo, PendingVideos, RecSession, StudentRow, Week } from './types'
 import { diffOn, fromBase, msIn, useViewTz, wdName } from './tz'
 import TzBar from './TzBar'
+import ClassWorkAdmin from './ClassWorkAdmin'
 import './booking.css'
 
-const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['issues', '錯誤訊息'], ['videos', '待補錄影'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
+const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['issues', '錯誤訊息'], ['videos', '待補錄影'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生互動練習紀錄'], ['classwork', '班級作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
 type Sec = (typeof SECS)[number][0]
 const SEC_KEY = 'thaiskr_admin_sec'
 const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'sched' } catch { return 'sched' } }
@@ -61,6 +62,9 @@ export default function AdminPage() {
   const [onlyActive, setOnlyActive] = useState(false)
   const [who, setWho] = useState<'all' | 'private' | 'at' | 'rec'>('all')
   const [pv, setPv] = useState<PendingVideos | null>(null)
+  // 班級作業還沒回饋的份數（左側小數字）：課表讀完後在背景讀，進「班級作業」後由那頁更新
+  const [cwTodo, setCwTodo] = useState<number | null>(null)
+  const cwLoading = useRef(false)
   const pvLoading = useRef(false)
   const [newBar, setNewBar] = useState('')
   const [busy, setBusy] = useState({ n: 0, text: '' })
@@ -135,7 +139,13 @@ export default function AdminPage() {
   }, [api, run, loadWeek, loadMonth, step])
   useEffect(() => { if (!needKey) init() }, [needKey, init])
 
-  // 進入「學生作業」時才讀「作業」分頁
+  useEffect(() => {
+    if (!st || cwTodo !== null || cwLoading.current) return
+    cwLoading.current = true
+    api.adminGetClassWork().then(l => setCwTodo(l.filter(w => !w.feedback).length)).catch(() => setCwTodo(0)) // 舊版後端沒有這個功能：不顯示數字
+  }, [st, cwTodo, api])
+
+  // 進入「學生互動練習紀錄」時才讀「作業」分頁
   useEffect(() => {
     if (sec !== 'homework' || hw || !st) return
     run('讀取作業中…', () => api.adminGetHomework()).then(setHw).catch(e => flash(false, e.message))
@@ -247,7 +257,7 @@ export default function AdminPage() {
       <div className="mgr-shell">
         <nav className="mgr-side">
           {SECS.map(([k, n]) => (
-            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}{k === 'issues' && !!st.issues?.length && <span className="mgr-badge">{st.issues.length}</span>}{k === 'videos' && !!pv?.items.length && <span className="mgr-badge">{pv.items.length}</span>}</button>
+            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}{k === 'issues' && !!st.issues?.length && <span className="mgr-badge">{st.issues.length}</span>}{k === 'videos' && !!pv?.items.length && <span className="mgr-badge">{pv.items.length}</span>}{k === 'classwork' && !!cwTodo && <span className="mgr-badge">{cwTodo}</span>}</button>
           ))}
           {/* 其他工具：另開分頁，不影響這頁尚未儲存的開放時段 */}
           <a className="mgr-tool" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
@@ -393,7 +403,7 @@ export default function AdminPage() {
           {sec === 'homework' && (
             <div className="bk-card">
               <div className="bk-row between">
-                <h2 style={{ margin: 0 }}>學生作業</h2>
+                <h2 style={{ margin: 0 }}>學生互動練習紀錄</h2>
                 <button onClick={() => { setHw(null) }}>重新整理</button>
               </div>
               <p className="bk-muted">學生在作業頁按「送出作業」後出現在這裡（最近 300 筆，新的在上面）。同一課重做會多一筆，學生頁顯示最近一次。資料也存在試算表的「作業」分頁。</p>
@@ -407,6 +417,8 @@ export default function AdminPage() {
               )}
             </div>
           )}
+
+          {sec === 'classwork' && <ClassWorkAdmin api={api} run={run} flash={flash} onTodo={setCwTodo} />}
 
           {sec === 'backend' && (
             <BackendSettings links={backend} st={st} onSave={v => {
@@ -471,6 +483,7 @@ export default function AdminPage() {
               {st.students.length ? st.students.filter(s => who === 'rec' ? !!s.recording : who === 'all' || (who === 'at') === !!s.display).map(s => (
                 <StudentItem key={s.name} s={s} units={units}
                   onDelete={() => { if (confirm(`確定刪除學生「${s.name}」？他們的連結會立刻失效（預約與作業紀錄會保留）。`)) act('刪除學生中…', () => api.adminDeleteStudent(s.name), `已刪除 ${s.name}`, true) }}
+                  onSaveClass={c => act('儲存班級中…', () => api.adminSetClass(s.name, c), c ? `${s.name} 編入「${c}」` : `${s.name} 改成一對一`, true)}
                   onSaveDisplay={d => act('儲存平台名稱中…', () => api.adminSetDisplay(s.name, d), `已儲存 ${s.name} 的平台名稱`, true)}
                   onSaveCourses={list => act('儲存開放課程中…', () => api.adminSetCourses(s.name, list), `已儲存 ${s.name} 的開放課程`, true)}
                   onSaveRecording={on => act('儲存中…', () => api.adminSetRecording(s.name, on), on ? `${s.name} 之後的課會提醒補錄影連結` : `${s.name} 不需要課後錄影`, true).then(() => setPv(null))}
@@ -488,6 +501,7 @@ export default function AdminPage() {
               )}
               <NewStudent at={who === 'at'} onAdd={(n, e, d) => act('新增學生中…', () => api.adminCreateStudent(n, e, d), d ? '已新增 AmazingTalker 學生' : '已新增學生')} />
               <p className="bk-muted">有填「AmazingTalker 名稱」的學生在平台上預約，他們的連結只會看到「我的課程與作業」，看不到預約。</p>
+              <p className="bk-muted">👥 團班：同一班的學生綁<b>同一份課程記錄表</b>就會自動同一班，班級作業互相看得到。想自己取班名或分班，在「班級」欄填同一個名字（手動填的優先）。</p>
               <p className="bk-muted">貼上學生的「課程記錄表」網址後，學生頁會顯示剩餘堂數，確認預約時會自動把日期與 Zoom 連結填進下一堂。</p>
               <p className="bk-muted">新學生也可以用沒有代碼的通用連結（<code>#/book</code>）自己填姓名與 Email，送出後你確認時會自動建檔。</p>
             </div>
@@ -515,14 +529,16 @@ const Diag = ({ lines, fatal, always }: { lines: string[]; fatal: string; always
 
 const Busy = ({ text }: { text: string }) => <div className="mgr-busy"><div><i /><span>{text}</span></div></div>
 
-function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDisplay, onSaveRecording, onDelete }: { s: StudentRow; units: Unit[]; onRenew: () => void; onDelete: () => void; onSaveRec: (url: string) => void; onSaveCourses: (list: string[]) => void; onSaveDisplay: (display: string) => void; onSaveRecording: (on: boolean) => void }) {
+function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDisplay, onSaveClass, onSaveRecording, onDelete }: { s: StudentRow; units: Unit[]; onRenew: () => void; onDelete: () => void; onSaveRec: (url: string) => void; onSaveCourses: (list: string[]) => void; onSaveDisplay: (display: string) => void; onSaveClass: (cls: string) => void; onSaveRecording: (on: boolean) => void }) {
+  const manual = s.clsManual ?? s.cls ?? '' // 舊版後端沒有 clsManual
+  const [cls, setCls] = useState(manual)
   const [url, setUrl] = useState(s.record ?? '')
   const [display, setDisplay] = useState(s.display ?? '')
   const [courses, setCourses] = useState<string[]>(s.courses)
   const [copied, setCopied] = useState(false)
   return (
     <div className="bk-item">
-      <div>{s.name}{s.display && <span className="mgr-at">AT・{s.display}</span>}{s.recording && <span className="mgr-rec">🎥 錄影</span>}<div className="bk-muted">{s.email}</div>{s.token && <div className="mgr-link">{linkOf(s)}</div>}</div>
+      <div>{s.name}{s.display && <span className="mgr-at">AT・{s.display}</span>}{s.cls && <span className="mgr-rec">👥 {s.cls}</span>}{s.recording && <span className="mgr-rec">🎥 錄影</span>}<div className="bk-muted">{s.email}</div>{s.token && <div className="mgr-link">{linkOf(s)}</div>}</div>
       <div className="bk-row">
         {s.token && <button onClick={() => navigator.clipboard.writeText(linkOf(s)).then(() => setCopied(true))}>{copied ? '已複製' : '複製連結'}</button>}
         <button onClick={onRenew}>{s.token ? '換新連結' : '產生連結'}</button>
@@ -543,6 +559,10 @@ function StudentItem({ s, units, onRenew, onSaveRec, onSaveCourses, onSaveDispla
       <div className="bk-row" style={{ flexBasis: '100%' }}>
         <input style={{ flex: 1, minWidth: 200 }} placeholder="AmazingTalker 名稱（平台學生才填）" value={display} onChange={e => setDisplay(e.target.value)} />
         <button disabled={display.trim() === (s.display ?? '')} onClick={() => onSaveDisplay(display)}>儲存</button>
+      </div>
+      <div className="bk-row" style={{ flexBasis: '100%' }}>
+        <input style={{ flex: 1, minWidth: 200 }} placeholder={s.cls && !manual ? `班級：自動（${s.cls}）` : '班級：留空＝綁同一份記錄表的人自動同一班'} value={cls} onChange={e => setCls(e.target.value)} />
+        <button disabled={cls.trim() === manual} onClick={() => onSaveClass(cls.trim())}>儲存</button>
       </div>
       <div className="mgr-courses">
         <label><input type="checkbox" checked={!!s.recording} onChange={e => onSaveRecording(e.target.checked)} />🎥 需要課後錄影</label>

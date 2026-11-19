@@ -35,7 +35,7 @@ export interface OpenDays { days: Day[]; asOf: string }
 export interface Rule { type: '每週' | '單次' | '限定' | '休假' | '備註'; weekday: number | ''; date: string; start: string; end: string; label?: string }
 export interface Booking { id: string; source: string; name: string; start: string; length: number; status: string }
 export interface Pending { id: string; name: string; start: string; length: number; note: string }
-export interface StudentRow { name: string; /** 平台顯示名稱：有填＝AmazingTalker 學生 */ display?: string; email: string; token: string; record?: string; courses: string[]; /** 課後錄影開始日期 yyyy-MM-dd；空白＝不需要 */ recording?: string }
+export interface StudentRow { name: string; /** 平台顯示名稱：有填＝AmazingTalker 學生 */ display?: string; email: string; token: string; record?: string; courses: string[]; /** 課後錄影開始日期 yyyy-MM-dd；空白＝不需要 */ recording?: string; /** 目前的班級：手動填的班名，或綁同一份記錄表自動產生的「團班：姓名、姓名」；空白＝一對一（舊版後端沒有） */ cls?: string; /** 「班級」欄手動填的值（空白＝自動） */ clsManual?: string }
 /** 預約備註裡還沒按 × 的錯誤訊息（Zoom／記錄表失敗等），items 是一段一段的訊息 */
 export interface NoteIssue { id: string; source: string; name: string; start: string; status: string; items: string[] }
 export interface AdminState { rules: Rule[]; bookings: Booking[]; pending: Pending[]; students: StudentRow[]; /** 舊版後端沒有 */ issues?: NoteIssue[]; sheetUrl?: string; scriptUrl?: string } // 後台試算表、Apps Script 專案網址（舊版後端沒有）
@@ -49,3 +49,12 @@ export interface RecSession { name: string; start: string; end: string }
 /** 待補錄影：需要錄影的學生已上完、但記錄表「影片連結」還空白的課 */
 export interface PendingVideo { name: string; record: string; no: string; start: string; end: string; dateOnly: boolean; progress: string }
 export interface PendingVideos { items: PendingVideo[]; /** 需要錄影但沒辦法檢查的學生（沒綁記錄表、沒有「影片連結」欄） */ problems: { name: string; reason: string }[] }
+
+// ───────── 班級作業（字幕聽打＋斷句解析，見後端 ClassWork.gs）─────────
+/** 一句：n＝句號，typed＝學生打的泰文，zh＝學生自己翻的中文意思（舊資料沒有），note＝學生寫的斷句解析 */
+export interface ClassWorkLine { n: number; typed: string; zh?: string; note: string }
+export interface ClassComment { id: string; time: string; name: string; text: string; teacher: boolean }
+export interface ClassWorkItem { id: string; time: string; updated: string; name: string; cls: string; key: string; items: ClassWorkLine[]; feedback: string; feedbackTime: string; comments: ClassComment[] }
+/** 學生頁：mine＝自己的作業（還沒交是 null）；works＝自己＋同班同學的作業，交了才會有 */
+export interface ClassWorkDraft { items: ClassWorkLine[]; time: string }
+export interface ClassWorkView { name: string; cls: string; mine: ClassWorkItem | null; works: ClassWorkItem[]; /** 存在後台的草稿（舊版後端沒有） */ draft?: ClassWorkDraft | null }

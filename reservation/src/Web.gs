@@ -4,13 +4,15 @@
  * 學生用的函式公開；admin 開頭的函式需要管理密鑰（指令碼屬性 ADMIN_KEY）。
  */
 
-const PUBLIC_API_ = { getStudentView: getStudentView, getStudentInfo: getStudentInfo, getOpenDays: getOpenDays, submitBooking: submitBooking, cancelBooking: cancelBooking, getHomeworkInfo: getHomeworkInfo, submitHomework: submitHomework };
+const PUBLIC_API_ = { getStudentView: getStudentView, getStudentInfo: getStudentInfo, getOpenDays: getOpenDays, submitBooking: submitBooking, cancelBooking: cancelBooking, getHomeworkInfo: getHomeworkInfo, submitHomework: submitHomework,
+  getClassWork: getClassWork, submitClassWork: submitClassWork, saveClassDraft: saveClassDraft, addClassComment: addClassComment };
 const ADMIN_API_ = {
   adminGetState: adminGetState, adminGetWeek: adminGetWeek, adminGetMonth: adminGetMonth, adminSaveRules: adminSaveRules,
   adminSetStatus: adminSetStatus, adminCreateStudent: adminCreateStudent, adminRenewLink: adminRenewLink, adminSetRecord: adminSetRecord, adminSetDisplay: adminSetDisplay, adminImportPlatformStudents: adminImportPlatformStudents, adminDeleteStudent: adminDeleteStudent, adminSetCourses: adminSetCourses,
   adminGetRecordSessions: adminGetRecordSessions, adminCancelRecordLesson: adminCancelRecordLesson, adminGetHomework: adminGetHomework,
   adminSetRecording: adminSetRecording, adminGetPendingVideos: adminGetPendingVideos, adminSetVideoLink: adminSetVideoLink,
   adminDismissNote: adminDismissNote,
+  adminGetClassWork: adminGetClassWork, adminReplyClassWork: adminReplyClassWork, adminCommentClassWork: adminCommentClassWork, adminSetClass: adminSetClass,
 };
 
 function doGet() { return json_({ ok: true, service: 'thaiskr-reservation' }); }
@@ -72,7 +74,27 @@ function readStudents_() {
   if (sh.getLastRow() < 2) return [];
   return sh.getRange(2, 1, sh.getLastRow() - 1, STUDENT_HEADERS.length).getValues()
     // 姓名一律轉文字：純數字的姓名（例如 77）getValues 會讀成數字，跟作業、預約紀錄的文字比對不到
-    .map(function (r, i) { return { row: i + 2, name: String(r[0]), display: r[1], email: r[2], note: r[3], token: r[4], '課程記錄表': r[5], courses: parseCourses_(r[6]), recording: recordingSince_(r[7]) }; });
+    .map(function (r, i) { return { row: i + 2, name: String(r[0]), display: r[1], email: r[2], note: r[3], token: r[4], '課程記錄表': r[5], courses: parseCourses_(r[6]), recording: recordingSince_(r[7]), clsManual: String(r[8] || '').trim() }; })
+    .map(withClass_);
+}
+
+/**
+ * 學生的班級（cls）：「班級」欄有填就用它；沒填但跟別人綁同一份課程記錄表＝自動同一班（班名＝「團班：姓名、姓名」）；都沒有＝一對一（空字串）。
+ * 用 map 的第三個參數拿到整個名單，比對記錄表的試算表 ID。
+ */
+function withClass_(s, i, all) {
+  if (s.clsManual) { s.cls = s.clsManual; return s; }
+  const id = recordId_(s['課程記錄表']);
+  const mates = id ? all.filter(function (x) { return !x.clsManual && recordId_(x['課程記錄表']) === id; }) : [];
+  s.cls = mates.length > 1 ? '團班：' + mates.map(function (x) { return x.name; }).join('、') : '';
+  return s;
+}
+
+/** 記錄表網址或 ID → 試算表 ID（同一份表不管網址後面接什麼都算同一個） */
+function recordId_(v) {
+  const t = String(v || '').trim();
+  const m = /\/d\/([\w-]+)/.exec(t);
+  return m ? m[1] : (/^[\w-]{20,}$/.test(t) ? t : '');
 }
 
 /** 「課後錄影」欄 → 開始日期 'yyyy-MM-dd'；空白＝不需要錄影。手動打「是」或日期格式不對時，當成從很久以前就開始（全部的課都算） */
@@ -403,7 +425,7 @@ function adminGetState() {
   const pending = readBookings_().filter(function (b) { return b['來源'] === '私下' && b['狀態'] === STATUS.PENDING; })
     .map(function (b) { return { id: b['編號'], name: b['學生'], start: toLocalStr_(b['開始']), length: b['課長'], note: b['備註'] }; });
   const students = readStudents_().map(function (s) {
-    return { name: s.name, display: String(s.display || ''), email: s.email, token: s.token || '', record: s['課程記錄表'] || '', courses: s.courses, recording: s.recording };
+    return { name: s.name, display: String(s.display || ''), email: s.email, token: s.token || '', record: s['課程記錄表'] || '', courses: s.courses, recording: s.recording, cls: s.cls, clsManual: s.clsManual };
   });
   // 所有來源、尚未結束（或一天內剛結束）的預約，供老師頁直接調整狀態
   const since = Date.now() - 86400000;

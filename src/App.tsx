@@ -9,6 +9,7 @@ import { getSession } from './reservation/session'
 import BookingPage from './reservation/BookingPage'
 import AdminPage from './reservation/AdminPage'
 import VideoChallengePage from './components/VideoChallengePage'
+import SubtitlePracticePage from './components/SubtitlePracticePage'
 import HomeworkPage from './components/HomeworkPage'
 import PresentPage from './components/PresentPage'
 import HandoutPage from './components/HandoutPage'
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="/reading/handout/:unit" element={<HandoutPage />} />
           <Route path="/reading/lesson/:id/homework" element={<HomeworkPage />} />
           <Route path="/reading/lesson/:id/video" element={<VideoChallengePage />} />
+          <Route path="/reading/lesson/:id/subtitle" element={<SubtitlePracticePage />} />
           <Route path="/reading/review/:unit" element={<HomeworkPage />} />
           <Route path="/conversation" element={<ConvIndex />} />
           <Route path="/conversation/:level/lesson/:n" element={<ConvLessonPage />} />
