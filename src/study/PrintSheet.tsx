@@ -105,7 +105,7 @@ export function PrintSheet({ doc, showRom, showZh, art }: { doc: StudyDoc; showR
       )}
 
       {doc.culture && (
-        <section>
+        <section className="pr-newpage">
           {head(`文化補充：${doc.culture.title}`)}
           {doc.culture.intro && <p>{doc.culture.intro}</p>}
           <CultureList c={doc.culture} showRom={showRom} />

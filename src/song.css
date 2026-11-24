@@ -165,3 +165,6 @@ a.vtog { text-decoration: none; display: inline-block; }
 .sctable th, .sctable td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; }
 .sctable th { background: var(--accent-soft); font-weight: 600; }
 .sctable p { margin: 4px 0 0; }
+
+/* 列印：文化補充從新的一頁開始 */
+@media print { .pr-newpage { break-before: page; page-break-before: always; } }
