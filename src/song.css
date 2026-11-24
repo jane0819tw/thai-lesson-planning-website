@@ -38,7 +38,7 @@
   .sprint h1 { font-size: 17pt; margin: 0; }
   .sprint h2 { font-size: 12.5pt; margin: 14pt 0 6pt; padding-bottom: 2pt; border-bottom: 1.5pt solid #c2410c; color: #c2410c; break-after: avoid; }
   /* 藝術字開關也套用到講義 */
-  .sprint .th { font-family: 'Noto Sans Thai Looped', 'Noto Sans TC', sans-serif; }
+  .sprint .th { font-family: 'Sarabun', 'Noto Sans TC', sans-serif; }
   .sprint.tf-loopless .th { font-family: 'Noto Sans Thai', 'Noto Sans TC', sans-serif; }
   .sprint .rom span { color: #1d4f91; }
   .pr-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12pt; border-bottom: 1pt solid #999; padding-bottom: 4pt; }

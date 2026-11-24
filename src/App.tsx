@@ -37,7 +37,7 @@ export default function App() {
           <StudentLink />
         </span>
       </header>
-      <main className={loc.pathname.startsWith('/reading') ? 'wrap reading' : 'wrap'}>
+      <main className="wrap">
         <ErrorBoundary key={loc.pathname + loc.search}>
         <Routes>
           <Route path="/" element={<Home />} />

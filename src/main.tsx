@@ -2,18 +2,10 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import App from './App'
-// Noto Sans Thai Looped 內建在網站裡（不靠 Google Fonts），確保每台裝置的泰文字形一致
-import '@fontsource/noto-sans-thai-looped/thai-400.css'
-import '@fontsource/noto-sans-thai-looped/thai-500.css'
-import '@fontsource/noto-sans-thai-looped/thai-600.css'
-import '@fontsource/noto-sans-thai-looped/thai-700.css'
-import '@fontsource/noto-sans-thai-looped/latin-400.css'
-import '@fontsource/noto-sans-thai-looped/latin-500.css'
-import '@fontsource/noto-sans-thai-looped/latin-600.css'
-import '@fontsource/noto-sans-thai-looped/latin-700.css'
+// 泰文字體內建在網站裡（不靠 Google Fonts），確保每台裝置的字形一致：
+// 有頭字 Sarabun（全站預設）、無頭字 Noto Sans Thai（藝術字開關）；描字底字 LayijiTrace 在 styles.css
 import '@fontsource/noto-sans-thai/thai-400.css'
 import '@fontsource/noto-sans-thai/thai-600.css'
-// 認字課程（/reading）的泰文改用 Sarabun；筆順描紅的底字仍用 LayijiTrace
 import '@fontsource/sarabun/thai-400.css'
 import '@fontsource/sarabun/thai-500.css'
 import '@fontsource/sarabun/thai-600.css'
