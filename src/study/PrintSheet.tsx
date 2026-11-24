@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Rom } from '../video/Rom'
 import { firstOfLines, repeatsOfLines, shownAsLines } from '../song/lines'
 import type { StudyDoc } from './types'
+import { CultureList } from './CultureList'
 
 /** 開瀏覽器列印視窗（可選「另存為 PDF」），檔名預設取 document.title */
 export function printDoc(doc: StudyDoc) {
@@ -100,6 +101,14 @@ export function PrintSheet({ doc, showRom, showZh, art }: { doc: StudyDoc; showR
               </li>
             ))}
           </ol>
+        </section>
+      )}
+
+      {doc.culture && (
+        <section>
+          {head(`文化補充：${doc.culture.title}`)}
+          {doc.culture.intro && <p>{doc.culture.intro}</p>}
+          <CultureList c={doc.culture} showRom={showRom} />
         </section>
       )}
 

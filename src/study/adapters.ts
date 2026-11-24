@@ -36,10 +36,10 @@ export function fromVideo(v: VideoLesson): StudyDoc {
   return {
     kind: 'video', id: v.id, title: v.title,
     subtitle: [v.titleZh, v.topic, v.level, mmss(v.duration)].filter(Boolean).join('・'),
-    youtubeId: v.youtubeId, duration: v.duration,
+    youtubeId: v.youtubeId, videoSrc: v.videoSrc, duration: v.duration,
     lines,
     notes: [...words, ...pats],
     noteAt: [...noteLines(lines, words), ...pats.map(p => v.lines.findIndex(L => L.patterns.includes(p.id)))],
-    quiz: v.quiz, tips: v.tips, pagePath: `/video/${v.id}`,
+    quiz: v.quiz, tips: v.tips, culture: v.culture, pagePath: `/video/${v.id}`,
   }
 }

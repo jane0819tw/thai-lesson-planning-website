@@ -1,3 +1,4 @@
+import type { VideoCulture } from '../video/types'
 // 歌詞跟讀與影片教學共用的「學習文件」：投影片模式、列印講義、單字／句型列表都吃這個形狀。
 // 歌曲和影片各自的資料格式不同，用 adapters.ts 轉進來。
 import type { SongQuiz } from '../song/types'
@@ -21,6 +22,8 @@ export interface StudyDoc {
   /** 標題下的一行小字（中文名、歌手、主題…） */
   subtitle: string
   youtubeId: string
+  /** 本機影片路徑（public/ 底下）；有填就不用 YouTube */
+  videoSrc?: string
   duration: number
   lines: StudyLine[]
   /** 單字在前、句型在後 */
@@ -30,6 +33,8 @@ export interface StudyDoc {
   quiz?: SongQuiz[]
   images?: { src: string; alt: string; caption?: string }[]
   tips?: { title: string; body: string }[]
+  /** 文化補充（小測驗後面） */
+  culture?: VideoCulture
   /** 回到一般頁面的路徑 */
   pagePath: string
 }

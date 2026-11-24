@@ -7,7 +7,8 @@ import { firstOfLines, repeatsOfLines, shownAsLines } from '../song/lines'
 import { fromSong, fromVideo } from '../study/adapters'
 import { NoteRow } from '../study/NoteRow'
 import type { StudyDoc, StudyNote } from '../study/types'
-import { loadYouTubeApi, PLAYER_ERRORS, type YTPlayer } from '../video/youtube'
+import { mountPlayer, type YTPlayer } from '../video/youtube'
+import { CultureList } from '../study/CultureList'
 import { Rom } from '../video/Rom'
 import { Volume } from '../video/Volume'
 import ZoomImage from './ZoomImage'
@@ -173,6 +174,19 @@ function PresentView({ doc }: { doc: StudyDoc }) {
     doc.quiz?.forEach((q, k) => s.push({ section: `小測驗 ${k + 1}`, body: (
       <Quiz q={q} n={k + 1} total={doc.quiz!.length} pick={picks[k]} onPick={p => setPicks(m => ({ ...m, [k]: p }))} showZh={showZh} />
     ) }))
+    if (doc.culture) s.push({ section: '文化補充', body: (
+      <div className="spt-review spt-wide">
+        <h2>文化補充：{doc.culture.title}</h2>
+        {doc.culture.intro && <p>{doc.culture.intro}</p>}
+        <CultureList c={doc.culture} showRom={showRom} part="main" />
+      </div>
+    ) })
+    if (doc.culture?.table) s.push({ section: '文化補充', body: (
+      <div className="spt-review">
+        <h2>文化補充：{doc.culture.title}</h2>
+        <CultureList c={doc.culture} showRom={showRom} part="table" />
+      </div>
+    ) })
     doc.images?.forEach(im => s.push({ section: '補充', body: (
       <figure className="spt-img">
         <ZoomImage src={im.src} alt={im.alt} />
@@ -199,32 +213,11 @@ function PresentView({ doc }: { doc: StudyDoc }) {
   }, [slides])
 
   // 播放器：只建立一次，換頁不重載（非歌詞頁只是藏起來）
-  useEffect(() => {
-    let cancelled = false
-    let player: YTPlayer | null = null
-    const host = hostRef.current!
-    const mount = document.createElement('div')
-    host.appendChild(mount)
-    loadYouTubeApi()
-      .then(() => {
-        if (cancelled || !window.YT) return
-        player = new window.YT.Player(mount, {
-          videoId: doc.youtubeId, width: '100%', height: '100%',
-          playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
-          events: {
-            onReady: () => { if (!cancelled) { playerRef.current = player; setStatus('ready') } },
-            onError: e => { if (!cancelled) { setStatus('error'); setErrorMsg(PLAYER_ERRORS[e.data] ?? '無法播放這支影片。') } },
-          },
-        })
-      })
-      .catch(() => { if (!cancelled) { setStatus('error'); setErrorMsg('無法載入 YouTube 播放器（可能被網路或瀏覽器擋住）。') } })
-    return () => {
-      cancelled = true
-      playerRef.current = null
-      try { player?.destroy() } catch { /* 已被移除 */ }
-      host.innerHTML = ''
-    }
-  }, [doc.youtubeId])
+  useEffect(() => mountPlayer(
+    hostRef.current!, doc,
+    p => { playerRef.current = p; setStatus('ready') },
+    msg => { playerRef.current = null; setStatus('error'); setErrorMsg(msg) },
+  ), [doc.youtubeId, doc.videoSrc])
 
   useEffect(() => { if (status === 'ready') playerRef.current?.setPlaybackRate(rate) }, [rate, status])
 
@@ -378,7 +371,7 @@ function PresentView({ doc }: { doc: StudyDoc }) {
               <div className="vover">
                 {status === 'loading' ? <p>載入播放器…</p> : <>
                   <p>{errorMsg}</p>
-                  <a className="btn" href={`https://www.youtube.com/watch?v=${doc.youtubeId}`} target="_blank" rel="noopener noreferrer">在 YouTube 開啟</a>
+                  {!doc.videoSrc && <a className="btn" href={`https://www.youtube.com/watch?v=${doc.youtubeId}`} target="_blank" rel="noopener noreferrer">在 YouTube 開啟</a>}
                 </>}
               </div>
             )}

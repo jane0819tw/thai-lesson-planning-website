@@ -119,3 +119,49 @@ a.vtog { text-decoration: none; display: inline-block; }
 .spt-img img { max-width: 100%; max-height: 70vh; border-radius: 10px; border: 1px solid var(--line); }
 .spt-side > button { display: grid; gap: 2px; }
 .spt-side-th { font-size: .85rem; color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* 文化補充（小測驗後面） */
+.sculture { margin: 0; display: grid; gap: 10px; }
+.sculture > div { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; break-inside: avoid; }
+.sculture dt { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.sculture dt .th { font-size: 1.25em; font-weight: 700; }
+.sculture-zh { font-weight: 600; }
+.sculture dd { margin: 4px 0 0; }
+
+/* 文化補充：官階金字塔。左欄長條由上而下變寬，右欄對應官階與職位 */
+.spyr { display: grid; gap: 4px; margin: 6px 0 12px; }
+.spyr-head, .spyr-row { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.45fr) minmax(0, .85fr); gap: 12px; align-items: center; }
+.spyr-duty { margin: 0; font-size: .82em; line-height: 1.35; }
+.spyr-entry { display: block; width: fit-content; margin-top: 3px; padding: 0 6px; border: 1px solid var(--accent); color: var(--accent); border-radius: 999px; font-size: .75em; white-space: nowrap; }
+@media (max-width: 700px) { .spyr-head, .spyr-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .spyr-head span:last-child { display: none; } .spyr-duty { grid-column: 1 / -1; color: var(--muted); } }
+.spyr-head { font-size: .8em; color: var(--muted); }
+.spyr-head span:first-child { text-align: center; }
+.spyr-cell { display: flex; justify-content: center; }
+.spyr-bar { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0 8px; padding: 5px 8px; border-radius: 6px; text-align: center; break-inside: avoid; }
+.spyr-bar .th { font-weight: 700; font-size: 1.1em; }
+.spyr-zh { font-weight: 600; }
+.spyr-job { display: flex; flex-direction: column; font-size: .9em; line-height: 1.35; border-left: 2px dashed var(--line); padding-left: 10px; }
+.spyr-rank { color: var(--muted); font-size: .9em; }
+.spyr-bar { background: var(--tier); border-left: 5px solid transparent; }
+.spyr-chip { background: var(--tier); border-radius: 4px; padding: 0 6px; }
+.g-officer .spyr-bar { border-left-color: #c2410c; }
+.g-nco .spyr-bar { border-left-color: #3b6fb6; }
+.spyr-legend .g-officer::before { background: #c2410c; width: 5px; }
+.spyr-legend .g-nco::before { background: #3b6fb6; width: 5px; }
+.spyr-legend span:not([class])::before { display: none; }
+.spyr-legend { display: flex; gap: 16px; justify-content: center; margin: 4px 0 0; color: var(--muted); }
+.spyr-legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.spyr-row { break-inside: avoid; }
+@media print { .spyr-bar, .spyr-chip, .spyr-legend span::before { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+.spyr-job { list-style: none; margin: 0; }
+.spyr-job li { margin: 2px 0; }
+.spyr-bar .spyr-full { width: 100%; font-size: .72em; font-weight: 400; color: var(--muted); }
+
+/* 文化補充金字塔有三欄，投影片這頁用比較寬的版面 */
+.spt .spt-body.novid .spt-inner:has(.spt-wide) { width: 1240px; }
+
+.sctable h3 { margin: 10px 0 6px; font-size: 1em; }
+.sctable table { border-collapse: collapse; width: 100%; font-size: .9em; }
+.sctable th, .sctable td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; }
+.sctable th { background: var(--accent-soft); font-weight: 600; }
+.sctable p { margin: 4px 0 0; }

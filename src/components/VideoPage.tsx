@@ -3,7 +3,7 @@ import { getAdminKey } from '../reservation/api'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { getVideoRepository } from '../data/videoRepository'
 import type { VideoLesson, VideoLine, VideoWord } from '../video/types'
-import { loadYouTubeApi, PLAYER_ERRORS, type YTPlayer } from '../video/youtube'
+import { mountPlayer, type YTPlayer } from '../video/youtube'
 import { Rom } from '../video/Rom'
 import { Volume } from '../video/Volume'
 import { speak } from '../audio/speak'
@@ -11,6 +11,7 @@ import { fromVideo } from '../study/adapters'
 import { NoteSections } from '../study/NoteRow'
 import { PrintSheet, printDoc } from '../study/PrintSheet'
 import { QuizItem } from '../study/QuizItem'
+import { CultureList } from '../study/CultureList'
 import '../video.css'
 import '../song.css'
 
@@ -95,37 +96,12 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
   const live = useRef({ starts, wordStarts, loopIdx, duration: video.duration })
   live.current = { starts, wordStarts, loopIdx, duration: video.duration }
 
-  // 1) 建立播放器
-  useEffect(() => {
-    let cancelled = false
-    let player: YTPlayer | null = null
-    const host = hostRef.current!
-    const mount = document.createElement('div')
-    host.appendChild(mount)
-    loadYouTubeApi()
-      .then(() => {
-        if (cancelled || !window.YT) return
-        player = new window.YT.Player(mount, {
-          videoId: video.youtubeId,
-          width: '100%',
-          height: '100%',
-          playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
-          events: {
-            onReady: () => { if (!cancelled) { playerRef.current = player; setStatus('ready') } },
-            onError: e => { if (!cancelled) { setStatus('error'); setErrorMsg(PLAYER_ERRORS[e.data] ?? '無法播放這支影片。') } },
-          },
-        })
-      })
-      .catch(() => {
-        if (!cancelled) { setStatus('error'); setErrorMsg('無法載入 YouTube 播放器（可能被網路或瀏覽器擋住）。') }
-      })
-    return () => {
-      cancelled = true
-      playerRef.current = null
-      try { player?.destroy() } catch { /* 已被移除 */ }
-      host.innerHTML = ''
-    }
-  }, [video.youtubeId])
+  // 1) 建立播放器（YouTube 或本機影片）
+  useEffect(() => mountPlayer(
+    hostRef.current!, video,
+    p => { playerRef.current = p; setStatus('ready') },
+    msg => { playerRef.current = null; setStatus('error'); setErrorMsg(msg) },
+  ), [video.youtubeId, video.videoSrc])
 
   // 2) 每 120ms 讀播放時間：判斷目前是哪一句、哪一個字，並處理單句循環
   useEffect(() => {
@@ -198,7 +174,7 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
 
   const seekTo = (i: number, keepLoop = true) => {
     const p = playerRef.current
-    if (!p) { window.open(ytUrl(starts[i]), '_blank', 'noopener,noreferrer'); return }
+    if (!p) { if (!video.videoSrc) window.open(ytUrl(starts[i]), '_blank', 'noopener,noreferrer'); return }
     p.seekTo(starts[i], true)
     p.playVideo()
     setActive(i)
@@ -288,8 +264,10 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
                 {status === 'loading' ? <p>載入播放器…</p> : (
                   <>
                     <p>{errorMsg}</p>
-                    <a className="btn" href={ytUrl(0)} target="_blank" rel="noopener noreferrer">在 YouTube 開啟</a>
-                    <p className="small">點句子的時間會在 YouTube 新分頁從該秒數開始播放。</p>
+                    {!video.videoSrc && <>
+                      <a className="btn" href={ytUrl(0)} target="_blank" rel="noopener noreferrer">在 YouTube 開啟</a>
+                      <p className="small">點句子的時間會在 YouTube 新分頁從該秒數開始播放。</p>
+                    </>}
                   </>
                 )}
               </div>
@@ -412,6 +390,14 @@ function VideoView({ video, edit }: { video: VideoLesson; edit: boolean }) {
         <section className="sextra">
           <h2>小測驗</h2>
           <ol className="squiz">{video.quiz.map((q, i) => <QuizItem key={i} q={q} />)}</ol>
+        </section>
+      )}
+
+      {video.culture && (
+        <section className="sextra">
+          <h2>文化補充：{video.culture.title}</h2>
+          {video.culture.intro && <p>{video.culture.intro}</p>}
+          <CultureList c={video.culture} showRom={showRom} />
         </section>
       )}
 
