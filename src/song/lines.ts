@@ -49,7 +49,9 @@ export function noteLines(
 ): number[] {
   const thai = (t: string) => t.match(/[฀-๿]+/g) ?? []
   return notes.map(n => {
-    const byWord = lines.findIndex(L => !L.hidden && L.words.some(w => w.th.trim() === n.th))
+    // 「หนา ๆ」這種重疊詞也算同一個字，不然會掉到後面的子字串比對（หนา 會配到 เสื้อหนาว）
+    const base = (t: string) => t.replace(/\s*ๆ/g, '').trim()
+    const byWord = lines.findIndex(L => !L.hidden && L.words.some(w => base(w.th) === n.th))
     if (byWord >= 0) return byWord
     const parts = thai(n.th)
     if (!parts.length) return -1

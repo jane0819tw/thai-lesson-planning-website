@@ -6,7 +6,7 @@ import type { SongQuiz } from '../song/types'
 import { firstOfLines, repeatsOfLines, shownAsLines } from '../song/lines'
 import { fromSong, fromVideo } from '../study/adapters'
 import { NoteRow } from '../study/NoteRow'
-import type { StudyDoc, StudyNote } from '../study/types'
+import type { StudyDoc, StudyNote, StudyWord } from '../study/types'
 import { mountPlayer, type YTPlayer } from '../video/youtube'
 import { CultureList } from '../study/CultureList'
 import { Rom } from '../video/Rom'
@@ -17,7 +17,8 @@ import '../song.css'
 
 /**
  * 歌詞／影片投影片模式（線上一對一分享畫面用）。
- * 一句一頁：左邊影片，右邊大字歌詞或台詞；單字、句型在第一次出現的那句直接講解（一列一則）。
+ * 一句一頁：左邊影片，右邊大字歌詞或台詞；單字、句型在第一次出現的那句直接講解。
+ * 開著講解時，台詞裡有講解的字換底色，一次只顯示一則講解（預設第一則），點別的字換成那則。
  * 講完接：單字複習 → 句型複習 → 小測驗（一題一頁）→ 補充圖片 → 注意點。
  */
 
@@ -57,8 +58,35 @@ export function VideoPresent() {
   return <PresentView key={doc.id} doc={doc} />
 }
 
-/** 一句底下一頁最多放幾則講解 */
-const NOTES_PER_SLIDE = 2
+const baseTh = (t: string) => t.replace(/\s*ๆ/g, '').replace(/\s+/g, '')
+
+/** 這則講解對到台詞裡的哪幾個字（斷詞的索引），對不到就是空的 */
+function noteWords(words: StudyWord[], note: StudyNote): number[] {
+  // 影片句型：斷詞有標 p
+  if (note.kind === 'pattern') {
+    const ix = words.flatMap((w, j) => (w.p === note.id ? [j] : []))
+    if (ix.length) return ix
+  }
+  // 一個字，或連續幾個字剛好拼成這個詞（เสื้อกันหนาว＋ตัวนอก）；
+  // 句型取泰文片段（เป็นที่ + 動詞 → เป็นที่），可以跨到下一個字的開頭（เป็น＋ที่ต้องการ）
+  const parts = note.th.match(/[\u0E00-\u0E7F]+/g) ?? []
+  for (const target of [baseTh(note.th), ...parts.map(baseTh)]) {
+    if (!target) continue
+    for (let a = 0; a < words.length; a++) {
+      let acc = ''
+      for (let b = a; b < words.length; b++) {
+        acc += baseTh(words[b].th)
+        if (acc === target || (b > a && acc.startsWith(target))) return Array.from({ length: b - a + 1 }, (_, k) => a + k)
+        if (!target.startsWith(acc)) break
+      }
+    }
+  }
+  // 退而求其次：講解的泰文片段出現在哪些字裡
+  return words.flatMap((w, j) => {
+    const b = baseTh(w.th)
+    return b && parts.some(x => b.includes(x) || x === b) ? [j] : []
+  })
+}
 
 /**
  * 複習頁一頁最多放幾「列」：每則算 1 列（字＋解釋）＋ 每個例句 1 列。
@@ -98,6 +126,8 @@ function PresentView({ doc }: { doc: StudyDoc }) {
   const [art, setArt] = useState(false)
   const [side, setSide] = useState(false)
   const [picks, setPicks] = useState<Record<number, number>>({})
+  /** 每句目前顯示哪一則講解（note id）；沒選過就是第一則 */
+  const [sel, setSel] = useState<Record<number, string>>({})
   /** 單句播放：播到這個秒數自動暫停 */
   const stopAt = useRef<number | null>(null)
 
@@ -123,11 +153,33 @@ function PresentView({ doc }: { doc: StudyDoc }) {
       const rep = firstOf[k] !== k
       const here = notes.filter((_, j) => noteAt[j] === k)
       const rom = L.words.map(w => w.rom).filter(Boolean).join(' ')
-      // 講解超過 2 則就分成好幾頁，每頁上面都留著這句，字才不會縮到看不清楚
-      const groups: StudyNote[][] = []
-      if (showNotes) for (let j = 0; j < here.length; j += NOTES_PER_SLIDE) groups.push(here.slice(j, j + NOTES_PER_SLIDE))
-      if (!groups.length) groups.push([])
-      groups.forEach((part, g) => s.push({ section: `第 ${n + 1} 句${groups.length > 1 ? `（講解 ${g + 1}/${groups.length}）` : ''}`, line: k, body: (
+      const notesOn = showNotes && here.length > 0
+      const cur = notesOn ? (here.find(x => x.id === sel[k]) ?? here[0]) : null
+      // 每個字屬於哪幾則講解
+      const owners: StudyNote[][] = L.words.map(() => [])
+      const unmatched: StudyNote[] = []
+      if (notesOn) here.forEach(x => {
+        const ix = noteWords(L.words, x)
+        if (!ix.length) unmatched.push(x)
+        ix.forEach(j => owners[j].push(x))
+      })
+      // 點有講解的字：換成那則；同一個字有好幾則（字和句型重疊）就輪流
+      const pick = (own: StudyNote[]) => {
+        if (!own.length) return
+        const at = own.findIndex(x => x.id === cur?.id)
+        setSel(m => ({ ...m, [k]: own[(at + 1) % own.length].id }))
+      }
+      const wordProps = (j: number, cls: string) => {
+        const own = owners[j]
+        if (!own.length) return { className: cls }
+        const on = own.find(x => x.id === cur?.id)
+        return {
+          className: `${cls} snote nk-${(on ?? own[0]).kind}${on ? ' on' : ''}`,
+          onClick: () => pick(own),
+          title: own.map(x => x.th).join('、'),
+        }
+      }
+      s.push({ section: `第 ${n + 1} 句`, line: k, body: (
         <div className="spt-line">
           <div className="vlh">
             <span className="small muted">第 {n + 1} / {visible.length} 句・{mmss(L.start)}</span>
@@ -135,12 +187,16 @@ function PresentView({ doc }: { doc: StudyDoc }) {
             {rep && <span className="srep">重複第 {visible.indexOf(firstOf[k]) + 1} 句</span>}
           </div>
           {!showSeg ? <>
-            <p className="th spt-th">{L.th}</p>
+            <p className="th spt-th">{notesOn ? L.words.map((w, j) => {
+              // 字後面的空格放在底色外面
+              const t = w.th.trimEnd()
+              return <span key={j}><span {...wordProps(j, 'sw')}>{t}</span>{w.th.slice(t.length)}</span>
+            }) : L.th}</p>
             {showRom && rom && <p className="spt-rom"><Rom text={rom} /></p>}
           </> : (
             <div className="vwords spt-words">
               {L.words.map((w, j) => (
-                <span key={j} className="vw">
+                <span key={j} {...wordProps(j, 'vw')}>
                   <span className="th vth">{w.th}</span>
                   {showRom && w.rom && <Rom text={w.rom} />}
                   {showZh && w.zh && <span className="vwzh">{w.zh}</span>}
@@ -149,11 +205,27 @@ function PresentView({ doc }: { doc: StudyDoc }) {
             </div>
           )}
           {showZh && L.zh && <p className="spt-zh">{L.zh}</p>}
-          {part.length > 0 && (
-            <div className="nlist spt-notes">{part.map(x => <NoteRow key={x.id} note={x} showRom={showRom} showZh={showZh} />)}</div>
-          )}
+          {notesOn && <>
+            {unmatched.length > 0 && (
+              <div className="spt-chips">
+                {unmatched.map(x => (
+                  <button key={x.id} type="button" className={`snote nk-${x.kind}${x.id === cur?.id ? ' on' : ''}`} onClick={() => setSel(m => ({ ...m, [k]: x.id }))}>
+                    <span className="th">{x.th}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* 這句的講解疊在同一格、只顯示選到的那則：高度取最高的，換講解時整頁大小不會跳 */}
+            <div className="spt-stack spt-notes">
+              {here.map(x => (
+                <div key={x.id} className={`nlist${x.id === cur?.id ? '' : ' spt-off'}`} aria-hidden={x.id !== cur?.id}>
+                  <NoteRow note={x} showRom={showRom} showZh={showZh} />
+                </div>
+              ))}
+            </div>
+          </>}
         </div>
-      ) }))
+      ) })
     })
     // 所有複習頁疊在同一格裡、只顯示目前這頁：整組高度一樣，縮放比例就一樣，每頁字和寬度都一致
     const reviewPages = ([['單字複習', words], ['句型複習', pats]] as const)
@@ -200,7 +272,7 @@ function PresentView({ doc }: { doc: StudyDoc }) {
       </div>
     ) })
     return s
-  }, [doc, isSong, lines, notes, noteAt, firstOf, repeatsOf, showRom, showZh, showSeg, showNotes, picks])
+  }, [doc, isSong, lines, notes, noteAt, firstOf, repeatsOf, showRom, showZh, showSeg, showNotes, picks, sel])
 
   const n = slides.length
   const cur = slides[Math.min(i, n - 1)]
@@ -338,10 +410,12 @@ function PresentView({ doc }: { doc: StudyDoc }) {
   const fit = useCallback(() => { if (stage.current && inner.current) fitInto(stage.current, inner.current, 2) }, [])
   useLayoutEffect(fit, [fit, i, slides, withVideo])
   useEffect(() => {
-    const ro = new ResizeObserver(fit)
+    // 縮放本身會改變大小，留到下一格再算，免得 ResizeObserver 一直循環
+    let raf = 0
+    const ro = new ResizeObserver(() => { cancelAnimationFrame(raf); raf = requestAnimationFrame(fit) })
     if (stage.current) ro.observe(stage.current)
     if (inner.current) ro.observe(inner.current)
-    return () => ro.disconnect()
+    return () => { ro.disconnect(); cancelAnimationFrame(raf) }
   }, [fit, i])
 
   const tog = (on: boolean, set: (f: (x: boolean) => boolean) => void, label: string, key: string) => (
