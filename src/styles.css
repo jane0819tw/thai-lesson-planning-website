@@ -883,7 +883,8 @@ table.rc-table .rc-img { display: block; width: 100%; max-width: 150px; margin: 
 .rk { display: grid; gap: 4px; }
 .rk + .rk { margin-top: 12px; }
 .rk-row { display: flex; gap: 4px; }
-.rk-key { width: 38px; height: 42px; flex: none; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 7px; background: var(--card); color: var(--fg); font-size: 1.25rem; padding: 0; font-family: inherit; }
+.rk-key { width: 38px; height: 42px; flex: none; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 7px; background: var(--card); color: var(--fg); font-size: 1.25rem; padding: 0; }
+.rk-key.th { font-family: 'Sarabun', 'Noto Sans Thai', sans-serif; }  /* 不能 inherit：body 先排 Noto Sans TC，◌ 會從中文字體拿、上下方母音接不上變成方框 */
 button.rk-key { cursor: pointer; }
 .rk-key.other { color: var(--muted); font-size: .85rem; font-family: system-ui, sans-serif; }
 .rk-key.lit { background: var(--c); border-color: var(--c); color: #fff; }
@@ -975,3 +976,16 @@ table.tone td.tcover button:hover { background: #3a342b; }
 .ws-split .ws-first td, .ws-split .ws-first th { border-top-width: 2px; }
 .ws-inline-mark { display: inline-flex; color: var(--accent); }
 .ws tr { break-inside: avoid; }
+.ws-join { margin-top: 28px; }  /* 接在上一份作業下面，不換頁 */
+/* 判斷聲調的「習字三次」欄（L4 老師）、抄寫單字／習字帖（L3、L5 老師） */
+.ws-judge .ws-copy3 { width: 30%; padding: 2px; }
+.ws-judge td:last-child { white-space: nowrap; font-size: .9rem !important; }
+.ws-judge th:first-child { width: 16% !important; }
+.ws-judge .ws-circle { font-size: .95rem !important; letter-spacing: 0 !important; white-space: nowrap; }
+.ws-cells { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #ccc; }
+.ws-cells > svg + svg { border-left: 1px solid #ddd; }
+.ws-copy { display: grid; gap: 8px; margin-top: 8px; }
+.ws-copy-row { display: grid; grid-template-columns: 22% 1fr; gap: 8px; align-items: center; break-inside: avoid; }
+.ws-copy-word { display: flex; flex-direction: column; }
+.ws-copy-word .th { font-size: 1.7rem; line-height: 1.3; }
+.ws-copy-word small { font-size: .8rem; }

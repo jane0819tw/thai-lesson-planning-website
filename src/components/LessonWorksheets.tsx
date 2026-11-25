@@ -1,8 +1,9 @@
 import type { Lesson, Worksheet } from '../types'
 import { ghostText, vowelForm } from '../strokes'
 import MarkGlyph from './MarkGlyph'
+import TraceRow, { LetterCell } from './TraceRow'
 
-// 講義作業（課程資料的 worksheets）：L2 拼字表＋聲調填空、L3 拼字表、L4 判斷聲調、L5 拆字（2026-11 老師定）
+// 講義作業（課程資料的 worksheets）：L2 拼字表＋聲調填空、L3 拼字表＋抄寫單字、L4 判斷聲調（含習字三次）、L5 拆字＋習字帖（2026-11 老師定）
 // 一份作業一頁（.h-sheet），右上姓名日期；出題內容在課程 JSON，這裡只排版
 const TONES = ['第一聲', '第二聲', '第三聲', '第四聲', '第五聲']
 const spell = (c: string, form: string) => form.replace('-', c)
@@ -61,12 +62,13 @@ function ToneJudge({ words }: { words: Extract<Worksheet, { kind: 'toneJudge' }>
     <>
       <p className="small">看每個字：圈出子音是中子音還是高子音、母音是長還是短，寫出聲調符號（沒有就寫「無」），最後寫出念第幾聲。</p>
       <table className="ws-table ws-judge">
-        <thead><tr><th>字</th><th>子音</th><th>母音</th><th>聲調符號</th><th>念第幾聲</th></tr></thead>
+        <thead><tr><th>字</th><th className="ws-copy3">習字三次</th><th>子音</th><th>母音</th><th>聲調符號</th><th>念第幾聲</th></tr></thead>
         <tbody>
           {words.map(w => (
             <tr key={w.thai}>
               <th><span className="th ws-word">{w.thai}</span>{w.zh && <small className="muted">　{w.zh}</small>}</th>
-              <td className="ws-circle">中　　高</td><td className="ws-circle">長　　短</td><td /><td>第＿＿聲</td>
+              <td className="ws-copy3"><div className="ws-cells">{[0, 1, 2].map(k => <LetterCell key={k} of="ก" />)}</div></td>
+              <td className="ws-circle">中　高</td><td className="ws-circle">長　短</td><td /><td>第＿＿聲</td>
             </tr>
           ))}
         </tbody>
@@ -98,17 +100,46 @@ function Split({ words }: { words: Extract<Worksheet, { kind: 'split' }>['words'
   )
 }
 
-const TITLE: Record<Worksheet['kind'], string> = { spell: '拼字表', toneFill: '聲調填空', toneJudge: '判斷聲調', split: '拆字' }
+// 抄寫單字（L3）／習字帖（L5）：一個字一列，左邊字＋中文，右邊練字格（寬的字格數變少，字高不變）
+function Copy({ words }: { words: { thai: string; zh?: string }[] }) {
+  return (
+    <>
+      <p className="small">先描淡色的字，再在空白格裡自己寫。</p>
+      <div className="ws-copy">
+        {words.map(w => (
+          <div key={w.thai} className="ws-copy-row">
+            <div className="ws-copy-word"><span className="th">{w.thai}</span>{w.zh && <small className="muted">{w.zh}</small>}</div>
+            <TraceRow text={w.thai} />
+          </div>
+        ))}
+      </div>
+    </>
+  )
+}
+
+const TITLE: Record<Worksheet['kind'], string> = { spell: '拼字表', toneFill: '聲調填空', toneJudge: '判斷聲調', split: '拆字', copy: '抄寫單字' }
+
+// L5 之後每一課都要有習字帖（L5 老師 2026-11-25）：課程資料沒寫 copy 就自動加一份，字用這課的作業字（中文從單字、練習找）
+function withCopy(l: Lesson): Worksheet[] {
+  const ws = l.worksheets ?? []
+  if (l.number < 5 || ws.some(w => w.kind === 'copy') || !l.homework.length) return ws
+  const zh = new Map<string, string>()
+  l.practice.forEach(g => g.items.forEach(i => i.zh && zh.set(i.thai, i.zh)))
+  l.vocab.forEach(v => v.zh && zh.set(v.thai, v.zh))
+  const words = l.homework.slice(0, l.homeworkCount ?? 8).map(t => ({ thai: t, zh: zh.get(t) }))
+  return [...ws, { kind: 'copy', title: '習字帖', words }]
+}
 
 export default function LessonWorksheets({ l }: { l: Lesson }) {
-  return <>{(l.worksheets ?? []).map((w, i) => (
-    <section className="h-sheet ws" key={i}>
-      <Name />
-      <h2>L{l.number} 作業　{TITLE[w.kind]}</h2>
+  return <>{withCopy(l).map((w, i) => (
+    <section className={w.join ? 'ws ws-join' : 'h-sheet ws'} key={i}>
+      {!w.join && <Name />}
+      <h2>L{l.number} 作業　{(w.kind === 'copy' && w.title) || TITLE[w.kind]}</h2>
       {w.kind === 'spell' && <Spell l={l} consonants={w.consonants} />}
       {w.kind === 'toneFill' && <ToneFill l={l} pairs={w.pairs} />}
       {w.kind === 'toneJudge' && <ToneJudge words={w.words} />}
       {w.kind === 'split' && <Split words={w.words} />}
+      {w.kind === 'copy' && <Copy words={w.words ?? l.vocab.map(v => ({ thai: v.thai, zh: v.zh }))} />}
     </section>
   ))}</>
 }

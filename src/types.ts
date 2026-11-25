@@ -98,11 +98,15 @@ export interface VowelIntroConfig { focus: ('single' | 'compound' | 'special' | 
  *  toneFill＝聲調填空（pairs：子音＋這課某個母音 id，短音、長音各一列；不加符號那格給好，沒有的聲調打 ✕，規則同中子音）；
  *  toneJudge＝判斷聲調（圈中／高子音、長／短母音，寫聲調符號和念第幾聲；answer 是答案，講義不印）；
  *  split＝拆字（一個音節一列：子音、母音、聲調符號、第幾聲；demo＝示範題，答案直接印出） */
-export type Worksheet =
+/** join：不換頁，接在上一份作業下面（L3 拼字表＋抄寫單字同一頁） */
+export type Worksheet = (
   | { kind: 'spell'; consonants: string[] }
   | { kind: 'toneFill'; pairs: { c: string; vowel: string }[] }
   | { kind: 'toneJudge'; words: { thai: string; zh?: string; answer: { group: 'mid' | 'high'; long: boolean; mark?: string; t: number } }[] }
   | { kind: 'split'; words: { thai: string; zh: string; parts: Syllable[]; demo?: boolean }[] }
+  /** 抄寫單字／習字帖：一個字一列，左邊字＋中文，右邊練字格（描 2–3 個，其餘空白）；words 沒填＝這課的單字（L3、L5 老師） */
+  | { kind: 'copy'; title?: string; words?: { thai: string; zh?: string }[] }
+) & { join?: boolean }
 
 export interface RecapPoint { point: string; items?: string[]; toneTable?: ToneTable }
 

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getRepository } from '../data/repository'
 import type { Lesson } from '../types'
@@ -49,11 +49,22 @@ export default function HandoutPage() {
   const r = reviewRange(unit)
   useEffect(() => { getRepository().listLessons().then(ls => setLessons(ls.filter(l => l.number >= r.from && l.number <= r.to).sort((a, b) => a.number - b.number))) }, [r.from, r.to])
   useEffect(() => { document.title = `泰文認字 ${reviewRangeLabel(unit)} 講義` }, [unit])
+  // 字母圖示、補充圖片平常是 lazy 載入；按瀏覽器列印時沒捲到的圖不會載入，印出來就缺圖（L1–L5 老師），講義裡一律立刻載入
+  const root = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = root.current
+    if (!el) return
+    const eager = () => el.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach(i => { i.loading = 'eager' })
+    eager()
+    const mo = new MutationObserver(eager)
+    mo.observe(el, { childList: true, subtree: true })
+    return () => mo.disconnect()
+  }, [lessons])
   if (!lessons) return <p>載入中…</p>
   if (!lessons.length) return <p>這個單元還沒有課程。<Link to="/reading">回認字課程</Link></p>
 
   return (
-    <div className="handout">
+    <div className="handout" ref={root}>
       <p className="noprint"><BackLink to="/reading" label="認字課程" />　<button className="btn" onClick={() => window.print()}>列印／存成 PDF</button></p>
       <header className="h-cover">
         <div className="h-num">泰文認字課程</div>
