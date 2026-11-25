@@ -1,4 +1,6 @@
 /* 時事補充（src/news）：卡片沿用會話課 conv.css */
+/* 大字句子：全域 .big（styles.css）會變紅色，時事這裡改回一般文字顏色，避免看起來像錯字 */
+.npage .c-line.big { color: var(--fg); }
 .npage .n-intro p { margin: .3em 0; line-height: 1.8; }
 .npage .c-sec { margin-top: 1.4em; }
 .n-fig { margin: 0 0 12px; }
@@ -13,20 +15,39 @@
 .n-vlist > li { padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
 .n-vlist > li:last-child { border-bottom: 0; }
 .n-vword { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.n-from { font-size: .75rem; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
 .n-vex { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0 0 4px; }
 .n-exlabel { flex: none; font-size: .75rem; padding: 1px 8px; border-radius: 99px; background: var(--cbox); color: var(--cbox-fg); margin-top: .45em; }
 .n-vex .c-th { font-size: 1.1rem; }
 .n-explain:has(.n-qimg) { display: flex; gap: 12px; align-items: flex-start; }
 .n-qimg { width: 96px; height: 96px; object-fit: contain; flex: none; border-radius: 8px; background: #fff; }
+/* 原文分組：好幾張截圖並排 */
+.n-shots > div { display: flex; gap: 10px; align-items: flex-start; }
+.n-shots-1 img { width: 100%; max-width: 760px; }
+.n-shots > div img { min-width: 0; flex: 0 1 auto; max-width: calc((100% - 20px) / 3); width: auto; border: 1px solid var(--line); }
+.n-shots-1 > div img { max-width: 100%; }
+/* 圖鑑：小圖＋泰文／拼音／中文，格子排 */
+.n-gloss { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.n-gloss > li { display: flex; gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--line); border-radius: 10px; }
+.n-gloss img { width: 64px; height: 64px; object-fit: contain; border-radius: 8px; background: #eeeceb; flex: none; }
+.n-gloss li > div { display: flex; flex-direction: column; line-height: 1.4; }
+.n-gloss .c-th { font-size: 1.2rem; }
+.n-gloss small { display: block; }
 /* 時事補充：關掉拼音、中文、喇叭時直接收起來，後面的內容往前補位（會話課是保留位置，這裡不同） */
 .npage.c-hide-rom .c-rom, .npage.c-hide-zh .c-zh, .npage.c-hide-speak .speak,
 .npage .c-hide-rom .c-rom, .npage .c-hide-zh .c-zh, .npage .c-hide-speak .speak { display: none; }
 /* 投影片：主圖不要撐太高 */
 .c-slides .n-fig img { max-height: 46vh; width: auto; max-width: 100%; }
+.c-slides .n-imgcard:not(:has(.c-cards-col > *)) .n-fig img { max-height: 68vh; }
+.c-slides .n-shots img { max-height: 52vh; }
 /* 講義：主圖、商品圖縮小，卡片不跨頁 */
 @media print {
   .nhandout .n-fig img { max-width: 60%; }
-  .nhandout .n-vlist > li { break-inside: avoid; }
+  .nhandout .n-shots-1 img { max-width: 80%; }
+  .nhandout .n-shots > div img { max-height: 300px; }
+  .nhandout .n-imgcard { break-inside: avoid; }
+  .nhandout .n-vlist > li, .nhandout .n-gloss > li { break-inside: avoid; }
+  .nhandout .n-gloss img { width: 48px; height: 48px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .nhandout .n-explain { background: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .nhandout .n-qimg { width: 70px; height: 70px; }
   .nhandout .n-qnum, .nhandout .n-tag, .nhandout .n-exlabel { -webkit-print-color-adjust: exact; print-color-adjust: exact; }

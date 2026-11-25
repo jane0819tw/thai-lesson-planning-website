@@ -1,0 +1,455 @@
+{
+  "date": "2026-11-25",
+  "title": "ลอยกระทงออนไลน์",
+  "titleZh": "線上放水燈",
+  "intro": [
+    "泰曆十二月的滿月是水燈節 <<วันลอยกระทง|wan loi krà-tong>>，泰國人會把水燈 <<กระทง|krà-tong>> 放進河裡許願。",
+    "這個網站「<<กระทงลอยด้วยกัน|krà-tong loi dûay gan>>」讓大家線上放水燈，一共三步：先 <<เลือกฐาน|lêuak tăan>>（選底座：香蕉葉、麵包、蛋糕…），再 <<แต่ง|dtàeng>>（放上花、蠟燭、香和可愛小物），最後 <<ลอย|loi>>（放到河上，還可以選在哪個城市放）。"
+  ],
+  "source": {
+    "url": "",
+    "label": "posyforyou「กระทงลอยด้วยกัน」線上放水燈網站（網站截圖）"
+  },
+  "image": {
+    "src": "news/2026-11-25/shot1.jpg",
+    "credit": "圖片：posyforyou 網站截圖",
+    "lines": [
+      {
+        "th": "กระทงลอยด้วยกัน",
+        "rom": "krà-tong loi dûay gan",
+        "zh": "水燈一起漂（網站標語）"
+      },
+      {
+        "th": "ลอยที่กรุงเทพฯ",
+        "rom": "loi têe grung-têp",
+        "zh": "在曼谷放"
+      },
+      {
+        "th": "เลือกฐาน · แต่ง · ลอย",
+        "rom": "lêuak tăan · dtàeng · loi",
+        "zh": "選底座・裝飾・放水燈"
+      },
+      {
+        "th": "เลือกก่อน แล้วค่อยแต่ง",
+        "rom": "lêuak gòn láew kôi dtàeng",
+        "zh": "先選，再裝飾"
+      },
+      {
+        "th": "สุ่มให้หน่อย",
+        "rom": "sùm hâi nòi",
+        "zh": "幫我隨機選一下"
+      },
+      {
+        "th": "แตะน้ำเล่นได้ · ลากเพื่อหมุนดูรอบ ๆ",
+        "rom": "dtàe náam lên dâai · lâak pêua mŭn doo rôp rôp",
+        "zh": "可以點水玩・拖曳可以旋轉看四周"
+      },
+      {
+        "th": "แล้วแตะชิ้นบนกระทงเพื่อเปลี่ยนสี ขนาด เรียงเป็นวง หรือแตะอีกจุดเพื่อย้าย",
+        "rom": "láew dtàe chín bon krà-tong pêua bplìan sĕe kà-nàat riang bpen wong rĕu dtàe èek jùt pêua yáai",
+        "zh": "再點水燈上的那一件，可以換顏色、大小、排成一圈，或點另一個地方來移動"
+      },
+      {
+        "th": "เลิกทำ · เริ่มแต่งใหม่",
+        "rom": "lêrk tam · rêrm dtàeng mài",
+        "zh": "復原・重新裝飾"
+      }
+    ],
+    "words": [
+      {
+        "th": "กระทง",
+        "rom": "krà-tong",
+        "zh": "水燈",
+        "note": "用香蕉葉、麵包等做的小船，上面插花、香、蠟燭",
+        "from": [
+          1
+        ]
+      },
+      {
+        "th": "ลอย",
+        "rom": "loi",
+        "zh": "漂、放（讓東西漂在水上）",
+        "note": "ลอยกระทง＝放水燈；โคมลอย＝天燈",
+        "from": [
+          1,
+          2
+        ]
+      },
+      {
+        "th": "แต่ง",
+        "rom": "dtàeng",
+        "zh": "裝飾、打扮",
+        "note": "ตกแต่ง＝裝飾（比較正式）；ของแต่ง＝裝飾品",
+        "from": [
+          3,
+          6
+        ]
+      },
+      {
+        "th": "สุ่ม",
+        "rom": "sùm",
+        "zh": "隨機、抽",
+        "note": "สุ่มให้หน่อย＝幫我隨便抽一個；กล่องสุ่ม＝盲盒",
+        "from": [
+          4
+        ]
+      },
+      {
+        "th": "แตะ",
+        "rom": "dtàe",
+        "zh": "點、碰、輕觸",
+        "note": "手機、網頁上「點一下」就用這個字",
+        "from": [
+          5
+        ]
+      }
+    ],
+    "groups": [
+      {
+        "title": "圖 1：選底座的畫面",
+        "images": [
+          "news/2026-11-25/shot1.jpg"
+        ],
+        "lines": [
+          {
+            "th": "กระทงลอยด้วยกัน",
+            "rom": "krà-tong loi dûay gan",
+            "zh": "水燈一起漂（網站標語）"
+          },
+          {
+            "th": "ลอยที่กรุงเทพฯ",
+            "rom": "loi têe grung-têp",
+            "zh": "在曼谷放"
+          },
+          {
+            "th": "เลือกฐาน · แต่ง · ลอย",
+            "rom": "lêuak tăan · dtàeng · loi",
+            "zh": "選底座・裝飾・放水燈"
+          },
+          {
+            "th": "เลือกก่อน แล้วค่อยแต่ง",
+            "rom": "lêuak gòn láew kôi dtàeng",
+            "zh": "先選，再裝飾"
+          },
+          {
+            "th": "สุ่มให้หน่อย",
+            "rom": "sùm hâi nòi",
+            "zh": "幫我隨機選一下"
+          },
+          {
+            "th": "แตะน้ำเล่นได้ · ลากเพื่อหมุนดูรอบ ๆ",
+            "rom": "dtàe náam lên dâai · lâak pêua mŭn doo rôp rôp",
+            "zh": "可以點水玩・拖曳可以旋轉看四周"
+          }
+        ]
+      },
+      {
+        "title": "圖 2–4：裝飾水燈的畫面（花、供品、可愛小物）",
+        "images": [
+          "news/2026-11-25/shot2.jpg",
+          "news/2026-11-25/shot3.jpg",
+          "news/2026-11-25/shot4.jpg"
+        ],
+        "lines": [
+          {
+            "th": "แล้วแตะชิ้นบนกระทงเพื่อเปลี่ยนสี ขนาด เรียงเป็นวง หรือแตะอีกจุดเพื่อย้าย",
+            "rom": "láew dtàe chín bon krà-tong pêua bplìan sĕe kà-nàat riang bpen wong rĕu dtàe èek jùt pêua yáai",
+            "zh": "再點水燈上的那一件，可以換顏色、大小、排成一圈，或點另一個地方來移動"
+          },
+          {
+            "th": "เลิกทำ · เริ่มแต่งใหม่",
+            "rom": "lêrk tam · rêrm dtàeng mài",
+            "zh": "復原・重新裝飾"
+          }
+        ]
+      }
+    ]
+  },
+  "glossary": [
+    {
+      "title": "選水燈底座",
+      "th": "เลือกฐาน",
+      "rom": "lêuak tăan",
+      "items": [
+        {
+          "th": "ใบตอง",
+          "rom": "bai dtong",
+          "zh": "香蕉葉",
+          "image": "news/2026-11-25/base-banana.jpg",
+          "note": "傳統款"
+        },
+        {
+          "th": "ดอกบัว",
+          "rom": "dòk bua",
+          "zh": "蓮花",
+          "image": "news/2026-11-25/base-lotus.jpg"
+        },
+        {
+          "th": "เค้ก",
+          "rom": "kéhk",
+          "zh": "蛋糕",
+          "image": "news/2026-11-25/base-cake.jpg"
+        },
+        {
+          "th": "ขนมปัง",
+          "rom": "kà-nŏm bpang",
+          "zh": "麵包",
+          "image": "news/2026-11-25/base-bread.jpg",
+          "note": "放水裡魚會吃，比較環保"
+        },
+        {
+          "th": "ถ้วย",
+          "rom": "tûay",
+          "zh": "碗、杯",
+          "image": "news/2026-11-25/base-cup.jpg"
+        },
+        {
+          "th": "เทียนบัว",
+          "rom": "tian bua",
+          "zh": "蓮花蠟燭",
+          "image": "news/2026-11-25/base-lotuscandle.jpg"
+        }
+      ]
+    },
+    {
+      "title": "花",
+      "th": "ดอกไม้",
+      "rom": "dòk máai",
+      "items": [
+        {
+          "th": "ดาวเรือง",
+          "rom": "daao-reuang",
+          "zh": "萬壽菊",
+          "image": "news/2026-11-25/marigold.jpg"
+        },
+        {
+          "th": "มะลิ",
+          "rom": "má-lí",
+          "zh": "茉莉花",
+          "image": "news/2026-11-25/jasmine.jpg"
+        },
+        {
+          "th": "กุหลาบ",
+          "rom": "gù-làap",
+          "zh": "玫瑰",
+          "image": "news/2026-11-25/rose.jpg"
+        },
+        {
+          "th": "บัวตูม",
+          "rom": "bua dtoom",
+          "zh": "含苞的蓮花",
+          "image": "news/2026-11-25/lotusbud.jpg",
+          "note": "ตูม＝含苞"
+        },
+        {
+          "th": "กล้วยไม้",
+          "rom": "glûay-máai",
+          "zh": "蘭花",
+          "image": "news/2026-11-25/orchid.jpg"
+        },
+        {
+          "th": "ดอกรัก",
+          "rom": "dòk rák",
+          "zh": "牛角瓜花",
+          "image": "news/2026-11-25/crownflower.jpg",
+          "note": "名字裡有 รัก（愛）"
+        },
+        {
+          "th": "บานไม่รู้โรย",
+          "rom": "baan mâi róo roi",
+          "zh": "千日紅",
+          "image": "news/2026-11-25/globeamaranth.jpg",
+          "note": "บาน 開＋ไม่รู้ 不會＋โรย 凋謝"
+        }
+      ]
+    },
+    {
+      "title": "供品",
+      "th": "ของบูชา",
+      "rom": "kŏng boo-chaa",
+      "items": [
+        {
+          "th": "เทียน",
+          "rom": "tian",
+          "zh": "蠟燭",
+          "image": "news/2026-11-25/candle.jpg"
+        },
+        {
+          "th": "ธูป",
+          "rom": "tôop",
+          "zh": "香",
+          "image": "news/2026-11-25/incense.jpg"
+        },
+        {
+          "th": "ใบเตยพับ",
+          "rom": "bai dtoei páp",
+          "zh": "摺成花的香蘭葉",
+          "image": "news/2026-11-25/pandan.jpg",
+          "note": "พับ＝摺"
+        },
+        {
+          "th": "เทียนพรรษา",
+          "rom": "tian pan-săa",
+          "zh": "守夏節大蠟燭",
+          "image": "news/2026-11-25/buddhistlent.jpg"
+        },
+        {
+          "th": "ผางประทีป",
+          "rom": "păang bprà-têep",
+          "zh": "陶土小油燈",
+          "image": "news/2026-11-25/claylamp.jpg",
+          "note": "泰北的燈"
+        },
+        {
+          "th": "เทียนดอกบัว",
+          "rom": "tian dòk bua",
+          "zh": "蓮花蠟燭",
+          "image": "news/2026-11-25/lotuscandle.jpg"
+        },
+        {
+          "th": "เทียนชัย",
+          "rom": "tian chai",
+          "zh": "祈福蠟燭",
+          "image": "news/2026-11-25/victorycandle.jpg",
+          "note": "ชัย＝勝利"
+        },
+        {
+          "th": "ตะคันกะลา",
+          "rom": "dtà-kan gà-laa",
+          "zh": "椰殼燈",
+          "image": "news/2026-11-25/coconutlamp.jpg",
+          "note": "กะลา＝椰子殼"
+        },
+        {
+          "th": "เหรียญ",
+          "rom": "rĭan",
+          "zh": "硬幣",
+          "image": "news/2026-11-25/coin.jpg"
+        },
+        {
+          "th": "โคมลอย",
+          "rom": "kohm loi",
+          "zh": "天燈",
+          "image": "news/2026-11-25/lantern.jpg",
+          "note": "โคม 燈＋ลอย 飄"
+        },
+        {
+          "th": "บายศรี",
+          "rom": "baai-sĕe",
+          "zh": "芭蕉葉塔",
+          "image": "news/2026-11-25/baisri.jpg",
+          "note": "拜拜用的葉子塔"
+        }
+      ]
+    },
+    {
+      "title": "可愛小物",
+      "th": "ของน่ารัก",
+      "rom": "kŏng nâa-rák",
+      "items": [
+        {
+          "th": "พญานาค",
+          "rom": "pá-yaa-nâak",
+          "zh": "那迦（蛇神）",
+          "image": "news/2026-11-25/naga.jpg",
+          "note": "傳說住在河裡"
+        },
+        {
+          "th": "หงส์",
+          "rom": "hŏng",
+          "zh": "天鵝",
+          "image": "news/2026-11-25/swan.jpg"
+        },
+        {
+          "th": "เทียนกุหลาบ",
+          "rom": "tian gù-làap",
+          "zh": "玫瑰蠟燭",
+          "image": "news/2026-11-25/rosecandle.jpg"
+        },
+        {
+          "th": "หัวใจ",
+          "rom": "hŭa jai",
+          "zh": "愛心",
+          "image": "news/2026-11-25/heart.jpg"
+        },
+        {
+          "th": "แมวกวัก",
+          "rom": "maew gwàk",
+          "zh": "招財貓",
+          "image": "news/2026-11-25/luckycat.jpg",
+          "note": "กวัก＝招手"
+        }
+      ]
+    }
+  ],
+  "sentences": [
+    {
+      "th": "กระทงลอยด้วยกัน",
+      "rom": "krà-tong loi dûay gan",
+      "zh": "水燈一起漂（網站標語）"
+    },
+    {
+      "th": "ลอยที่กรุงเทพฯ",
+      "rom": "loi têe grung-têp",
+      "zh": "在曼谷放"
+    },
+    {
+      "th": "เลือกก่อน แล้วค่อยแต่ง",
+      "rom": "lêuak gòn láew kôi dtàeng",
+      "zh": "先選，再裝飾"
+    },
+    {
+      "th": "สุ่มให้หน่อย",
+      "rom": "sùm hâi nòi",
+      "zh": "幫我隨機選一下"
+    },
+    {
+      "th": "แตะน้ำเล่นได้ · ลากเพื่อหมุนดูรอบ ๆ",
+      "rom": "dtàe náam lên dâai · lâak pêua mŭn doo rôp rôp",
+      "zh": "可以點水玩・拖曳可以旋轉看四周"
+    },
+    {
+      "th": "เลิกทำ · เริ่มแต่งใหม่",
+      "rom": "lêrk tam · rêrm dtàeng mài",
+      "zh": "復原・重新裝飾"
+    }
+  ],
+  "quotes": [],
+  "extra": [
+    {
+      "th": "คืนนี้วันลอยกระทง",
+      "rom": "keun née wan loi krà-tong",
+      "zh": "今晚是水燈節。"
+    },
+    {
+      "th": "ไปลอยกระทงด้วยกันไหม",
+      "rom": "bpai loi krà-tong dûay gan mái",
+      "zh": "要一起去放水燈嗎？"
+    },
+    {
+      "th": "ปีนี้ลอยกระทงออนไลน์",
+      "rom": "bpee née loi krà-tong on-lai",
+      "zh": "今年線上放水燈。"
+    },
+    {
+      "th": "พระจันทร์เต็มดวงสวยมาก",
+      "rom": "prá-jan dtem duang sŭay mâak",
+      "zh": "滿月好漂亮。"
+    },
+    {
+      "th": "กระทงขนมปัง ปลากินได้",
+      "rom": "krà-tong kà-nŏm bpang bplaa gin dâai",
+      "zh": "麵包水燈，魚可以吃。"
+    },
+    {
+      "th": "อธิษฐานก่อนลอยนะ",
+      "rom": "à-tít-tăan gòn loi ná",
+      "zh": "放之前要先許願喔。"
+    },
+    {
+      "th": "ขอให้ปีหน้ามีแฟน",
+      "rom": "kŏr hâi bpee nâa mee faen",
+      "zh": "希望明年有另一半。"
+    }
+  ]
+}
