@@ -159,9 +159,15 @@ async def main(ids, only=None):
         if missing: print("不在所選課程中，略過:", *sorted(missing))
     new = failed = 0
     made = set()  # 這次實際生成的詞（來源標記只對它們更新）
+    sf = OUT / "sources.json"  # 記錄每段音檔的來源，之後整批換成官方服務或真人錄音時用
+    srcs = json.loads(sf.read_text(encoding="utf-8")) if sf.exists() else {}
     for t in sorted(texts):
         name = hashlib.sha1(t.encode()).hexdigest()[:10] + ".mp3"
         f = OUT / name
+        if srcs.get(t, "").startswith("azure:") and f.exists():  # 老師在 Azure 試聽頁選定的，不要被 edge-tts／gTTS 蓋掉
+            manifest[t] = name
+            if only: print("已改用 Azure，略過（要重做用 scripts/gen-audio-azure.py）:", t)
+            continue
         if not only and f.exists() and f.stat().st_size > 0:
             manifest[t] = name
             continue
@@ -169,8 +175,6 @@ async def main(ids, only=None):
             manifest[t] = name; new += 1; made.add(t)
         else:
             failed += 1; print("FAILED:", t)
-    sf = OUT / "sources.json"  # 記錄每段音檔的來源，之後整批換成官方服務或真人錄音時用
-    srcs = json.loads(sf.read_text(encoding="utf-8")) if sf.exists() else {}
     for t in texts:
         if t in manifest and (t in made or t not in srcs):
             srcs[t] = "gtts" if t in gtts_texts else "edge-tts"

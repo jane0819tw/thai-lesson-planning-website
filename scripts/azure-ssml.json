@@ -1,0 +1,12 @@
+{
+  "_說明": "個別詞的 Azure SSML 調整（key＝manifest 的 key）。可用欄位：text（改寫合成文字）、rate（語速，如 -30%）、pitch（如 +5%）、contour（音高曲線，如 (0%,+0Hz) (100%,+20Hz)）、ipa（IPA 發音）、voices（只生這幾種聲音，如 [\"achara\"]）、ssml（直接寫 <voice> 裡面的整段 SSML，其他欄位就不用）",
+  "เตอ": {
+    "rate": "-30%"
+  },
+  "กี่น": {
+    "text": "ก่ีน"
+  },
+  "คี่น": {
+    "text": "ค่ีน"
+  }
+}

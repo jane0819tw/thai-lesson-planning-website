@@ -21,3 +21,6 @@ data/videos/*/
 
 # 加字幕前的合併影片（網站只用 video_th_sub.mp4）
 public/extras/videos/*/video.mp4
+
+# Azure 音檔試聽候選（scripts/gen-audio-azure.py 產生，選定後才蓋到 public/audio/）
+public/audio/azure-preview/

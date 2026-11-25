@@ -283,6 +283,7 @@ python3 scripts/gen-audio.py lesson-NN --only 詞1 詞2  # 強制重生指定的
 
 - 預設 edge-tts，母音相關走 gTTS（規則見 `docs/audio-rerecord.md`）。
 - edge-tts 回傳空音訊（NoAudioReceived）或老師說聲調不對 → 把詞加進 `scripts/gen-audio.py` 的 `FORCE_GTTS`，再用 `--only` 重生，並在 `docs/audio-rerecord.md` 加一列（出現位置、試過什麼、狀態「待確認」）。L11 的 คั้น 就是這樣處理。
+- 老師說聲調不對、edge-tts／gTTS 都試過仍不好 → 改用官方 Azure Speech：`python3 scripts/gen-audio-azure.py 詞1 詞2`（不給詞＝跑 `docs/audio-rerecord.md` 待處理清單），生成 Premwadee／Achara／Niwat 三種候選，請老師在 `npm run dev` 的 `/audio/azure-preview/index.html` 試聽勾選、按「套用」直接蓋正式檔（檔名不變，sources.json 記成 `azure:<聲音>`）。個別詞要改合成文字、語速、音高曲線寫在 `scripts/azure-ssml.json`（L10 กี่น／คี่น 改寫成聲調符號在前的 ก่ีน／ค่ีน 才念對）。2026-11-25 第一批 23 個詞老師多選 Achara。套用後把 `docs/audio-rerecord.md` 該列狀態改成「已改用 Azure <聲音>」。`gen-audio.py` 會略過 `azure:` 的詞（`--only` 也不蓋）。金鑰在 `.env.local`（不進版本控制）。
 - 老師說句子念太快 → 加進 `FORCE_RATE`（例 `-40%`，L14 ช่วงนี้เป็นยังไงบ้าง、ไม่ไป ฉันเหนื่อย），再用 `--only` 重生。作業字也會生成音檔（`homework` 有收）。
 - L15 老師聽過要重生的例字（องุ่น、ปริมาณ、กรุณา）也是加進 `FORCE_GTTS` 再 `--only` 重生。
 - edge-tts 偶爾回 503 或逾時，腳本會自動等幾秒重試（L15 之前會整個中斷）。兩個 session 同時跑 `gen-audio.py` 會互相蓋掉 `manifest.json`，跑完要確認本課的詞都在 manifest 裡，少了就再跑一次（已有的 mp3 會直接登記）。
