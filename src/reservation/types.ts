@@ -33,7 +33,7 @@ export interface OpenDays { days: Day[]; asOf: string }
 
 // ───────── 老師管理頁 ─────────
 export interface Rule { type: '每週' | '單次' | '限定' | '休假' | '備註'; weekday: number | ''; date: string; start: string; end: string; label?: string }
-export interface Booking { id: string; source: string; name: string; start: string; length: number; status: string }
+export interface Booking { id: string; source: string; name: string; start: string; length: number; status: string; /** Zoom 連結（舊版後端沒有） */ zoom?: string }
 export interface Pending { id: string; name: string; start: string; length: number; note: string }
 export interface StudentRow { name: string; /** 平台顯示名稱：有填＝AmazingTalker 學生 */ display?: string; email: string; token: string; record?: string; courses: string[]; /** 課後錄影開始日期 yyyy-MM-dd；空白＝不需要 */ recording?: string; /** 目前的班級：手動填的班名，或綁同一份記錄表自動產生的「團班：姓名、姓名」；空白＝一對一（舊版後端沒有） */ cls?: string; /** 「班級」欄手動填的值（空白＝自動） */ clsManual?: string }
 /** 預約備註裡還沒按 × 的錯誤訊息（Zoom／記錄表失敗等），items 是一段一段的訊息 */
@@ -45,7 +45,7 @@ export interface WeekDay { date: string; closed: string; open: number[]; allDay:
 export interface Week { monday: string; today: string; days: WeekDay[]; /** 前端自己補：換算時區時需要的前一週／下一週資料 */ more?: WeekDay[] }
 /** 月曆：這個月所在的完整週（週一開始），month 是 yyyy-MM */
 export interface Month { month: string; today: string; days: WeekDay[] }
-export interface RecSession { name: string; start: string; end: string }
+export interface RecSession { name: string; start: string; end: string; /** 記錄表那一堂的會議連結（舊版後端沒有） */ zoom?: string }
 /** 待補錄影：需要錄影的學生已上完、但記錄表「影片連結」還空白的課 */
 export interface PendingVideo { name: string; record: string; no: string; start: string; end: string; dateOnly: boolean; progress: string }
 export interface PendingVideos { items: PendingVideo[]; /** 需要錄影但沒辦法檢查的學生（沒綁記錄表、沒有「影片連結」欄） */ problems: { name: string; reason: string }[] }

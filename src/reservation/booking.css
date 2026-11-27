@@ -157,3 +157,14 @@ a.bk-course:hover { border-color: var(--accent); }
 .bk-cancel:empty { display: none; }
 .bk button.bk-cancel-btn { min-height: 0; padding: 3px 10px; font-size: .85rem; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 6px; }
 .bk button.bk-cancel-btn:hover { color: var(--bk-err); border-color: color-mix(in srgb, var(--bk-err) 50%, var(--line)); }
+
+/* 老師頁「即將上課」 */
+.up-day h3 { margin: 16px 0 2px; font-size: .95rem; color: var(--muted); }
+.up-day h3.today { color: var(--accent); }
+.up-day .bk-item:first-of-type { border-top: 0; }
+.up-item.hot { background: color-mix(in srgb, var(--accent) 8%, transparent); border-radius: 8px; padding-left: 8px; padding-right: 8px; }
+.up-tag, .up-pend, .up-when { margin-left: 8px; padding: 1px 8px; border-radius: 99px; font-size: .8rem; background: var(--bk-soft); color: var(--muted); }
+.up-pend { border: 1px dashed var(--line); }
+.up-when.hot { background: var(--accent); color: var(--bg); font-weight: 600; }
+.bk a.bk-btn { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--bk-soft); color: inherit; text-decoration: none; }
+.bk a.bk-btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }

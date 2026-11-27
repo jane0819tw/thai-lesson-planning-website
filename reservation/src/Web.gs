@@ -431,7 +431,7 @@ function adminGetState() {
   const since = Date.now() - 86400000;
   const bookings = readBookings_().filter(function (b) { return b['開始'] && new Date(b['實際結束'] || b['開始']).getTime() >= since; })
     .sort(function (a, b) { return new Date(a['開始']) - new Date(b['開始']); })
-    .map(function (b) { return { id: b['編號'], source: b['來源'], name: b['學生'], start: toLocalStr_(b['開始']), length: b['課長'], status: b['狀態'] }; });
+    .map(function (b) { return { id: b['編號'], source: b['來源'], name: b['學生'], start: toLocalStr_(b['開始']), length: b['課長'], status: b['狀態'], zoom: b['Zoom連結'] || '' }; }); // zoom：老師頁「即將上課」直接進教室
   // 備註裡還沒按 × 的錯誤（Zoom、記錄表失敗等），新的在前
   const issues = readBookings_().map(function (b) { return { b: b, items: noteIssues_(b['備註'], b['備註已讀']) }; })
     .filter(function (x) { return x.items.length; })
@@ -692,7 +692,7 @@ function recordOnlySessions_(nowStr) {
     bookings.forEach(function (b) {
       if (b['學生'] === s.name && b['開始'] && (b['狀態'] === STATUS.PENDING || b['狀態'] === STATUS.CONFIRMED)) known[toLocalStr_(b['開始'])] = true;
     });
-    rec.sessions.forEach(function (x) { if (x.end > nowStr && !known[x.start]) out.push({ name: s.name, start: x.start, end: x.end }); });
+    rec.sessions.forEach(function (x) { if (x.end > nowStr && !known[x.start]) out.push({ name: s.name, start: x.start, end: x.end, zoom: x.link || '' }); });
   });
   return out.sort(function (a, b) { return a.start < b.start ? -1 : a.start > b.start ? 1 : 0; });
 }

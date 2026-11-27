@@ -14,12 +14,13 @@ import type { AdminState, HomeworkRow, Month, PendingVideo, PendingVideos, RecSe
 import { diffOn, fromBase, msIn, useViewTz, wdName } from './tz'
 import TzBar from './TzBar'
 import ClassWorkAdmin from './ClassWorkAdmin'
+import UpcomingAdmin, { linkOf, upcomingSessions, useNow } from './UpcomingAdmin'
 import './booking.css'
 
-const SECS = [['sched', '開放時段'], ['pending', '待確認'], ['issues', '錯誤訊息'], ['videos', '待補錄影'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生互動練習紀錄'], ['classwork', '班級作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
+const SECS = [['upcoming', '即將上課'], ['sched', '開放時段'], ['pending', '待確認'], ['issues', '錯誤訊息'], ['videos', '待補錄影'], ['bookings', '所有預約'], ['students', '學生'], ['homework', '學生互動練習紀錄'], ['classwork', '班級作業'], ['links', '課程入口'], ['backend', '後台設定']] as const
 type Sec = (typeof SECS)[number][0]
 const SEC_KEY = 'thaiskr_admin_sec'
-const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'sched' } catch { return 'sched' } }
+const secGet = (): Sec => { try { const v = localStorage.getItem(SEC_KEY); return SECS.find(x => x[0] === v)?.[0] ?? 'upcoming' } catch { return 'upcoming' } }
 // 行事曆用週檢視或月檢視（記在這個瀏覽器；沒選過＝月）
 const CAL_KEY = 'thaiskr_admin_calview'
 const calGet = (): 'week' | 'month' => { try { return localStorage.getItem(CAL_KEY) === 'week' ? 'week' : 'month' } catch { return 'month' } }
@@ -30,8 +31,6 @@ const backendGet = (): BackendLinks => { try { const v = JSON.parse(localStorage
 const STATUSES = ['待確認', '已確認', '已拒絕', '已過期', '已取消']
 const BASE_TITLE = typeof document === 'undefined' ? '' : document.title
 const todayStr = () => new Date().toISOString().slice(0, 10)
-// 學生預約頁就在同一個網站：<網站>/#/book?t=<代碼>
-const linkOf = (s: StudentRow) => `${location.origin}${location.pathname}#/book?t=${s.token}`
 
 export default function AdminPage() {
   const [sp] = useSearchParams()
@@ -79,6 +78,8 @@ export default function AdminPage() {
     window.addEventListener('error', onErr); window.addEventListener('unhandledrejection', onRej)
     return () => { window.removeEventListener('error', onErr); window.removeEventListener('unhandledrejection', onRej) }
   }, [])
+  const now = useNow()
+  const upcoming = useMemo(() => (st ? upcomingSessions(st.bookings, rec, now) : []), [st, rec, now])
   const lessons = useLessons()
   const units = readingUnits(lessons.map(l => l.number))
   // 畫面用老師所在地的時間；後端資料都是台北時間（tz.ts）
@@ -158,9 +159,9 @@ export default function AdminPage() {
     api.adminGetPendingVideos().then(setPv).catch(e => { if (sec === 'videos') flash(false, (e as Error).message) }).finally(() => { pvLoading.current = false })
   }, [st, wk, pv, api]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // 進入「所有預約」時才讀各學生的記錄表（每位要開一次檔，比較慢）
+  // 進入「所有預約」「即將上課」時才讀各學生的記錄表（每位要開一次檔，比較慢）
   useEffect(() => {
-    if (sec !== 'bookings' || rec || !st) return
+    if ((sec !== 'bookings' && sec !== 'upcoming') || rec || !st) return
     run('讀取學生記錄表中…', () => api.adminGetRecordSessions()).then(setRec).catch(e => flash(false, e.message))
   }, [sec, rec, st, api, run])
 
@@ -257,7 +258,7 @@ export default function AdminPage() {
       <div className="mgr-shell">
         <nav className="mgr-side">
           {SECS.map(([k, n]) => (
-            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}{k === 'issues' && !!st.issues?.length && <span className="mgr-badge">{st.issues.length}</span>}{k === 'videos' && !!pv?.items.length && <span className="mgr-badge">{pv.items.length}</span>}{k === 'classwork' && !!cwTodo && <span className="mgr-badge">{cwTodo}</span>}</button>
+            <button key={k} className={sec === k ? 'sel' : ''} onClick={() => goSec(k)}>{n}{k === 'upcoming' && (() => { const n = upcoming.filter(u => fromBase(u.start, tz).slice(0, 10) === msIn(now, tz).slice(0, 10)).length; return n > 0 && <span className="mgr-badge" title="今天的課">{n}</span> })()}{k === 'pending' && st.pending.length > 0 && <span className="mgr-badge">{st.pending.length}</span>}{k === 'issues' && !!st.issues?.length && <span className="mgr-badge">{st.issues.length}</span>}{k === 'videos' && !!pv?.items.length && <span className="mgr-badge">{pv.items.length}</span>}{k === 'classwork' && !!cwTodo && <span className="mgr-badge">{cwTodo}</span>}</button>
           ))}
           {/* 其他工具：另開分頁，不影響這頁尚未儲存的開放時段 */}
           <a className="mgr-tool" href="#/reading/stroke-editor" target="_blank" rel="noopener noreferrer">✏️ 筆順錄製工具</a>
@@ -265,6 +266,13 @@ export default function AdminPage() {
           <a className="mgr-tool" href="#/song" target="_blank" rel="noopener noreferrer">🎵 歌詞跟讀</a>
         </nav>
         <div className="mgr-content">
+          {sec === 'upcoming' && (
+            <UpcomingAdmin sessions={upcoming} recLoading={!rec} students={st.students} tz={tz} now={now}
+              onRefresh={async () => {
+                try { const s = await run('重新載入中…', () => api.adminGetState()); setSt(s); if (!dirty) setDraft(buildDraft(s.rules)); setRec(null) } catch (e) { flash(false, (e as Error).message) }
+              }} />
+          )}
+
           {sec === 'sched' && (
             <>
               <div className="bk-card">

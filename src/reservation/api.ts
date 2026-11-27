@@ -139,6 +139,9 @@ const db: AdminState = {
     { type: '備註', weekday: '', date: day(2), start: '', end: '', label: '出國' },
   ],
   bookings: [
+    { id: 'B0018', source: '私下', name: 'Jenny', start: `${day(0)} ${hhmm(5)}`, length: 25, status: '已確認', zoom: 'https://zoom.us/j/123' },
+    { id: 'B0019', source: '私下', name: 'Jenny', start: `${day(0)} ${hhmm(35)}`, length: 25, status: '已確認', zoom: 'https://zoom.us/j/123' },
+    { id: 'B0022', source: 'AmazingTalker', name: '王小明', start: `${day(1)} 09:00`, length: 25, status: '已確認' },
     { id: 'B0020', source: '私下', name: 'Amy', start: `${day(1)} 19:00`, length: 50, status: '待確認' },
     { id: 'B0021', source: 'AmazingTalker', name: 'Jenny', start: `${day(2)} 21:00`, length: 50, status: '已過期' },
   ],
@@ -254,7 +257,7 @@ const mock: Api = {
   adminImportPlatformStudents: () => delay({ added: [], linked: [] }),
   adminSetDisplay: (n, d) => { db.students.forEach(s => { if (s.name === n) s.display = d.trim() }); return delay(true) },
   adminSetCourses: (n, c) => { db.students.forEach(s => { if (s.name === n) s.courses = c }); return delay(true) },
-  adminGetRecordSessions: () => delay([{ name: 'Ariel', start: `${day(3)} 09:00`, end: `${day(3)} 09:30` }, { name: 'Ariel', start: `${day(3)} 09:30`, end: `${day(3)} 10:00` }]),
+  adminGetRecordSessions: () => delay([{ name: 'Ariel', start: `${day(3)} 09:00`, end: `${day(3)} 09:30`, zoom: 'https://zoom.us/j/789' }, { name: 'Ariel', start: `${day(3)} 09:30`, end: `${day(3)} 10:00`, zoom: 'https://zoom.us/j/789' }]),
   adminCancelRecordLesson: () => delay(true),
   adminSetRecording: (n, on) => { db.students.forEach(s => { if (s.name === n) s.recording = on ? (s.recording || day(0)) : '' }); return delay(true) },
   adminGetPendingVideos: () => delay(structuredClone(mockVideos)),
