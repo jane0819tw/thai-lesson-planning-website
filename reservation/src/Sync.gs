@@ -161,7 +161,8 @@ function applyStatusChange_(b) {
 function addNote_(b, text) { b['備註'] = (b['備註'] ? b['備註'] + '；' : '') + text; }
 
 /**
- * 私下預約確認：建立 Zoom → 填進學生記錄表的下一堂 （不寄信）。
+ * 私下預約確認：建立 Zoom → 填進學生記錄表的下一堂。
+ * 邀請信由之後的 syncCalendarEvent_ 處理（把學生加進行事曆事件，Google 寄信）。
  * 每一步都可重複執行（已有連結不重建、記錄表已有連結不重寫），
  * 任何一步失敗都只記在備註，不會讓確認動作整個失敗。
  */
@@ -182,8 +183,7 @@ function confirmPrivate_(b) {
       notify_('尚未建立 Zoom：' + b['學生'], '請在「專案設定 → 指令碼屬性」設定 ZOOM_ACCOUNT_ID、ZOOM_CLIENT_ID、ZOOM_CLIENT_SECRET，再把這筆預約的狀態改一次。');
     } else {
       try {
-        const email = (student && String(student.email || '').trim()) || emailFromNote_(b['備註']);
-        const m = zoomCreateMeeting_(zoomTopic_(b['學生'], start), start, b['課長'], email);
+        const m = zoomCreateMeeting_(zoomTopic_(b['學生'], start), start, b['課長'], studentEmailFor_(b));
         b['Zoom連結'] = m.joinUrl; b['會議編號'] = m.id;
       } catch (e) {
         addNote_(b, 'Zoom 建立失敗：' + e.message);
@@ -198,6 +198,13 @@ function confirmPrivate_(b) {
   } else {
     addNote_(b, '尚未綁定學生的課程記錄表');
   }
+}
+
+/** 學生 email：先看學生表，沒有再看預約備註（私下預約新學生填的）；格式不對回傳空字串 */
+function studentEmailFor_(b) {
+  const s = readStudents_().filter(function (x) { return x.name === b['學生']; })[0];
+  const email = (s && String(s.email || '').trim()) || emailFromNote_(b['備註']);
+  return /^\S+@\S+\.\S+$/.test(email) ? email : '';
 }
 
 /** 取消／拒絕／過期：先把記錄表裡那一堂清掉（要在 Zoom 連結被清空之前，才找得到對應的列） */
